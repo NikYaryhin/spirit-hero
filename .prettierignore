@@ -1,0 +1,8 @@
+node_modules
+build
+dist
+.vscode
+.idea
+.eslintcache
+coverage
+*.log
