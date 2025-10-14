@@ -48,8 +48,7 @@ export default function StoreDetailsForm() {
 					</div>
 				</fieldset>
 			</form>
-
-			<form action="submit" className={css['store--details__form']}>
+			<form className={css['store--details__form']}>
 				<fieldset>
 					<legend>2. Choose primary colors (multiple choice is available)</legend>
 
@@ -73,6 +72,12 @@ export default function StoreDetailsForm() {
 					</ul>
 				</fieldset>
 			</form>
+
+			<div className={css['next__button--box']}>
+				<button className={css.next__button}>Next</button>
+
+				<span className={css['next__button--label']}>It will take about 10 min.</span>
+			</div>
 		</section>
 	)
 }

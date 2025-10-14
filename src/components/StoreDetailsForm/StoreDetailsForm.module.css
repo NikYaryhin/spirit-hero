@@ -86,4 +86,37 @@
 			}
 		}
 	}
+
+	.next__button--box {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+
+		max-width: 14.1rem;
+		margin-left: auto;
+
+		.next__button {
+
+			border-radius: 1.2rem;
+
+			font-size: 1.4rem;
+			line-height: 1.57;
+			color: #fcfcfc;
+
+			background-color: #4E008E;
+			transition: background-color 0.25s ease, border 0.25s ease-in-out;
+
+			&:hover, &:focus {
+				border: 1px solid #4E008E;
+				background-color: #5E00A8;
+			}
+		}
+
+		.next__button--label {
+			font-size: 1.2rem;
+			line-height: 1.33;
+			color: #4E008E;
+
+		}
+	}
 }
