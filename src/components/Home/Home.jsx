@@ -68,7 +68,7 @@ export default function Home() {
 							</span>
 						</p>
 
-						<button className={css['home__content--bottom__button']}>Book a Demo</button>
+						<a className={css['home__content--bottom__button']}>Book a Demo</a>
 					</div>
 				</div>
 			</div>

@@ -180,6 +180,22 @@
 
 				.home__content--bottom__button {
 					margin-left: auto;
+					padding: 0.8rem 1.6rem;
+
+					border-radius: 0.6rem;
+					border: 1px solid #CACACA;
+
+					font-size: 1.2rem;
+					line-height: calc(16/12);
+					font-weight: 400;
+					color: #373239;
+
+					background: #FCFCFC;
+					transition: box-shadow 0.25s ease;
+
+					&:hover, &:focus {
+						box-shadow: 0px -3px 0px 0px #00000014 inset;
+					}
 				}
 			}
 		}

@@ -1,3 +1,16 @@
+import BuilderHeader from '@/components/BuilderHeader/BuilderHeader'
+import LogoPicker from '@/components/LogoPicker/LogoPicker'
+import StoreDetailsForm from '@/components/StoreDetailsForm/StoreDetailsForm'
+import { useState } from 'react'
+
 export default function Builder() {
-	return <h1>Builder</h1>
+	const [activeStep, setActiveStep] = useState(2)
+
+	return (
+		<>
+			<BuilderHeader activeStep={activeStep} setActiveStep={setActiveStep} />
+			<LogoPicker />
+			<StoreDetailsForm />
+		</>
+	)
 }

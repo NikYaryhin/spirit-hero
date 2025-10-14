@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital@0;1&family=Poppins:wght@400;500;600;700&display=swap');
 
 :root {
   font-family: 'Poppins', sans-serif;
@@ -46,6 +46,11 @@ h1 {
   line-height: 1.1;
 }
 
+a {
+
+  transition: border-color 0.25s, opacity 0.25s;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -55,11 +60,17 @@ button {
   font-family: inherit;
   background-color: #1a1a1a;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, opacity 0.25s;
+}
+
+button:disabled {
+  opacity: 0.7;
+  border-color: transparent;
+  cursor: not-allowed;
 }
 
 button:hover {
-  border-color: #646cff;
+  border-color: #373239;
 }
 
 button:focus,
@@ -77,6 +88,10 @@ h1, h2, h3, h4, h5, h6, p {
   margin: 0;
 }
 
+.rotated {
+  transform: rotate(180deg);
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -90,4 +105,18 @@ h1, h2, h3, h4, h5, h6, p {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Visually hide content but keep it accessible to screen readers */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
 }
