@@ -35,7 +35,13 @@ export default function ProductCard({
 						/>
 					</svg>
 				</span>
-				<input type="checkbox" className="visually-hidden" value={id} onChange={inputHandle} />
+				<input
+					type="checkbox"
+					className="visually-hidden"
+					value={id}
+					onChange={inputHandle}
+					data-collection={isSelected ? 'selected' : 'catalog'}
+				/>
 			</label>
 		</li>
 	)

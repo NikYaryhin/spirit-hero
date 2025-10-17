@@ -61,6 +61,25 @@ export default function ProductsSection() {
 		})
 	}
 
+	const addToStoreButtonHandle = (event) => {
+		const selectedInputs = document.querySelectorAll('input[data-collection="catalog"]:checked')
+
+		const selectedProductsIdArr = [...selectedInputs].map((input) => {
+			const { value } = input
+
+			setCatalogProducts((prev) => {
+				const product = prev.find((product) => String(product.id) === value)
+
+				setSelectedProducts((selPrev) => {
+					const exists = selPrev.some((product) => String(product.id) === value)
+					return exists ? selPrev : [...selPrev, product]
+				})
+
+				return prev.filter((product) => String(product.id) !== value)
+			})
+		})
+	}
+
 	return (
 		<div className={css['products__section']}>
 			<div className={css['products__catalog--pickers']}>
@@ -102,7 +121,10 @@ export default function ProductsSection() {
 
 				<div className={css['buttons__box']}>
 					<button className={`${css.select_all} light_button_1`}>Select All</button>
-					<button className={`${css.add_to_store} contrast_button_1`}>
+					<button
+						className={`${css.add_to_store} contrast_button_1`}
+						onClick={addToStoreButtonHandle}
+					>
 						<Lightning />
 						Add to my store
 					</button>
