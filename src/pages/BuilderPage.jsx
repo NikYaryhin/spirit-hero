@@ -1,6 +1,7 @@
 import BuilderHeader from '@/components/BuilderHeader/BuilderHeader'
-import LogoPicker from '@/components/LogoPicker/LogoPicker'
-import StoreDetailsForm from '@/components/StoreDetailsForm/StoreDetailsForm'
+import Details from '@/components/Steps/Details'
+import ProductsStep from '@/components/Steps/ProductsStep'
+
 import { useState } from 'react'
 
 export default function Builder() {
@@ -9,8 +10,9 @@ export default function Builder() {
 	return (
 		<>
 			<BuilderHeader activeStep={activeStep} setActiveStep={setActiveStep} />
-			<LogoPicker />
-			<StoreDetailsForm />
+
+			{activeStep === 1 && <Details />}
+			{activeStep === 2 && <ProductsStep />}
 		</>
 	)
 }

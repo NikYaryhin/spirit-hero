@@ -6,6 +6,11 @@ const apiClient = axios.create({
 
 let bearerToken = null
 
+const storedToken = localStorage.getItem('access_token') || null
+if (storedToken) {
+	bearerToken = storedToken
+}
+
 apiClient.interceptors.request.use((config) => {
 	if (bearerToken) {
 		config.headers = config.headers || {}
@@ -17,6 +22,9 @@ apiClient.interceptors.request.use((config) => {
 export function setToken(token) {
 	bearerToken = token || ''
 
+	if (token) localStorage.setItem('access_token', token)
+	else localStorage.removeItem('access_token')
+
 	apiClient.interceptors.request.use((config) => {
 		if (bearerToken) {
 			config.headers = config.headers || {}
@@ -24,6 +32,8 @@ export function setToken(token) {
 		}
 		return config
 	})
+
+	console.log('bearerToken', bearerToken)
 }
 
 class SpiritHeroApi {

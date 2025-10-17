@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+
+  <symbol
+    viewBox="0 0 10 8"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M1.25 4.75L3.5 7L8.75 1.75"
+      stroke="#FCFCFC"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </symbol>
+</svg>
