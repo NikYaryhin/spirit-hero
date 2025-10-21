@@ -1,0 +1,71 @@
+.products_filter-group {
+	padding: 0.4rem 1.6rem;
+	border-radius: 1.2rem;
+
+	background-color: #FCFCFC;
+
+	&:not([open]) {
+		summary svg {
+			rotate: 180deg;
+		}
+	}
+
+	summary {
+		display: flex;
+		align-items: center;
+
+		justify-content: space-between;
+		padding: 1rem 0;
+
+		font-size: 1.4rem;
+		font-weight: 700;
+		line-height: 1.43;
+		text-transform: uppercase;
+
+		list-style: none;
+		cursor: pointer;
+	}
+
+	.filters__list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+
+		.category__label {
+			display: flex;
+			align-items: center;
+			gap: 0.4rem;
+
+			font-size: 1.4rem;
+			line-height: 1.57;
+			color: #605767;
+
+			cursor: pointer;
+
+			&:has(input:checked) {
+
+				.checkbox__emulator {
+					svg {
+						visibility: visible;
+					}
+				}
+			}
+
+			.checkbox__emulator {
+				top: 1.6rem;
+				left: 1.2rem;
+
+				display: inline-block;
+				width: 1.6rem;
+				height: 1.6rem;
+
+				border: 1px solid #9B9AA5;
+				border-radius: 0.2rem;
+
+				svg {
+					visibility: hidden;
+				}
+			}
+		}
+	}
+}

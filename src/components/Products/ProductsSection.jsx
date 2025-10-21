@@ -4,26 +4,116 @@ import css from './ProductsSection.module.css'
 import Check from '../Icons/Check'
 import Lightning from '../Icons/Lightning'
 import ProductCard from '../ProductCard/ProductCard'
-import Icon from '../Icon'
+import Filters from '../Filters/Filters'
 
-export default function ProductsSection() {
+export default function ProductsSection({ isFlashSale }) {
+	const [sortingBy, setSortingBy] = useState('')
+	const [selectedCount, setSelectedCount] = useState(0)
 	const [isCatalog, setIsCatalog] = useState(true)
-	const [catalogProducts, setCatalogProducts] = useState(null)
-	const [selectedProducts, setSelectedProducts] = useState([])
-	const [categories, setCategories] = useState(null)
+	const [catalogProducts, setCatalogProducts] = useState([])
+	const [myShopProducts, setMyShopProducts] = useState([])
+	const [filters, setFilters] = useState(null)
+	const [initialCatalogProducts, setInitialCatalogProducts] = useState([])
+	const [initialMyShopProducts, setInitialMyShopProducts] = useState([])
+	const [activeFilters, setActiveFilters] = useState({
+		brands: [],
+		categories: [],
+		colorFamilies: [],
+	})
+
+	useEffect(() => {
+		const hasAnyFilters =
+			(activeFilters.brands && activeFilters.brands.length > 0) ||
+			(activeFilters.categories && activeFilters.categories.length > 0) ||
+			(activeFilters.colorFamilies && activeFilters.colorFamilies.length > 0)
+
+		console.log({ hasAnyFilters })
+
+		const matchByFilters = (product) => {
+			// OR внутри каждой группы, AND между группами
+			// приведение к строке для стабильного сравнения
+			if (activeFilters.brands && activeFilters.brands.length > 0) {
+				const passBrand = activeFilters.brands.includes(
+					String(product.brand_id),
+				)
+				if (!passBrand) return false
+			}
+
+			if (activeFilters.categories && activeFilters.categories.length > 0) {
+				const passCategory = activeFilters.categories.includes(
+					String(product.category_id),
+				)
+				if (!passCategory) return false
+			}
+
+			if (
+				activeFilters.colorFamilies &&
+				activeFilters.colorFamilies.length > 0
+			) {
+				const colorIds = Array.isArray(product.colors)
+					? product.colors.map((c) => String(c.id))
+					: []
+				const passColor = colorIds.some((id) =>
+					activeFilters.colorFamilies.includes(id),
+				)
+				if (!passColor) return false
+			}
+
+			return true
+		}
+
+		const applySorting = (arr) => {
+			if (!Array.isArray(arr)) return arr
+			if (sortingBy === 'expensive') {
+				return [...arr].sort(
+					(a, b) => b.params.on_demand_price - a.params.on_demand_price,
+				)
+			}
+			if (sortingBy === 'cheap') {
+				return [...arr].sort(
+					(a, b) => a.params.on_demand_price - b.params.on_demand_price,
+				)
+			}
+			if (sortingBy === 'name') {
+				return [...arr].sort((a, b) =>
+					a.product_title.localeCompare(b.product_title),
+				)
+			}
+			return arr
+		}
+
+		const nextCatalog = applySorting(
+			hasAnyFilters
+				? initialCatalogProducts.filter(matchByFilters)
+				: initialCatalogProducts,
+		)
+		const nextShop = applySorting(
+			hasAnyFilters
+				? initialMyShopProducts.filter(matchByFilters)
+				: initialMyShopProducts,
+		)
+
+		setCatalogProducts(nextCatalog)
+		setMyShopProducts(nextShop)
+		// }, [activeFilters, sortingBy])
+	}, [activeFilters, sortingBy, initialCatalogProducts, initialMyShopProducts])
 
 	useEffect(() => {
 		const getProducts = async () => {
 			try {
 				if (!localStorage.getItem('access_token')) {
-					const loginRes = await spiritHeroApi.login('admin@gmail.com', '12345678')
+					const loginRes = await spiritHeroApi.login(
+						'admin@gmail.com',
+						'12345678',
+					)
 					console.log('loginRes', loginRes)
 				}
 				const res = await spiritHeroApi.getProducts()
 				console.log('res', res)
 
 				setCatalogProducts(res.products)
-				setCategories(res.categories)
+				setInitialCatalogProducts(res.products)
+				setFilters(res.filters)
 			} catch (error) {
 				console.error(error)
 			}
@@ -31,53 +121,157 @@ export default function ProductsSection() {
 		getProducts()
 	}, [])
 
-	const onCatalogCardClick = (event) => {
-		const { value } = event.currentTarget
+	useEffect(() => {
+		if (!catalogProducts) return
 
-		setCatalogProducts((prev) => {
-			const product = prev.find((product) => String(product.id) === value)
+		const count = isCatalog
+			? catalogProducts.filter((product) => product.selected).length
+			: myShopProducts.filter((product) => product.selected).length
 
-			setSelectedProducts((selPrev) => {
-				const exists = selPrev.some((product) => String(product.id) === value)
-				return exists ? selPrev : [...selPrev, product]
-			})
+		setSelectedCount(count)
+	}, [catalogProducts, myShopProducts, isCatalog])
 
-			return prev.filter((product) => String(product.id) !== value)
-		})
-	}
-
-	const onSelectedCardClick = (event) => {
-		const { value } = event.currentTarget
-
-		setSelectedProducts((prev) => {
-			const product = prev.find((product) => String(product.id) === value)
-
-			setCatalogProducts((selPrev) => {
-				const exists = selPrev.some((product) => String(product.id) === value)
-				return exists ? selPrev : selPrev.unshift(product)
-			})
-
-			return prev.filter((product) => String(product.id) !== value)
-		})
-	}
-
-	const addToStoreButtonHandle = (event) => {
-		const selectedInputs = document.querySelectorAll('input[data-collection="catalog"]:checked')
-
-		const selectedProductsIdArr = [...selectedInputs].map((input) => {
-			const { value } = input
-
+	useEffect(() => {
+		if (sortingBy === 'expensive') {
 			setCatalogProducts((prev) => {
-				const product = prev.find((product) => String(product.id) === value)
-
-				setSelectedProducts((selPrev) => {
-					const exists = selPrev.some((product) => String(product.id) === value)
-					return exists ? selPrev : [...selPrev, product]
-				})
-
-				return prev.filter((product) => String(product.id) !== value)
+				return [...prev].sort(
+					(a, b) => b.params.on_demand_price - a.params.on_demand_price,
+				)
 			})
+			setMyShopProducts((prev) => {
+				return [...prev].sort(
+					(a, b) => b.params.on_demand_price - a.params.on_demand_price,
+				)
+			})
+		}
+		if (sortingBy === 'cheap') {
+			setCatalogProducts((prev) => {
+				return [...prev].sort(
+					(a, b) => a.params.on_demand_price - b.params.on_demand_price,
+				)
+			})
+			setMyShopProducts((prev) => {
+				return [...prev].sort(
+					(a, b) => a.params.on_demand_price - b.params.on_demand_price,
+				)
+			})
+		}
+		if (sortingBy === 'name') {
+			setCatalogProducts((prev) => {
+				return [...prev].sort((a, b) =>
+					a.product_title.localeCompare(b.product_title),
+				)
+			})
+			setMyShopProducts((prev) => {
+				return [...prev].sort((a, b) =>
+					a.product_title.localeCompare(b.product_title),
+				)
+			})
+		}
+	}, [sortingBy])
+
+	const onCatalogCardClick = (event) => {
+		const { value, checked } = event.currentTarget
+
+		setCatalogProducts((prev) =>
+			prev.map((product) =>
+				String(product.id) === String(value)
+					? { ...product, selected: checked }
+					: product,
+			),
+		)
+	}
+
+	const onMyShopCardClick = (event) => {
+		const { value, checked } = event.currentTarget
+
+		setMyShopProducts((prev) =>
+			prev.map((product) =>
+				String(product.id) === String(value)
+					? { ...product, selected: checked }
+					: product,
+			),
+		)
+	}
+
+	const onSelectAllClick = () => {
+		if (isCatalog)
+			setCatalogProducts((prev) =>
+				prev.map((product) => {
+					return { ...product, selected: true }
+				}),
+			)
+		else
+			setMyShopProducts((prev) =>
+				prev.map((product) => {
+					return { ...product, selected: true }
+				}),
+			)
+	}
+
+	const addToStoreButtonHandle = () => {
+		setCatalogProducts((prevCatalog) => {
+			if (!Array.isArray(prevCatalog) || prevCatalog.length === 0)
+				return prevCatalog
+
+			const selectedForStore = prevCatalog
+				.filter((product) => product.selected)
+				.map((product) => ({ ...product, selected: false }))
+
+			const nextCatalog = prevCatalog.filter((product) => !product.selected)
+
+			setMyShopProducts((prevSelected) => {
+				const existing = new Set(prevSelected.map((p) => String(p.id)))
+				const append = selectedForStore.filter(
+					(p) => !existing.has(String(p.id)),
+				)
+				const nextMyShop = append.length
+					? [...prevSelected, ...append]
+					: prevSelected
+				setInitialMyShopProducts(nextMyShop)
+				return nextMyShop
+			})
+
+			setInitialCatalogProducts(nextCatalog)
+			return nextCatalog
 		})
+	}
+
+	const deleteFromTheStoreButtonHandle = () => {
+		setMyShopProducts(() => {
+			const productToCatalog = myShopProducts
+				.filter((product) => product.selected)
+				.map((product) => {
+					return { ...product, selected: false }
+				})
+			const nextShopProducts = myShopProducts.filter(
+				(product) => !product.selected,
+			)
+
+			setCatalogProducts((prevCatalog) => {
+				const existing = new Set(prevCatalog.map((p) => String(p.id)))
+				const append = productToCatalog.filter(
+					(p) => !existing.has(String(p.id)),
+				)
+
+				const nextCatalog = append.length
+					? [...append, ...prevCatalog]
+					: prevCatalog
+				setInitialCatalogProducts(nextCatalog)
+				return nextCatalog
+			})
+
+			setInitialMyShopProducts(nextShopProducts)
+			return nextShopProducts
+		})
+	}
+
+	const sortingSelectHandle = (event) => {
+		const { value } = event.currentTarget
+
+		console.log('value', value)
+
+		setSortingBy(value)
 	}
 
 	return (
@@ -90,7 +284,8 @@ export default function ProductsSection() {
 					<span className={css.icon}>
 						<Check />
 					</span>
-					Product catalog <span className={css.count}>{catalogProducts?.length || 0}</span>
+					Product catalog{' '}
+					<span className={css.count}>{catalogProducts?.length || 0}</span>
 				</button>
 
 				<button
@@ -101,91 +296,100 @@ export default function ProductsSection() {
 						<Check />
 					</span>
 					My Store
-					<span className={css.count}>{selectedProducts?.length || 0}</span>
+					<span className={css.count}>{myShopProducts?.length || 0}</span>
 				</button>
 			</div>
 
 			<div className={css['products__catalog--top']}>
-				<div>
-					<span>Sort by</span>
+				<div className={css.sorting__wrap}>
+					<span className={css.sorting__label}>Sort by</span>
 
-					<select name="select" id="">
-						<option value="Recommended">Recommended</option>
+					<select
+						onChange={sortingSelectHandle}
+						className={css.sorting__select}
+						name="sorting"
+						defaultValue=""
+					>
+						<option value="" disabled>
+							Recommended
+						</option>
+						<option value="expensive">From expensive to cheap</option>
+						<option value="cheap">From cheap to expensive</option>
+						<option value="name">Name</option>
 					</select>
 				</div>
 
 				<h3 className={css['products__catalog--top__label']}>
-					You have selected {selectedProducts?.length || 0} product
-					{selectedProducts?.length === 1 ? '' : 's'}
+					You have selected {selectedCount} product
+					{myShopProducts?.length === 1 ? '' : 's'}
 				</h3>
 
 				<div className={css['buttons__box']}>
-					<button className={`${css.select_all} light_button_1`}>Select All</button>
 					<button
-						className={`${css.add_to_store} contrast_button_1`}
-						onClick={addToStoreButtonHandle}
+						className={`${css.select_all} light_button_1`}
+						onClick={onSelectAllClick}
 					>
-						<Lightning />
-						Add to my store
+						Select All
 					</button>
+
+					{!isCatalog && (
+						<button
+							className={`${css.delete__selected} light_button_2`}
+							onClick={deleteFromTheStoreButtonHandle}
+						>
+							Delete
+						</button>
+					)}
+
+					{isCatalog && (
+						<button
+							className={`${css.add_to_store} contrast_button_1`}
+							onClick={addToStoreButtonHandle}
+						>
+							<Lightning />
+							Add to my store
+						</button>
+					)}
 				</div>
 			</div>
 
 			<div className={css.products__handle}>
 				<div className={css.products_filters}>
-					{categories && (
-						<details className={css['products_filter-group']} open>
-							<summary>
-								Categories <Icon name="ChevronUp" />
-							</summary>
-
-							<ul className={css.filters__list}>
-								{categories.map(({ category, id }) => (
-									<li key={id}>
-										<label className={css.category__label}>
-											<span className={css.checkbox__emulator}>
-												<svg
-													width="18"
-													height="13"
-													viewBox="0 0 18 13"
-													fill="none"
-													xmlns="http://www.w3.org/2000/svg"
-												>
-													<path
-														d="M1 7.1875L5.86957 12L17 1"
-														stroke="#4E008E"
-														strokeWidth="2"
-														strokeLinecap="round"
-														strokeLinejoin="round"
-													/>
-												</svg>
-											</span>
-											<span className={css.category__name}>{category}</span>
-											<input type="checkbox" className="visually-hidden" value={id} />
-										</label>
-									</li>
-								))}
-							</ul>
-						</details>
-					)}
+					{filters &&
+						Object.keys(filters).map((key) => {
+							if (key !== 'sizes')
+								return (
+									<Filters
+										key={key}
+										keyName={key}
+										filterName={key}
+										category={filters[key]}
+										setActiveFilters={setActiveFilters}
+									/>
+								)
+						})}
 				</div>
 
 				<ul className={css.products__list}>
 					{catalogProducts &&
 						isCatalog &&
-						catalogProducts.map(({ id, product_title, product_image }) => (
-							<ProductCard key={id} id={id} name={product_title} image={product_image} />
+						catalogProducts.map((product) => (
+							<ProductCard
+								key={product.id}
+								inputHandle={onCatalogCardClick}
+								product={product}
+								isFlashSale={isFlashSale}
+							/>
 						))}
 
-					{selectedProducts &&
+					{myShopProducts &&
 						!isCatalog &&
-						selectedProducts.map(({ id, product_title, product_image }) => (
+						myShopProducts.map((product) => (
 							<ProductCard
-								key={id}
-								id={id}
-								name={product_title}
-								image={product_image}
-								isSelected={true}
+								key={product.id}
+								inputHandle={onMyShopCardClick}
+								product={product}
+								isFlashSale={isFlashSale}
 							/>
 						))}
 				</ul>

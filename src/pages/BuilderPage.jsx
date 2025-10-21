@@ -12,7 +12,7 @@ export default function Builder() {
 			<BuilderHeader activeStep={activeStep} setActiveStep={setActiveStep} />
 
 			{activeStep === 1 && <Details />}
-			{activeStep === 2 && <ProductsStep />}
+			{activeStep === 2 && <ProductsStep setActiveStep={setActiveStep} />}
 		</>
 	)
 }

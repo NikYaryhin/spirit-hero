@@ -17,8 +17,8 @@ export default function ColorCheckbox({ color, name }) {
 						d="M1 7.1875L5.86957 12L17 1"
 						stroke="#4E008E"
 						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
+						strokeLinecap="round"
+						strokeLinejoin="round"
 					/>
 				</svg>
 			</span>
