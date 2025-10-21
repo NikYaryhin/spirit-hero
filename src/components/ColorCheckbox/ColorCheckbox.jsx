@@ -1,6 +1,12 @@
 import css from './ColorCheckbox.module.css'
 
-export default function ColorCheckbox({ color, name }) {
+export default function ColorCheckbox({
+	onInputHandle,
+	color,
+	name,
+	required,
+	inputName,
+}) {
 	return (
 		<label className={css.label}>
 			<span className={css.color} style={{ backgroundColor: color }}></span>
@@ -16,13 +22,20 @@ export default function ColorCheckbox({ color, name }) {
 					<path
 						d="M1 7.1875L5.86957 12L17 1"
 						stroke="#4E008E"
-						stroke-width="2"
+						strokeWidth="2"
 						strokeLinecap="round"
 						strokeLinejoin="round"
 					/>
 				</svg>
 			</span>
-			<input type="checkbox" className="visually-hidden" value={color} />
+			<input
+				onChange={(event) => onInputHandle(event.currentTarget.value)}
+				type="radio"
+				className="visually-hidden"
+				name={inputName}
+				value={name}
+				required={required}
+			/>
 		</label>
 	)
 }

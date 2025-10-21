@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 import css from './StoreDetailsForm.module.css'
+import spiritHeroApi from '@/api/spiritHeroApi'
 
 const COLORS = [
 	{ color: '#41FB8B', name: 'Green', id: 1 },
@@ -15,20 +17,67 @@ const COLORS = [
 ]
 
 export default function StoreDetailsForm() {
+	const [storeName, setStoreName] = useState('')
+	const [storeURL, setStoreURL] = useState('')
+	const [firstSocial, setFirstSocial] = useState('')
+	const [secondSocial, setSecondSocial] = useState('')
+	const [color, setColor] = useState('')
+
+	const onFormSubmit = async (event) => {
+		event.preventDefault()
+
+		const payload = {
+			start_type: 1,
+			store_type: 1,
+			store_name: storeName,
+			website_url: storeURL,
+			social_media_1: firstSocial || '',
+			social_media_2: secondSocial || '',
+			color,
+		}
+		console.log('payload', payload)
+
+		try {
+			const res = await spiritHeroApi.saveStore(payload)
+
+			console.log(res)
+		} catch (error) {
+			console.error('spiritHeroApi.saveStore() error', error)
+		}
+	}
+
 	return (
 		<section className={css['store--details__section']}>
-			<form action="submit" className={css['store--details__form']}>
+			<form
+				action="submit"
+				onSubmit={onFormSubmit}
+				className={css['store--details__form']}
+			>
 				<fieldset>
-					<legend>1. Store details</legend>
+					<h3>1. Store details</h3>
 
 					<label className={css['text--label']}>
 						<span className={css['input--label']}>Add Name</span>
-						<input type="text" placeholder="Enter name of your store" required />
+						<input
+							onChange={(event) => {
+								setStoreName(event.currentTarget.value)
+							}}
+							type="text"
+							placeholder="Enter name of your store"
+							required
+						/>
 					</label>
 
 					<label className={css['text--label']}>
 						<span className={css['input--label']}>Add Website URL</span>
-						<input type="text" placeholder="ex.spirithero.com/abc-spirit-wear-store" required />
+						<input
+							onChange={(event) => {
+								setStoreURL('ex.spirithero.com/' + event.currentTarget.value)
+							}}
+							type="text"
+							placeholder="abc-spirit-wear-store"
+							required
+						/>
 					</label>
 
 					<div className={css['social--media__inputs--box']}>
@@ -36,48 +85,69 @@ export default function StoreDetailsForm() {
 							<span className={css['input--label']}>
 								Add Social Media <em>(optional)</em>
 							</span>
-							<input type="text" placeholder="https://tiktok.com" />
+							<input
+								onChange={(event) => {
+									setFirstSocial(event.currentTarget.value)
+								}}
+								type="url"
+								placeholder="https://tiktok.com"
+							/>
 						</label>
 
 						<label className={css['text--label']}>
 							<span className={css['input--label']}>
 								Add Social Media <em>(optional)</em>
 							</span>
-							<input type="text" placeholder="https://x.com" />
+							<input
+								onChange={(event) => {
+									setSecondSocial(event.currentTarget.value)
+								}}
+								type="url"
+								placeholder="https://x.com"
+							/>
 						</label>
 					</div>
 				</fieldset>
-			</form>
-			<form className={css['store--details__form']}>
+
 				<fieldset>
-					<legend>2. Choose primary colors (multiple choice is available)</legend>
+					<h3>2. Choose primary colors</h3>
 
 					<p className={css.paragraph}>
 						<span>
-							Choose colors for the products you will sell in your store. Be sure to select colors
-							that will look good with your logo on them.
+							Choose colors for the products you will sell in your store. Be
+							sure to select colors that will look good with your logo on them.
 						</span>
 						<span>
-							Our system automatically selects products & colorizes design templates based on your
-							store colors.
+							Our system automatically selects products & colorizes design
+							templates based on your store colors.
 						</span>
 					</p>
 
 					<ul className={css['color--picker__list']}>
 						{COLORS.map(({ color, name, id }) => (
 							<li key={id}>
-								<ColorCheckbox color={color} name={name} />
+								<ColorCheckbox
+									onInputHandle={setColor}
+									color={color}
+									name={name}
+									required={true}
+									inputName="color--input"
+								/>
 							</li>
 						))}
 					</ul>
 				</fieldset>
+
+				<div className={css['next__button--box']}>
+					<button type="submit" className={css.next__button}>
+						Next
+					</button>
+
+					<span className={css['next__button--label']}>
+						It will take about 10 min.
+					</span>
+				</div>
 			</form>
-
-			<div className={css['next__button--box']}>
-				<button className={css.next__button}>Next</button>
-
-				<span className={css['next__button--label']}>It will take about 10 min.</span>
-			</div>
 		</section>
 	)
 }

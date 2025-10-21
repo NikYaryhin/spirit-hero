@@ -8,21 +8,22 @@
 	padding-bottom: 4rem;
 
 	.store--details__form {
-		padding: 2.4rem 4rem;
-		border-radius: 2.4rem;
-		border: 1px solid #CACACA;
-		background-color: #F1EEF4;
+		display: flex;
+		flex-direction: column;
+		gap: 4rem;
 
 		fieldset {
 			display: flex;
 			flex-direction: column;
 			gap: 2.4rem;
 
-			margin: 0;
-			padding: 0;
-			border: unset;
+			padding: 2.4rem 4rem;
+			border-radius: 2.4rem;
+			border: 1px solid #CACACA;
+			background-color: #F1EEF4;
 
-			legend {
+
+			h3 {
 				font-size: 1.6rem;
 				line-height: 1.25;
 				font-weight: 600;
@@ -48,7 +49,8 @@
 					}
 				}
 
-				input[type="text"] {
+				input[type="text"],
+				input[type="url"] {
 					padding: 1rem 1.6rem;
 					border-radius: 1.2rem;
 					border: 1px solid #9B9AA5;
@@ -85,38 +87,39 @@
 				gap: 2.4rem;
 			}
 		}
-	}
 
-	.next__button--box {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
+		.next__button--box {
+			display: flex;
+			flex-direction: column;
+			gap: 1.5rem;
 
-		max-width: 14.1rem;
-		margin-left: auto;
+			max-width: 14.1rem;
+			margin-left: auto;
 
-		.next__button {
+			.next__button {
 
-			border-radius: 1.2rem;
+				border-radius: 1.2rem;
 
-			font-size: 1.4rem;
-			line-height: 1.57;
-			color: #fcfcfc;
+				font-size: 1.4rem;
+				line-height: 1.57;
+				color: #fcfcfc;
 
-			background-color: #4E008E;
-			transition: background-color 0.25s ease, border 0.25s ease-in-out;
+				background-color: #4E008E;
+				transition: background-color 0.25s ease, border 0.25s ease-in-out;
 
-			&:hover, &:focus {
-				border: 1px solid #4E008E;
-				background-color: #5E00A8;
+				&:hover, &:focus {
+					border: 1px solid #4E008E;
+					background-color: #5E00A8;
+				}
+			}
+
+			.next__button--label {
+				font-size: 1.2rem;
+				line-height: 1.33;
+				color: #4E008E;
+
 			}
 		}
-
-		.next__button--label {
-			font-size: 1.2rem;
-			line-height: 1.33;
-			color: #4E008E;
-
-		}
 	}
+
 }

@@ -5,6 +5,7 @@ import Check from '../Icons/Check'
 import Lightning from '../Icons/Lightning'
 import ProductCard from '../ProductCard/ProductCard'
 import Filters from '../Filters/Filters'
+import { toast } from 'react-toastify'
 
 export default function ProductsSection({ isFlashSale }) {
 	const [sortingBy, setSortingBy] = useState('')
@@ -27,11 +28,7 @@ export default function ProductsSection({ isFlashSale }) {
 			(activeFilters.categories && activeFilters.categories.length > 0) ||
 			(activeFilters.colorFamilies && activeFilters.colorFamilies.length > 0)
 
-		console.log({ hasAnyFilters })
-
 		const matchByFilters = (product) => {
-			// OR внутри каждой группы, AND между группами
-			// приведение к строке для стабильного сравнения
 			if (activeFilters.brands && activeFilters.brands.length > 0) {
 				const passBrand = activeFilters.brands.includes(
 					String(product.brand_id),
@@ -95,7 +92,6 @@ export default function ProductsSection({ isFlashSale }) {
 
 		setCatalogProducts(nextCatalog)
 		setMyShopProducts(nextShop)
-		// }, [activeFilters, sortingBy])
 	}, [activeFilters, sortingBy, initialCatalogProducts, initialMyShopProducts])
 
 	useEffect(() => {
@@ -170,6 +166,19 @@ export default function ProductsSection({ isFlashSale }) {
 		}
 	}, [sortingBy])
 
+	const showToast = (text) => {
+		toast.success(text, {
+			position: 'bottom-right',
+			autoClose: 4000,
+			hideProgressBar: false,
+			closeOnClick: false,
+			pauseOnHover: true,
+			draggable: true,
+			progress: undefined,
+			theme: 'light',
+		})
+	}
+
 	const onCatalogCardClick = (event) => {
 		const { value, checked } = event.currentTarget
 
@@ -209,61 +218,87 @@ export default function ProductsSection({ isFlashSale }) {
 			)
 	}
 
-	const addToStoreButtonHandle = () => {
-		setCatalogProducts((prevCatalog) => {
-			if (!Array.isArray(prevCatalog) || prevCatalog.length === 0)
-				return prevCatalog
+	const addToStoreButtonHandle = async () => {
+		const selectedIds = new Set(
+			(catalogProducts || [])
+				.filter((p) => p.selected)
+				.map((p) => String(p.id)),
+		)
+		if (selectedIds.size === 0) return
 
-			const selectedForStore = prevCatalog
-				.filter((product) => product.selected)
-				.map((product) => ({ ...product, selected: false }))
+		setInitialCatalogProducts((prevInitialCatalog) => {
+			if (!Array.isArray(prevInitialCatalog) || prevInitialCatalog.length === 0)
+				return prevInitialCatalog
 
-			const nextCatalog = prevCatalog.filter((product) => !product.selected)
-
-			setMyShopProducts((prevSelected) => {
-				const existing = new Set(prevSelected.map((p) => String(p.id)))
-				const append = selectedForStore.filter(
-					(p) => !existing.has(String(p.id)),
-				)
-				const nextMyShop = append.length
-					? [...prevSelected, ...append]
-					: prevSelected
-				setInitialMyShopProducts(nextMyShop)
-				return nextMyShop
-			})
-
-			setInitialCatalogProducts(nextCatalog)
-			return nextCatalog
+			const nextInitialCatalog = prevInitialCatalog.filter(
+				(p) => !selectedIds.has(String(p.id)),
+			)
+			return nextInitialCatalog
 		})
+
+		setInitialMyShopProducts((prevInitialMyShop) => {
+			const toAppend = (initialCatalogProducts || []).filter((p) =>
+				selectedIds.has(String(p.id)),
+			)
+			if (!toAppend || toAppend.length === 0) return prevInitialMyShop
+
+			const existing = new Set(prevInitialMyShop.map((p) => String(p.id)))
+			const append = toAppend
+				.filter((p) => !existing.has(String(p.id)))
+				.map((p) => ({ ...p }))
+			return append.length
+				? [...prevInitialMyShop, ...append]
+				: prevInitialMyShop
+		})
+
+		// try {
+		// 	const
+		// 	const res = await spiritHeroApi.addToMyStoreProductsList();
+
+		// 	console.log("res", res);
+
+		// } catch (error) {
+		// 	console.error("addToMyStoreProductsList() error", error);
+
+		// }
+
+		showToast(
+			`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully added to your store.`,
+		)
 	}
 
 	const deleteFromTheStoreButtonHandle = () => {
-		setMyShopProducts(() => {
-			const productToCatalog = myShopProducts
-				.filter((product) => product.selected)
-				.map((product) => {
-					return { ...product, selected: false }
-				})
-			const nextShopProducts = myShopProducts.filter(
-				(product) => !product.selected,
+		// IDs выбранных в render myShopProducts
+		const selectedIds = new Set(
+			(myShopProducts || []).filter((p) => p.selected).map((p) => String(p.id)),
+		)
+		if (selectedIds.size === 0) return
+
+		setInitialMyShopProducts((prevInitialMyShop) => {
+			const nextInitialMyShop = prevInitialMyShop.filter(
+				(p) => !selectedIds.has(String(p.id)),
 			)
-
-			setCatalogProducts((prevCatalog) => {
-				const existing = new Set(prevCatalog.map((p) => String(p.id)))
-				const append = productToCatalog.filter(
-					(p) => !existing.has(String(p.id)),
-				)
-
-				const nextCatalog = append.length
-					? [...append, ...prevCatalog]
-					: prevCatalog
-				setInitialCatalogProducts(nextCatalog)
-				return nextCatalog
-			})
-
-			setInitialMyShopProducts(nextShopProducts)
-			return nextShopProducts
+			return nextInitialMyShop
 		})
+
+		setInitialCatalogProducts((prevInitialCatalog) => {
+			const toAppend = (initialMyShopProducts || []).filter((p) =>
+				selectedIds.has(String(p.id)),
+			)
+			if (!toAppend || toAppend.length === 0) return prevInitialCatalog
+
+			const existing = new Set(prevInitialCatalog.map((p) => String(p.id)))
+			const append = toAppend
+				.filter((p) => !existing.has(String(p.id)))
+				.map((p) => ({ ...p }))
+			return append.length
+				? [...append, ...prevInitialCatalog]
+				: prevInitialCatalog
+		})
+
+		showToast(
+			`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully removed from your store.`,
+		)
 	}
 
 	const sortingSelectHandle = (event) => {

@@ -59,7 +59,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle }) {
 							<input
 								type="radio"
 								name={`color-of-${id}`}
-								value={color.color_image}
+								value={color.color_image || ''}
 								className="visually-hidden"
 								onChange={colorSwatchHandle}
 							/>
