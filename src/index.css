@@ -1,4 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital@0;1&family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;500;600;700&display=swap');
+
+
+@font-face {
+  font-family: 'Dense';
+  src: url('./assets/fonts/Dense-Regular.woff2') format('woff2'),
+    url('./assets/fonts/Dense-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  font-family: 'Dense';
+}
+
+
 
 :root {
   font-family: 'Poppins', sans-serif;
@@ -145,6 +158,7 @@ h1, h2, h3, h4, h5, h6, p {
 .contrast_button_1 {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.8rem;
 
   padding: 1rem 1.6rem;
@@ -153,11 +167,15 @@ h1, h2, h3, h4, h5, h6, p {
   font-size: 1.4rem;
   line-height: 1.57;
   color: #FCFCFC;
+  text-align: center;
 
   background-color: #4E008E;
 
+  transition: border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+
   &:hover, &:focus {
     border-color: #FBB041;
+    color: #FBB041;
   }
 }
 

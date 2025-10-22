@@ -6,13 +6,19 @@ import Lightning from '../Icons/Lightning'
 import ProductCard from '../ProductCard/ProductCard'
 import Filters from '../Filters/Filters'
 import { toast } from 'react-toastify'
+import Loader from '../Loader/Loader'
 
-export default function ProductsSection({ isFlashSale }) {
+export default function ProductsSection({
+	myShopProducts,
+	setMyShopProducts,
+	isFlashSale,
+	storeId,
+}) {
+	const [isLoading, setIsLoading] = useState(true)
 	const [sortingBy, setSortingBy] = useState('')
 	const [selectedCount, setSelectedCount] = useState(0)
 	const [isCatalog, setIsCatalog] = useState(true)
 	const [catalogProducts, setCatalogProducts] = useState([])
-	const [myShopProducts, setMyShopProducts] = useState([])
 	const [filters, setFilters] = useState(null)
 	const [initialCatalogProducts, setInitialCatalogProducts] = useState([])
 	const [initialMyShopProducts, setInitialMyShopProducts] = useState([])
@@ -105,11 +111,12 @@ export default function ProductsSection({ isFlashSale }) {
 					console.log('loginRes', loginRes)
 				}
 				const res = await spiritHeroApi.getProducts()
-				console.log('res', res)
+				console.log('spiritHeroApi.getProducts() res', res)
 
 				setCatalogProducts(res.products)
 				setInitialCatalogProducts(res.products)
 				setFilters(res.filters)
+				setIsLoading(false)
 			} catch (error) {
 				console.error(error)
 			}
@@ -166,17 +173,29 @@ export default function ProductsSection({ isFlashSale }) {
 		}
 	}, [sortingBy])
 
-	const showToast = (text) => {
-		toast.success(text, {
-			position: 'bottom-right',
-			autoClose: 4000,
-			hideProgressBar: false,
-			closeOnClick: false,
-			pauseOnHover: true,
-			draggable: true,
-			progress: undefined,
-			theme: 'light',
-		})
+	const showToast = (text, type = 'success') => {
+		if (type === 'success')
+			toast.success(text, {
+				position: 'bottom-right',
+				autoClose: 4000,
+				hideProgressBar: false,
+				closeOnClick: false,
+				pauseOnHover: true,
+				draggable: true,
+				progress: undefined,
+				theme: 'light',
+			})
+		else
+			toast.error(text, {
+				position: 'bottom-right',
+				autoClose: 4000,
+				hideProgressBar: false,
+				closeOnClick: false,
+				pauseOnHover: true,
+				draggable: true,
+				progress: undefined,
+				theme: 'light',
+			})
 	}
 
 	const onCatalogCardClick = (event) => {
@@ -218,13 +237,35 @@ export default function ProductsSection({ isFlashSale }) {
 			)
 	}
 
-	const addToStoreButtonHandle = async () => {
+	const addToStoreButtonHandle = () => {
 		const selectedIds = new Set(
 			(catalogProducts || [])
 				.filter((p) => p.selected)
 				.map((p) => String(p.id)),
 		)
 		if (selectedIds.size === 0) return
+
+		const payload = {
+			store_id: +storeId || +localStorage.getItem('storeId'),
+			ids: Array.from(selectedIds).map((p) => +p),
+		}
+
+		console.log(payload)
+
+		spiritHeroApi
+			.addToMyStoreProductsList(payload.store_id, payload.ids)
+			.then((res) => {
+				console.log(res)
+				showToast(
+					`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully added to your store.`,
+				)
+			})
+			.catch((error) => {
+				showToast(
+					`Error while adding products to your store: ${error}`,
+					'error',
+				)
+			})
 
 		setInitialCatalogProducts((prevInitialCatalog) => {
 			if (!Array.isArray(prevInitialCatalog) || prevInitialCatalog.length === 0)
@@ -246,33 +287,43 @@ export default function ProductsSection({ isFlashSale }) {
 			const append = toAppend
 				.filter((p) => !existing.has(String(p.id)))
 				.map((p) => ({ ...p }))
-			return append.length
+
+			const arrayToReturn = append.length
 				? [...prevInitialMyShop, ...append]
 				: prevInitialMyShop
+
+			return arrayToReturn
 		})
-
-		// try {
-		// 	const
-		// 	const res = await spiritHeroApi.addToMyStoreProductsList();
-
-		// 	console.log("res", res);
-
-		// } catch (error) {
-		// 	console.error("addToMyStoreProductsList() error", error);
-
-		// }
-
-		showToast(
-			`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully added to your store.`,
-		)
 	}
 
 	const deleteFromTheStoreButtonHandle = () => {
-		// IDs выбранных в render myShopProducts
 		const selectedIds = new Set(
 			(myShopProducts || []).filter((p) => p.selected).map((p) => String(p.id)),
 		)
 		if (selectedIds.size === 0) return
+
+		console.log(Array.from(selectedIds))
+		const payload = {
+			store_id: +storeId || +localStorage.getItem('storeId'),
+			ids: Array.from(selectedIds).map((p) => +p),
+		}
+
+		console.log(payload)
+
+		spiritHeroApi
+			.deleteFromMyStoreProducts(payload.store_id, payload.ids)
+			.then((res) => {
+				console.log(res)
+				showToast(
+					`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully removed from your store.`,
+				)
+			})
+			.catch((error) => {
+				showToast(
+					`Error while removing products to your store: ${error}`,
+					'error',
+				)
+			})
 
 		setInitialMyShopProducts((prevInitialMyShop) => {
 			const nextInitialMyShop = prevInitialMyShop.filter(
@@ -295,140 +346,140 @@ export default function ProductsSection({ isFlashSale }) {
 				? [...append, ...prevInitialCatalog]
 				: prevInitialCatalog
 		})
-
-		showToast(
-			`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully removed from your store.`,
-		)
 	}
 
 	const sortingSelectHandle = (event) => {
 		const { value } = event.currentTarget
-
-		console.log('value', value)
 
 		setSortingBy(value)
 	}
 
 	return (
 		<div className={css['products__section']}>
-			<div className={css['products__catalog--pickers']}>
-				<button
-					className={`${isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}`}
-					onClick={() => setIsCatalog(true)}
-				>
-					<span className={css.icon}>
-						<Check />
-					</span>
-					Product catalog{' '}
-					<span className={css.count}>{catalogProducts?.length || 0}</span>
-				</button>
-
-				<button
-					className={`${!isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}`}
-					onClick={() => setIsCatalog(false)}
-				>
-					<span className={css.icon}>
-						<Check />
-					</span>
-					My Store
-					<span className={css.count}>{myShopProducts?.length || 0}</span>
-				</button>
-			</div>
-
-			<div className={css['products__catalog--top']}>
-				<div className={css.sorting__wrap}>
-					<span className={css.sorting__label}>Sort by</span>
-
-					<select
-						onChange={sortingSelectHandle}
-						className={css.sorting__select}
-						name="sorting"
-						defaultValue=""
-					>
-						<option value="" disabled>
-							Recommended
-						</option>
-						<option value="expensive">From expensive to cheap</option>
-						<option value="cheap">From cheap to expensive</option>
-						<option value="name">Name</option>
-					</select>
-				</div>
-
-				<h3 className={css['products__catalog--top__label']}>
-					You have selected {selectedCount} product
-					{myShopProducts?.length === 1 ? '' : 's'}
-				</h3>
-
-				<div className={css['buttons__box']}>
-					<button
-						className={`${css.select_all} light_button_1`}
-						onClick={onSelectAllClick}
-					>
-						Select All
-					</button>
-
-					{!isCatalog && (
+			{!isLoading ? (
+				<>
+					<div className={css['products__catalog--pickers']}>
 						<button
-							className={`${css.delete__selected} light_button_2`}
-							onClick={deleteFromTheStoreButtonHandle}
+							className={`${isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}`}
+							onClick={() => setIsCatalog(true)}
 						>
-							Delete
+							<span className={css.icon}>
+								<Check />
+							</span>
+							Product catalog{' '}
+							<span className={css.count}>{catalogProducts?.length || 0}</span>
 						</button>
-					)}
 
-					{isCatalog && (
 						<button
-							className={`${css.add_to_store} contrast_button_1`}
-							onClick={addToStoreButtonHandle}
+							className={`${!isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}`}
+							onClick={() => setIsCatalog(false)}
 						>
-							<Lightning />
-							Add to my store
+							<span className={css.icon}>
+								<Check />
+							</span>
+							My Store
+							<span className={css.count}>{myShopProducts?.length || 0}</span>
 						</button>
-					)}
-				</div>
-			</div>
+					</div>
 
-			<div className={css.products__handle}>
-				<div className={css.products_filters}>
-					{filters &&
-						Object.keys(filters).map((key) => {
-							if (key !== 'sizes')
-								return (
-									<Filters
-										key={key}
-										keyName={key}
-										filterName={key}
-										category={filters[key]}
-										setActiveFilters={setActiveFilters}
+					<div className={css['products__catalog--top']}>
+						<div className={css.sorting__wrap}>
+							<span className={css.sorting__label}>Sort by</span>
+
+							<select
+								onChange={sortingSelectHandle}
+								className={css.sorting__select}
+								name="sorting"
+								defaultValue=""
+							>
+								<option value="" disabled>
+									Recommended
+								</option>
+								<option value="expensive">From expensive to cheap</option>
+								<option value="cheap">From cheap to expensive</option>
+								<option value="name">Name</option>
+							</select>
+						</div>
+
+						<h3 className={css['products__catalog--top__label']}>
+							You have selected {selectedCount} product
+							{myShopProducts?.length === 1 ? '' : 's'}
+						</h3>
+
+						<div className={css['buttons__box']}>
+							<button
+								className={`${css.select_all} light_button_1`}
+								onClick={onSelectAllClick}
+							>
+								Select All
+							</button>
+
+							{!isCatalog && (
+								<button
+									className={`${css.delete__selected} light_button_2`}
+									onClick={deleteFromTheStoreButtonHandle}
+								>
+									Delete
+								</button>
+							)}
+
+							{isCatalog && (
+								<button
+									className={`${css.add_to_store} contrast_button_1`}
+									onClick={addToStoreButtonHandle}
+								>
+									<Lightning />
+									Add to my store
+								</button>
+							)}
+						</div>
+					</div>
+
+					<div className={css.products__handle}>
+						<div className={css.products_filters}>
+							{filters &&
+								Object.keys(filters).map((key) => {
+									if (key !== 'sizes')
+										return (
+											<Filters
+												key={key}
+												keyName={key}
+												filterName={key}
+												category={filters[key]}
+												setActiveFilters={setActiveFilters}
+											/>
+										)
+								})}
+						</div>
+
+						<ul className={css.products__list}>
+							{catalogProducts &&
+								isCatalog &&
+								catalogProducts.map((product) => (
+									<ProductCard
+										key={product.id}
+										inputHandle={onCatalogCardClick}
+										product={product}
+										isFlashSale={isFlashSale}
 									/>
-								)
-						})}
-				</div>
+								))}
 
-				<ul className={css.products__list}>
-					{catalogProducts &&
-						isCatalog &&
-						catalogProducts.map((product) => (
-							<ProductCard
-								key={product.id}
-								inputHandle={onCatalogCardClick}
-								product={product}
-								isFlashSale={isFlashSale}
-							/>
-						))}
-
-					{myShopProducts &&
-						!isCatalog &&
-						myShopProducts.map((product) => (
-							<ProductCard
-								key={product.id}
-								inputHandle={onMyShopCardClick}
-								product={product}
-								isFlashSale={isFlashSale}
-							/>
-						))}
-				</ul>
-			</div>
+							{myShopProducts &&
+								!isCatalog &&
+								myShopProducts.map((product) => (
+									<ProductCard
+										key={product.id}
+										inputHandle={onMyShopCardClick}
+										product={product}
+										isFlashSale={isFlashSale}
+									/>
+								))}
+						</ul>
+					</div>
+				</>
+			) : (
+				<Loader />
+			)}
 		</div>
 	)
 }

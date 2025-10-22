@@ -1,12 +1,19 @@
 import css from './ProductsStep.module.css'
-
 import Lightning from '../Icons/Lightning'
 import ProductsSection from '../Products/ProductsSection'
 import { useState } from 'react'
 import Icon from '../Icon'
+import Modal from '../Modal/Modal'
+import InkModal from '../InkModal/InkModal'
 
-export default function ProductsStep({ setActiveStep }) {
+export default function ProductsStep({
+	myShopProducts,
+	setMyShopProducts,
+	setActiveStep,
+	storeId,
+}) {
 	const [isFlashSale, setIsFlashSale] = useState(false)
+	const [isModalOpen, setIsModalOpen] = useState(false)
 
 	const flashSaleInputHandle = (event) => {
 		const { checked } = event.currentTarget
@@ -61,7 +68,7 @@ export default function ProductsStep({ setActiveStep }) {
 					) : (
 						<button
 							onClick={() => {
-								setActiveStep(1)
+								setIsModalOpen(true)
 							}}
 							className={css.back_to_colors}
 						>
@@ -71,7 +78,16 @@ export default function ProductsStep({ setActiveStep }) {
 				</div>
 			</div>
 
-			<ProductsSection isFlashSale={isFlashSale} />
+			<ProductsSection
+				myShopProducts={myShopProducts}
+				setMyShopProducts={setMyShopProducts}
+				storeId={storeId}
+				isFlashSale={isFlashSale}
+			/>
+
+			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+				<InkModal storeId={storeId} />
+			</Modal>
 		</section>
 	)
 }

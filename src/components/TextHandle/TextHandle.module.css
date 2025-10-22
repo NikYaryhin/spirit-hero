@@ -1,0 +1,174 @@
+.texthandle {
+	display: flex;
+	flex-direction: column;
+	gap: 1.2rem;
+
+	input, .textarea {
+		padding: 1rem;
+		border-radius: 1.2rem;
+		border: 1px solid #9B9AA5;
+
+		background-color: #FCFCFC;
+
+		font-size: 1.4rem;
+		line-height: 1.57;
+
+		&:focus, &:focus-within, &:focus-visible {
+			border-color: #4E008E;
+			box-shadow: 0px 0px 0px 3px #3639AA1A;
+			outline: unset;
+		}
+	}
+
+	.textarea {
+		width: 100%;
+		min-height: 11rem;
+		resize: vertical;
+
+		padding: 1.6rem;
+		border-radius: 0.8rem;
+		border: 0.2rem solid #e9e1ef;
+
+		font-size: 1.4rem;
+		line-height: 1.4;
+	}
+}
+
+
+.addBtn {
+	display: inline-block;
+	margin-top: 0.6rem;
+	padding: 0.6rem 1rem;
+	border-radius: 0.6rem;
+	background: #fff;
+	border: 0.1rem solid #ccc;
+	cursor: pointer;
+}
+
+.row {
+	display: flex;
+	gap: 1.6rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+
+.toggles {
+	display: flex;
+	gap: 0.8rem;
+}
+
+.toggleBtn {
+	padding: 0.8rem 1rem;
+	border-radius: 0.6rem;
+	border: 0.1rem solid #ddd;
+	background: #fff;
+	cursor: pointer;
+}
+
+.colorSwatches {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+}
+
+.swatch {
+	width: 1.8rem;
+	height: 1.8rem;
+	border-radius: 50%;
+	border: 0.2rem solid transparent;
+	cursor: pointer;
+}
+
+.swatch.selected {
+	box-shadow: 0 0 0 0.3rem rgba(78, 0, 142, 0.12);
+}
+
+.sizeInput {
+	width: 6.4rem;
+	padding: 0.8rem;
+	border-radius: 0.8rem;
+	border: 0.1rem solid #ddd;
+	text-align: center;
+}
+
+.agreeRow {
+	display: flex;
+	gap: 0.8rem;
+	align-items: flex-start;
+	font-size: 1.2rem;
+	color: #555;
+}
+
+.agreeRow input[type="checkbox"] {
+	margin-top: 0.3rem;
+}
+
+.fontpicker__box {
+	position: relative;
+	min-width: 22rem;
+
+	.fontpicker__button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: flex-start;
+
+		width: 100%;
+		padding: 1rem 1.6rem;
+		border-radius: 1.2rem;
+		border: 0.1rem solid #9B9AA5;
+
+		font-size: 1.4rem;
+		line-height: 1.57;
+		color: #605767;
+
+		background: #FCFCFC;
+		cursor: pointer;
+	}
+
+	.fontpicker__dropdown {
+		position: absolute;
+		z-index: 40;
+		top: calc(100% + 8px);
+		left: 0;
+
+		display: flex;
+		flex-direction: column;
+
+		width: 26rem;
+		max-height: 22rem;
+
+		padding: 0.6rem;
+		border: 0.1rem solid #9B9AA5;
+		border-radius: 0.8rem;
+		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+
+		background: #FCFCFC;
+	}
+
+	.fontpicker__search {
+		flex: 1;
+		padding: 0.6rem 0.8rem;
+		border-radius: 0.6rem;
+		border: 0.1rem solid #eee;
+		margin-bottom: 0.6rem;
+	}
+
+	.fontpicker__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		overflow: auto;
+		max-height: 16rem;
+	}
+
+	.fontpicker__item {
+		padding: 0.5rem 0.6rem;
+		font-size: 1.4rem;
+		cursor: pointer;
+	}
+
+	.fontpicker__item:hover {
+		background: rgba(0, 0, 0, 0.03);
+	}
+}

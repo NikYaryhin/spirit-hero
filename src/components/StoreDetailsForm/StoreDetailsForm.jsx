@@ -2,21 +2,9 @@ import { useState } from 'react'
 import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 import css from './StoreDetailsForm.module.css'
 import spiritHeroApi from '@/api/spiritHeroApi'
+import { COLORS } from '@/helpers/const'
 
-const COLORS = [
-	{ color: '#41FB8B', name: 'Green', id: 1 },
-	{ color: '#373239', name: 'Black', id: 2 },
-	{ color: '#FCFCFC', name: 'White', id: 3 },
-	{ color: '#71CAF4', name: 'Light Blue', id: 4 },
-	{ color: '#877A7A', name: 'Grey', id: 5 },
-	{ color: '#F830E0', name: 'Rose', id: 6 },
-	{ color: '#3639F7', name: 'Deep Blue', id: 7 },
-	{ color: '#FB4741', name: 'Red', id: 8 },
-	{ color: '#FBF841', name: 'Yellow', id: 9 },
-	{ color: '#9747FF', name: 'Purple', id: 10 },
-]
-
-export default function StoreDetailsForm() {
+export default function StoreDetailsForm({ setStoreId }) {
 	const [storeName, setStoreName] = useState('')
 	const [storeURL, setStoreURL] = useState('')
 	const [firstSocial, setFirstSocial] = useState('')
@@ -35,12 +23,13 @@ export default function StoreDetailsForm() {
 			social_media_2: secondSocial || '',
 			color,
 		}
-		console.log('payload', payload)
 
 		try {
 			const res = await spiritHeroApi.saveStore(payload)
+			console.log('spiritHeroApi.saveStore()', res)
 
-			console.log(res)
+			setStoreId(res.store.id)
+			localStorage.setItem('storeId', res.store.id)
 		} catch (error) {
 			console.error('spiritHeroApi.saveStore() error', error)
 		}

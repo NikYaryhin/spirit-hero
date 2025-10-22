@@ -12,7 +12,7 @@ export default function Icon({ name, className }) {
 				>
 					<path
 						d="M2 6L7 1L12 6"
-						stroke="#4E008E"
+						stroke="currentColor"
 						strokeWidth="1.5"
 						strokeLinecap="square"
 						strokeLinejoin="round"
@@ -32,7 +32,7 @@ export default function Icon({ name, className }) {
 				>
 					<path
 						d="M1 7.1875L5.86957 12L17 1"
-						stroke="#4E008E"
+						stroke="currentColor"
 						strokeWidth="2"
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -84,6 +84,7 @@ export default function Icon({ name, className }) {
 		case 'Inks':
 			return (
 				<svg
+					className={className}
 					width="24"
 					height="24"
 					viewBox="0 0 24 24"
@@ -121,32 +122,32 @@ export default function Icon({ name, className }) {
 				</svg>
 			)
 
-		default:
+		case 'Info':
 			return (
 				<svg
-					width="24"
-					height="24"
-					viewBox="0 0 24 24"
+					width="16"
+					height="16"
+					viewBox="0 0 16 16"
 					fill="none"
 					xmlns="http://www.w3.org/2000/svg"
 				>
-					<g clipPath="url(#clip0_3988_105448)">
+					<g clip-path="url(#clip0_6026_15925)">
 						<path
-							d="M12 9V13"
+							d="M8 6H8.00667"
 							stroke="#FBB041"
 							strokeWidth="1.5"
 							strokeLinecap="round"
 							strokeLinejoin="round"
 						/>
 						<path
-							d="M10.3625 3.59119L2.2565 17.1252C2.08939 17.4146 2.00096 17.7427 2.00001 18.0768C1.99905 18.411 2.0856 18.7396 2.25104 19.0299C2.41649 19.3203 2.65506 19.5622 2.94304 19.7317C3.23101 19.9013 3.55835 19.9924 3.8925 19.9962H20.1065C20.4405 19.9923 20.7677 19.9011 21.0555 19.7317C21.3433 19.5622 21.5818 19.3204 21.7472 19.0302C21.9126 18.74 21.9992 18.4116 21.9984 18.0776C21.9976 17.7435 21.9094 17.4155 21.7425 17.1262L13.6365 3.59019C13.466 3.30869 13.2257 3.07593 12.9389 2.91439C12.6522 2.75284 12.3286 2.66797 11.9995 2.66797C11.6704 2.66797 11.3468 2.75284 11.06 2.91439C10.7733 3.07593 10.533 3.30869 10.3625 3.59019V3.59119Z"
+							d="M7.33203 8H7.9987V10.6667H8.66536"
 							stroke="#FBB041"
 							strokeWidth="1.5"
 							strokeLinecap="round"
 							strokeLinejoin="round"
 						/>
 						<path
-							d="M12 16H12.01"
+							d="M8 2C12.8 2 14 3.2 14 8C14 12.8 12.8 14 8 14C3.2 14 2 12.8 2 8C2 3.2 3.2 2 8 2Z"
 							stroke="#FBB041"
 							strokeWidth="1.5"
 							strokeLinecap="round"
@@ -154,8 +155,353 @@ export default function Icon({ name, className }) {
 						/>
 					</g>
 					<defs>
-						<clipPath id="clip0_3988_105448">
+						<clipPath id="clip0_6026_15925">
+							<rect width="16" height="16" fill="white" />
+						</clipPath>
+					</defs>
+				</svg>
+			)
+
+		case 'Palette':
+			return (
+				<svg
+					className={className}
+					width="16"
+					height="16"
+					viewBox="0 0 16 16"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<g clipPath="url(#clip0_6026_120817)">
+						<path
+							d="M8 12.0003C8 11.6025 8.15803 11.2209 8.43934 10.9396C8.72064 10.6583 9.10217 10.5003 9.5 10.5003H12.3881C12.7279 10.5004 13.0576 10.3851 13.3233 10.1733C13.589 9.96156 13.7749 9.66588 13.8506 9.33468C13.9539 8.87993 14.004 8.41473 14 7.94843C13.9719 4.64718 11.24 1.96718 7.9375 2.0003C6.35706 2.01677 4.84694 2.65617 3.7352 3.77961C2.62347 4.90305 1.99991 6.41978 2 8.0003C2 10.6134 3.67062 12.5903 6 13.4134C6.22616 13.4934 6.4682 13.5179 6.70581 13.485C6.94342 13.4521 7.16967 13.3627 7.36558 13.2243C7.56149 13.0859 7.72135 12.9025 7.83174 12.6895C7.94212 12.4765 7.99983 12.2402 8 12.0003Z"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M8 5.5C8.41421 5.5 8.75 5.16421 8.75 4.75C8.75 4.33579 8.41421 4 8 4C7.58579 4 7.25 4.33579 7.25 4.75C7.25 5.16421 7.58579 5.5 8 5.5Z"
+							fill="#FBB041"
+						/>
+						<path
+							d="M5.25 7C5.66421 7 6 6.66421 6 6.25C6 5.83579 5.66421 5.5 5.25 5.5C4.83579 5.5 4.5 5.83579 4.5 6.25C4.5 6.66421 4.83579 7 5.25 7Z"
+							fill="#FBB041"
+						/>
+						<path
+							d="M5.25 10.5C5.66421 10.5 6 10.1642 6 9.75C6 9.33579 5.66421 9 5.25 9C4.83579 9 4.5 9.33579 4.5 9.75C4.5 10.1642 4.83579 10.5 5.25 10.5Z"
+							fill="#FBB041"
+						/>
+						<path
+							d="M10.75 7C11.1642 7 11.5 6.66421 11.5 6.25C11.5 5.83579 11.1642 5.5 10.75 5.5C10.3358 5.5 10 5.83579 10 6.25C10 6.66421 10.3358 7 10.75 7Z"
+							fill="#FBB041"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_6026_120817">
+							<rect width="16" height="16" fill="white" />
+						</clipPath>
+					</defs>
+				</svg>
+			)
+
+		case 'Frame':
+			return (
+				<svg
+					className={className}
+					width="40"
+					height="40"
+					viewBox="0 0 40 40"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M40 18.596C40 37.4186 29.3675 37.4186 18.9189 37.4186C8.47029 37.4186 0 28.9914 0 18.596C0 8.20053 8.47029 3 18.9189 3C29.3675 3 40 8.20053 40 18.596Z"
+						fill="#F1EEF4"
+					/>
+					<g clipPath="url(#clip0_6026_104593)">
+						<path
+							d="M27.5 11.75H12.5C12.0858 11.75 11.75 12.0858 11.75 12.5V27.5C11.75 27.9142 12.0858 28.25 12.5 28.25H27.5C27.9142 28.25 28.25 27.9142 28.25 27.5V12.5C28.25 12.0858 27.9142 11.75 27.5 11.75Z"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M17 18.5C17.8284 18.5 18.5 17.8284 18.5 17C18.5 16.1716 17.8284 15.5 17 15.5C16.1716 15.5 15.5 16.1716 15.5 17C15.5 17.8284 16.1716 18.5 17 18.5Z"
+							stroke="#FBB041"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M13.3164 28.2506L23.5961 17.97C23.6657 17.9002 23.7485 17.8449 23.8395 17.8072C23.9306 17.7694 24.0282 17.75 24.1267 17.75C24.2253 17.75 24.3229 17.7694 24.4139 17.8072C24.505 17.8449 24.5877 17.9002 24.6573 17.97L28.2517 21.5653"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_6026_104593">
+							<rect
+								width="24"
+								height="24"
+								fill="white"
+								transform="translate(8 8)"
+							/>
+						</clipPath>
+					</defs>
+				</svg>
+			)
+
+		case 'Letters':
+			return (
+				<svg
+					className={className}
+					width="40"
+					height="40"
+					viewBox="0 0 40 40"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M40 18.596C40 37.4186 29.3675 37.4186 18.9189 37.4186C8.47029 37.4186 0 28.9914 0 18.596C0 8.20053 8.47029 3 18.9189 3C29.3675 3 40 8.20053 40 18.596Z"
+						fill="#F1EEF4"
+					/>
+					<g clipPath="url(#clip0_6026_114219)">
+						<path
+							d="M21.5 26L15.5 13.25L9.5 26"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M26.75 26C28.4069 26 29.75 24.8247 29.75 23.375C29.75 21.9253 28.4069 20.75 26.75 20.75C25.0931 20.75 23.75 21.9253 23.75 23.375C23.75 24.8247 25.0931 26 26.75 26Z"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M29.75 26V20.375C29.75 18.9256 28.4066 17.75 26.75 17.75C25.8537 17.75 25.0494 17.9544 24.5 18.5"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M19.7369 22.25H11.2656"
+							stroke="#FBB041"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_6026_114219">
+							<rect
+								width="24"
+								height="24"
+								fill="white"
+								transform="translate(8 8)"
+							/>
+						</clipPath>
+					</defs>
+				</svg>
+			)
+
+		case 'Edits':
+			return (
+				<svg
+					className={className}
+					width="40"
+					height="40"
+					viewBox="0 0 40 40"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M40 18.596C40 37.4186 29.3675 37.4186 18.9189 37.4186C8.47029 37.4186 0 28.9914 0 18.596C0 8.20053 8.47029 3 18.9189 3C29.3675 3 40 8.20053 40 18.596Z"
+						fill="#F1EEF4"
+					/>
+					<path
+						d="M20 23H17V20L26 11L29 14L20 23Z"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M23.75 13.25L26.75 16.25"
+						stroke="#FBB041"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M28.25 20V27.5C28.25 27.6989 28.171 27.8897 28.0303 28.0303C27.8897 28.171 27.6989 28.25 27.5 28.25H12.5C12.3011 28.25 12.1103 28.171 11.9697 28.0303C11.829 27.8897 11.75 27.6989 11.75 27.5V12.5C11.75 12.3011 11.829 12.1103 11.9697 11.9697C12.1103 11.829 12.3011 11.75 12.5 11.75H20"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				</svg>
+			)
+
+		case 'UploadCloud':
+			return (
+				<svg
+					className={className}
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<g clip-path="url(#clip0_6026_82877)">
+						<path
+							d="M10.5013 19.5H6.75134C6.00692 19.4991 5.27122 19.3399 4.59303 19.0329C3.91485 18.726 3.3097 18.2783 2.81773 17.7196C2.32576 17.1609 1.95823 16.504 1.73952 15.7925C1.52081 15.0809 1.45592 14.331 1.54916 13.5924C1.6424 12.8539 1.89163 12.1436 2.28033 11.5087C2.66902 10.8738 3.18829 10.3289 3.80367 9.91001C4.41905 9.49113 5.11647 9.20791 5.84967 9.07914C6.58286 8.95037 7.33505 8.979 8.05634 9.16312"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M11.25 15L14.25 12L17.25 15"
+							stroke="#FBB041"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M14.25 19.5V12"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M7.5 12.0002C7.50032 10.6481 7.86615 9.32123 8.55877 8.16C9.2514 6.99878 10.2451 6.04639 11.4346 5.40362C12.6242 4.76085 13.9653 4.45161 15.3162 4.50862C16.6671 4.56564 17.9775 4.98678 19.1087 5.72749C20.2398 6.46819 21.1497 7.50092 21.742 8.71637C22.3344 9.93182 22.5871 11.2848 22.4735 12.6321C22.3599 13.9794 21.8842 15.271 21.0967 16.3701C20.3092 17.4692 19.2392 18.335 18 18.8758"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_6026_82877">
 							<rect width="24" height="24" fill="white" />
+						</clipPath>
+					</defs>
+				</svg>
+			)
+
+		case 'Plus':
+			return (
+				<svg
+					className={className}
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<g clipPath="url(#clip0_6026_119879)">
+						<path
+							d="M3 12C3 13.1819 3.23279 14.3522 3.68508 15.4442C4.13738 16.5361 4.80031 17.5282 5.63604 18.364C6.47177 19.1997 7.46392 19.8626 8.55585 20.3149C9.64778 20.7672 10.8181 21 12 21C13.1819 21 14.3522 20.7672 15.4442 20.3149C16.5361 19.8626 17.5282 19.1997 18.364 18.364C19.1997 17.5282 19.8626 16.5361 20.3149 15.4442C20.7672 14.3522 21 13.1819 21 12C21 9.61305 20.0518 7.32387 18.364 5.63604C16.6761 3.94821 14.3869 3 12 3C9.61305 3 7.32387 3.94821 5.63604 5.63604C3.94821 7.32387 3 9.61305 3 12Z"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M9 12H15"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M12 9V15"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_6026_119879">
+							<rect width="24" height="24" fill="white" />
+						</clipPath>
+					</defs>
+				</svg>
+			)
+
+		case 'Cancel':
+			return (
+				<svg
+					className={className}
+					width="16"
+					height="16"
+					viewBox="0 0 16 16"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<g clipPath="url(#clip0_6026_119870)">
+						<path
+							d="M12.5 3.5L3.5 12.5"
+							stroke="#4E008E"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M12.5 12.5L3.5 3.5"
+							stroke="#4E008E"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_6026_119870">
+							<rect width="16" height="16" fill="white" />
+						</clipPath>
+					</defs>
+				</svg>
+			)
+
+		default:
+			return (
+				<svg
+					className={className}
+					width="16"
+					height="16"
+					viewBox="0 0 16 16"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<g clipPath="url(#clip0_6026_119870)">
+						<path
+							d="M12.5 3.5L3.5 12.5"
+							stroke="#4E008E"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M12.5 12.5L3.5 3.5"
+							stroke="#4E008E"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_6026_119870">
+							<rect width="16" height="16" fill="white" />
 						</clipPath>
 					</defs>
 				</svg>

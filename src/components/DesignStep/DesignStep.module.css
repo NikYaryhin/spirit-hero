@@ -1,0 +1,90 @@
+.design_section {
+	display: flex;
+
+
+	.image__box, .settings__box {
+		width: 50%;
+	}
+
+	.image__box {
+		img {
+			width: 100%;
+			height: 100%;
+
+			object-position: center;
+			object-fit: contain;
+		}
+	}
+
+	.settings__box {
+		display: flex;
+		flex-direction: column;
+
+		padding: 1.6rem 5.6rem;
+
+		background-color: #F1EEF4;
+
+		.button {
+			width: fit-content;
+			margin-left: auto;
+			margin-bottom: 3.2rem;
+
+			font-weight: 400;
+		}
+
+		.title {
+			font-family: 'Dense';
+			font-size: 4.8rem;
+			line-height: 1.125;
+			text-transform: uppercase;
+		}
+
+		.subtitle {
+			margin-bottom: 3.2rem;
+
+			font-family: 'Lato';
+			font-size: 1.6rem;
+			line-height: 1.5;
+			font-weight: 700;
+			color: #605767;
+		}
+
+		.customizer {
+
+			.customizer__pickers {
+				display: flex;
+				justify-content: space-between;
+				gap: 1.6rem;
+
+				margin-bottom: 3.2rem;
+
+				padding: 0;
+				border: unset;
+
+				label {
+					flex: 1;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+
+					padding: 1.6rem;
+					border-radius: 1.2rem;
+					border: 1px solid #CACACA;
+
+					font-size: 1.6rem;
+					line-height: 1.2;
+					font-weight: 600;
+
+					background-color: #FCFCFC;
+					cursor: pointer;
+
+					&:has(input:checked) {
+						border-color: #4E008E;
+					}
+				}
+			}
+
+			.customizer__tools {}
+		}
+	}
+}
