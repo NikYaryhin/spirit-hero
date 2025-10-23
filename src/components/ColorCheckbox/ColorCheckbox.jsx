@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import css from './ColorCheckbox.module.css'
 
 export default function ColorCheckbox({
@@ -6,7 +7,16 @@ export default function ColorCheckbox({
 	name,
 	required,
 	inputName,
+	checked = false,
 }) {
+	const [isChecked, setIsChecked] = useState(checked)
+
+	const onInputChange = (e) => {
+		setIsChecked(!isChecked)
+		const { checked, value } = e.currentTarget
+
+		onInputHandle(checked, value)
+	}
 	return (
 		<label className={css.label}>
 			<span className={css.color} style={{ backgroundColor: color }}></span>
@@ -29,11 +39,12 @@ export default function ColorCheckbox({
 				</svg>
 			</span>
 			<input
-				onChange={(event) => onInputHandle(event.currentTarget.value)}
-				type="radio"
+				checked={isChecked}
+				onChange={onInputChange}
+				type="checkbox"
 				className="visually-hidden"
 				name={inputName}
-				value={name}
+				value={color}
 				required={required}
 			/>
 		</label>

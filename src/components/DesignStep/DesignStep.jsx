@@ -7,14 +7,18 @@ import TextHandle from '../TextHandle/TextHandle'
 import Moveable from 'react-moveable'
 import { v4 as uuidv4 } from 'uuid'
 
-export default function DesignStep({ myShopProducts }) {
+export default function DesignStep({ myShopProducts, storeId }) {
 	const [customizerType, setCustomizerType] = useState(null)
 
-	const [products] = useState(
+	const [products, setProducts] = useState(
 		myShopProducts && myShopProducts.length > 0
 			? myShopProducts
 			: JSON.parse(localStorage.getItem('myShopArr')),
 	)
+
+	// console.log(products)
+	const [image, setImage] = useState(products[0].product_image)
+
 	const [uploaderFiles, setUploaderFiles] = useState([])
 	const [uploaderAgreed, setUploaderAgreed] = useState(false)
 	const [uploaderDragOver, setUploaderDragOver] = useState(false)
@@ -24,6 +28,15 @@ export default function DesignStep({ myShopProducts }) {
 	const [selectedId, setSelectedId] = useState(null)
 	const containerRef = useRef(null)
 	const scaleRef = useRef({})
+
+	useEffect(() => {
+		if (products)
+			setProducts((prev) => {
+				return prev.map((prod, prodIdx) => {
+					return { ...prod, active: prodIdx === 0 ? true : false }
+				})
+			})
+	}, [])
 
 	// When uploaderFiles change, sync image elements with canvas
 	useEffect(() => {
@@ -58,8 +71,8 @@ export default function DesignStep({ myShopProducts }) {
 						type: 'image',
 						x: 30,
 						y: 30,
-						width: 240,
-						height: 240,
+						width: 100,
+						height: 100,
 						rotation: 0,
 						zIndex: (updatedElements.length || 0) + 1,
 						content: { src: f.url },
@@ -119,122 +132,162 @@ export default function DesignStep({ myShopProducts }) {
 											}}
 										/>
 									) : (
-										<div style={{ width: '100%', height: '100%', ...el.style }}>
+										<div
+											style={{
+												width: el.type === 'text' ? 'fit-content' : '100%',
+												height: el.type === 'text' ? 'fit-content' : '100%',
+												maxWidth: el.maxWidth || 'none',
+												...el.style,
+											}}
+										>
 											{el.content}
 										</div>
+									)}
+
+									{/* Кнопка удаления для текстовых элементов */}
+									{el.type === 'text' && (
+										<button
+											className={css.deleteButton}
+											onClick={(e) => {
+												e.stopPropagation()
+												setCustomElements((prev) =>
+													prev.filter((element) => element.id !== el.id),
+												)
+												if (selectedId === el.id) {
+													setSelectedId(null)
+												}
+											}}
+											title="Удалить текст"
+										>
+											<Icon name={'Cancel'} />
+										</button>
 									)}
 								</div>
 							))}
 
 							{selectedId &&
-								document.querySelector(`[data-id="${selectedId}"]`) && (
-									<Moveable
-										target={document.querySelector(`[data-id="${selectedId}"]`)}
-										container={containerRef.current}
-										draggable={true}
-										resizable={true}
-										scalable={true}
-										rotatable={true}
-										throttleDrag={0}
-										throttleResize={0}
-										handleRotate={true}
-										renderDirections={[
-											'nw',
-											'n',
-											'ne',
-											'w',
-											'e',
-											'sw',
-											's',
-											'se',
-										]}
-										edge={false}
-										onDrag={({ target, left, top }) => {
-											const id = target.getAttribute('data-id')
-											const container = containerRef.current
-											if (!container) return
-											setCustomElements((prev) =>
-												prev.map((el) => {
-													if (el.id !== id) return el
-													// allow partial exit: at least 1px of element must remain visible
-													const minLeft = -((el.width || 0) - 50)
-													const maxLeft = container.clientWidth - 50
-													const minTop = -((el.height || 0) - 50)
-													const maxTop = container.clientHeight - 50
-													const newLeft = Math.max(
-														minLeft,
-														Math.min(left, maxLeft),
-													)
-													const newTop = Math.max(minTop, Math.min(top, maxTop))
-													return { ...el, x: newLeft, y: newTop }
-												}),
-											)
-										}}
-										onResize={({ target, width, height }) => {
-											const id = target.getAttribute('data-id')
-											const container = containerRef.current
-											if (!container) return
-											setCustomElements((prev) =>
-												prev.map((el) => {
-													if (el.id !== id) return el
-													// allow resize but keep minimum size of 1px; partial exit allowed
-													const newW = Math.max(1, Math.round(width))
-													const newH = Math.max(1, Math.round(height))
-													return { ...el, width: newW, height: newH }
-												}),
-											)
-										}}
-										onScaleStart={({ target }) => {
-											const id = target.getAttribute('data-id')
-											const el = customElements.find((x) => x.id === id)
-											if (el)
-												scaleRef.current[id] = {
-													w: el.width || 0,
-													h: el.height || 0,
-												}
-										}}
-										onScale={({ target, scale }) => {
-											const id = target.getAttribute('data-id')
-											const initial = scaleRef.current[id]
-											if (!initial) return
-											let sx = 1
-											let sy = 1
-											if (Array.isArray(scale)) {
-												sx = scale[0]
-												sy = scale[1]
-											} else if (typeof scale === 'number') {
-												sx = sy = scale
+								document.querySelector(`[data-id="${selectedId}"]`) &&
+								(() => {
+									const selectedElement = customElements.find(
+										(el) => el.id === selectedId,
+									)
+									const isTextElement = selectedElement?.type === 'text'
+
+									return (
+										<Moveable
+											target={document.querySelector(
+												`[data-id="${selectedId}"]`,
+											)}
+											container={containerRef.current}
+											draggable={true}
+											resizable={!isTextElement}
+											scalable={!isTextElement}
+											rotatable={true}
+											throttleDrag={0}
+											throttleResize={0}
+											handleRotate={true}
+											renderDirections={
+												isTextElement
+													? []
+													: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
 											}
-											const newW = Math.max(1, Math.round(initial.w * sx))
-											const newH = Math.max(1, Math.round(initial.h * sy))
-											setCustomElements((prev) =>
-												prev.map((el) =>
-													el.id === id
-														? { ...el, width: newW, height: newH }
-														: el,
-												),
-											)
-										}}
-										onScaleEnd={({ target }) => {
-											const id = target.getAttribute('data-id')
-											delete scaleRef.current[id]
-										}}
-										onRotate={({ target, dist }) => {
-											const id = target.getAttribute('data-id')
-											setCustomElements((prev) =>
-												prev.map((el) =>
-													el.id === id ? { ...el, rotation: dist } : el,
-												),
-											)
-										}}
-									/>
-								)}
+											edge={false}
+											onDrag={({ target, left, top }) => {
+												const id = target.getAttribute('data-id')
+												const container = containerRef.current
+												if (!container) return
+												setCustomElements((prev) =>
+													prev.map((el) => {
+														if (el.id !== id) return el
+
+														// Для текстовых элементов используем фиксированные размеры для расчета границ
+														const elementWidth =
+															el.type === 'text'
+																? el.maxWidth || 300
+																: el.width || 0
+														const elementHeight =
+															el.type === 'text' ? 60 : el.height || 0
+
+														// allow partial exit: at least 1px of element must remain visible
+														const minLeft = -(elementWidth - 50)
+														const maxLeft = container.clientWidth - 50
+														const minTop = -(elementHeight - 50)
+														const maxTop = container.clientHeight - 50
+														const newLeft = Math.max(
+															minLeft,
+															Math.min(left, maxLeft),
+														)
+														const newTop = Math.max(
+															minTop,
+															Math.min(top, maxTop),
+														)
+														return { ...el, x: newLeft, y: newTop }
+													}),
+												)
+											}}
+											onResize={({ target, width, height }) => {
+												const id = target.getAttribute('data-id')
+												const container = containerRef.current
+												if (!container) return
+												setCustomElements((prev) =>
+													prev.map((el) => {
+														if (el.id !== id) return el
+														// allow resize but keep minimum size of 1px; partial exit allowed
+														const newW = Math.max(1, Math.round(width))
+														const newH = Math.max(1, Math.round(height))
+														return { ...el, width: newW, height: newH }
+													}),
+												)
+											}}
+											onScaleStart={({ target }) => {
+												const id = target.getAttribute('data-id')
+												const el = customElements.find((x) => x.id === id)
+												if (el)
+													scaleRef.current[id] = {
+														w: el.width || 0,
+														h: el.height || 0,
+													}
+											}}
+											onScale={({ target, scale }) => {
+												const id = target.getAttribute('data-id')
+												const initial = scaleRef.current[id]
+												if (!initial) return
+												let sx = 1
+												let sy = 1
+												if (Array.isArray(scale)) {
+													sx = scale[0]
+													sy = scale[1]
+												} else if (typeof scale === 'number') {
+													sx = sy = scale
+												}
+												const newW = Math.max(1, Math.round(initial.w * sx))
+												const newH = Math.max(1, Math.round(initial.h * sy))
+												setCustomElements((prev) =>
+													prev.map((el) =>
+														el.id === id
+															? { ...el, width: newW, height: newH }
+															: el,
+													),
+												)
+											}}
+											onScaleEnd={({ target }) => {
+												const id = target.getAttribute('data-id')
+												delete scaleRef.current[id]
+											}}
+											onRotate={({ target, dist }) => {
+												const id = target.getAttribute('data-id')
+												setCustomElements((prev) =>
+													prev.map((el) =>
+														el.id === id ? { ...el, rotation: dist } : el,
+													),
+												)
+											}}
+										/>
+									)
+								})()}
 						</div>
 
-						<img
-							src={products[0].product_image}
-							alt={products[0].product_title}
-						/>
+						<img src={image} alt={'Customize product'} />
 					</div>
 
 					<div className={css.settings__box}>
@@ -290,6 +343,7 @@ export default function DesignStep({ myShopProducts }) {
 										type="radio"
 										name="customizer--option"
 										className="visually-hidden"
+										disabled
 									/>
 								</label>
 							</fieldset>
@@ -315,8 +369,9 @@ export default function DesignStep({ myShopProducts }) {
 												type: 'text',
 												x: 20,
 												y: 20,
-												width: 240,
-												height: 60,
+												width: 'fit-content',
+												maxWidth: 300,
+												height: 'fit-content',
 												rotation: 0,
 												zIndex: (customElements.length || 0) + 1,
 												content: text,
@@ -336,17 +391,20 @@ export default function DesignStep({ myShopProducts }) {
 							</div>
 						</div>
 
-						<ul>
+						<ul className={css.products__list}>
 							{products &&
 								products.length > 0 &&
-								products.map((product) => (
-									<ProductCustomizerCard
-										onProductClick={() => {
-											console.log('click')
-										}}
-										product={product}
-									/>
-								))}
+								products.map((product) => {
+									return (
+										<ProductCustomizerCard
+											key={product.id}
+											setImage={setImage}
+											setProducts={setProducts}
+											product={product}
+											storeId={storeId}
+										/>
+									)
+								})}
 						</ul>
 					</div>
 				</>

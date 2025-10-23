@@ -1,0 +1,116 @@
+.customizer__card {
+	position: relative;
+	display: flex;
+
+	padding: 0.8rem 1.6rem;
+	border-radius: 1.2rem;
+	border: 1px solid #CACACA;
+
+	&.active {
+		background-color: #FCFCFC;
+		border-color: #4E008E;
+	}
+
+	.image__box {
+		width: 8rem;
+		height: 8rem;
+
+		img {
+			width: 100%;
+			height: 100%;
+
+			object-position: center;
+			object-fit: contain;
+		}
+	}
+
+	.info {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+
+		.title {
+			font-size: 1.4rem;
+			line-height: 1.57;
+		}
+
+		.color__swatchers {
+			display: flex;
+			align-items: center;
+			gap: 0.4rem;
+
+			padding: 0;
+			border: unset;
+
+			label {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				width: 2.4rem;
+				height: 2.4rem;
+
+				border-radius: 50%;
+				border: 1px solid #CACACA;
+
+				cursor: pointer;
+
+				&:has(input:checked) {
+					border-color: #4E008E;
+				}
+
+				.checkbox_emulator {
+					display: inline-block;
+					width: 1.8rem;
+					height: 1.8rem;
+
+					border-radius: 50%;
+					border: 1px solid #CACACA;
+				}
+			}
+		}
+	}
+
+	button {
+		padding: 0;
+		border: unset;
+		background-color: transparent;
+
+		&:hover, &:focus {
+			outline: unset;
+
+			svg {
+				scale: 1.15;
+			}
+		}
+
+		svg {
+			transition: scale 0.2s ease;
+		}
+
+	}
+
+	.close__button {
+		position: absolute;
+		top: 0.8rem;
+		right: 1.6rem;
+	}
+
+	.colors__button {
+		position: absolute;
+		bottom: 0.8rem;
+		right: 1.6rem;
+
+		display: flex;
+		gap: 0.6rem;
+		align-items: flex-end;
+
+
+
+		.plus__icon {
+			display: inline-block;
+			width: 1.6rem;
+			height: 1.6rem;
+		}
+	}
+}

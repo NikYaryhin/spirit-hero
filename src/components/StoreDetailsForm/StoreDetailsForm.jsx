@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 import css from './StoreDetailsForm.module.css'
 import spiritHeroApi from '@/api/spiritHeroApi'
@@ -9,7 +9,11 @@ export default function StoreDetailsForm({ setStoreId }) {
 	const [storeURL, setStoreURL] = useState('')
 	const [firstSocial, setFirstSocial] = useState('')
 	const [secondSocial, setSecondSocial] = useState('')
-	const [color, setColor] = useState('')
+	const [color, setColor] = useState([])
+
+	useEffect(() => {
+		console.log(color)
+	}, [color])
 
 	const onFormSubmit = async (event) => {
 		event.preventDefault()
@@ -33,6 +37,15 @@ export default function StoreDetailsForm({ setStoreId }) {
 		} catch (error) {
 			console.error('spiritHeroApi.saveStore() error', error)
 		}
+	}
+
+	const colorInputHandle = (checked, value) => {
+		setColor((prev) => {
+			const nextColors = checked
+				? [...prev, value]
+				: prev.filter((color) => color !== value)
+			return nextColors
+		})
 	}
 
 	return (
@@ -116,7 +129,7 @@ export default function StoreDetailsForm({ setStoreId }) {
 						{COLORS.map(({ color, name, id }) => (
 							<li key={id}>
 								<ColorCheckbox
-									onInputHandle={setColor}
+									onInputHandle={colorInputHandle}
 									color={color}
 									name={name}
 									required={true}

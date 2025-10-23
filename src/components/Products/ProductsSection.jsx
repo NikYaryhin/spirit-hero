@@ -5,8 +5,8 @@ import Check from '../Icons/Check'
 import Lightning from '../Icons/Lightning'
 import ProductCard from '../ProductCard/ProductCard'
 import Filters from '../Filters/Filters'
-import { toast } from 'react-toastify'
 import Loader from '../Loader/Loader'
+import { showToast } from '@/helpers/toastCall'
 
 export default function ProductsSection({
 	myShopProducts,
@@ -172,31 +172,6 @@ export default function ProductsSection({
 			})
 		}
 	}, [sortingBy])
-
-	const showToast = (text, type = 'success') => {
-		if (type === 'success')
-			toast.success(text, {
-				position: 'bottom-right',
-				autoClose: 4000,
-				hideProgressBar: false,
-				closeOnClick: false,
-				pauseOnHover: true,
-				draggable: true,
-				progress: undefined,
-				theme: 'light',
-			})
-		else
-			toast.error(text, {
-				position: 'bottom-right',
-				autoClose: 4000,
-				hideProgressBar: false,
-				closeOnClick: false,
-				pauseOnHover: true,
-				draggable: true,
-				progress: undefined,
-				theme: 'light',
-			})
-	}
 
 	const onCatalogCardClick = (event) => {
 		const { value, checked } = event.currentTarget

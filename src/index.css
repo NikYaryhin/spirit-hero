@@ -55,6 +55,11 @@ body {
   font-size: 10px;
 }
 
+main {
+  height: 100dvh;
+  overflow: auto;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

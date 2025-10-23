@@ -473,6 +473,23 @@ export default function Icon({ name, className }) {
 				</svg>
 			)
 
+		case 'Colors':
+			return (
+				<svg
+					className={className}
+					width="20"
+					height="20"
+					viewBox="0 0 20 20"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<circle cx="4" cy="4" r="4" fill="#CCDE2F" />
+					<circle cx="16" cy="4" r="4" fill="#637FF1" />
+					<circle cx="4" cy="16" r="4" fill="#F71C1C" />
+					<circle cx="16" cy="16" r="4" fill="#B1B1B1" />
+				</svg>
+			)
+
 		default:
 			return (
 				<svg
