@@ -292,6 +292,9 @@ export default function ProductsSection({
 				? [...prevInitialMyShop, ...append]
 				: prevInitialMyShop
 
+			// To delete
+			localStorage.setItem('myShopArr', JSON.stringify(arrayToReturn))
+
 			return arrayToReturn
 		})
 	}

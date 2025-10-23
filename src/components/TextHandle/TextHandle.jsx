@@ -1,17 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './TextHandle.module.css'
-import { COLORS, googleFontApiKey } from '@/helpers/const'
-
-const DEFAULT_COLORS = COLORS
+import { googleFontApiKey } from '@/helpers/const'
 
 export default function TextHandle({ onAdd }) {
 	const [text, setText] = useState('')
 	const [font, setFont] = useState('Montserrat')
 	const [bold, setBold] = useState(false)
 	const [italic, setItalic] = useState(false)
-	const [color, setColor] = useState(DEFAULT_COLORS[2].color)
+	const [color, setColor] = useState('#000')
 	const [size, setSize] = useState(54)
-	const [agreed, setAgreed] = useState(false)
 	const [fonts, setFonts] = useState([])
 	const [openFonts, setOpenFonts] = useState(false)
 	const [search, setSearch] = useState('')
@@ -62,8 +59,6 @@ export default function TextHandle({ onAdd }) {
 		}
 	}, [])
 
-	// removed unused loader; loadGoogleFontVariant handles variant-aware loading
-
 	function loadGoogleFontVariant(
 		family,
 		{ bold: wantBold = false, italic: wantItalic = false } = {},
@@ -110,15 +105,9 @@ export default function TextHandle({ onAdd }) {
 			</button>
 
 			<div className={styles.row}>
-				<div>
-					<span>Font</span>
-					{/* <div>
-						<input
-							className={styles.fontInput}
-							value={font}
-							onChange={(e) => setFont(e.target.value)}
-						/>
-					</div> */}
+				<div className={styles.column}>
+					<span className={styles.input__label}>Font</span>
+
 					<div className={styles.fontpicker__box}>
 						<button
 							type="button"
@@ -189,36 +178,42 @@ export default function TextHandle({ onAdd }) {
 					>
 						I
 					</button>
+
+					<div className={`${styles.column}`}>
+						<span className={`${styles.input__label} ${styles.bold}`}>
+							Colour
+						</span>
+
+						<label className={styles.color__picker}>
+							<span
+								className={styles.input__emulator}
+								style={{ backgroundColor: color }}
+							></span>
+							<input
+								type="color"
+								value={color}
+								onChange={(e) => setColor(e.target.value)}
+								className={'visually-hidden'}
+							/>
+						</label>
+					</div>
 				</div>
 
-				<div className={styles.colorSwatches} aria-label="Colour">
-					{DEFAULT_COLORS.map((c) => (
-						<button
-							key={c.id}
-							type="button"
-							title={c.name}
-							aria-label={`Select color ${c.color}`}
-							className={`${styles.swatch} ${c.color === color ? styles.selected : ''}`}
-							style={{ background: c.color }}
-							onClick={() => setColor(c.color)}
-						/>
-					))}
-				</div>
+				<div className={styles.column}>
+					<span className={`${styles.input__label} ${styles.bold}`}>Size</span>
 
-				<div>
-					<label>Size</label>
 					<input
 						className={styles.sizeInput}
 						type="number"
 						min={6}
-						max={200}
+						max={100}
 						value={size}
 						onChange={(e) => setSize(Number(e.target.value) || 0)}
 					/>
 				</div>
 			</div>
 
-			<label className={styles.agreeRow}>
+			{/* <label className={styles.agreeRow}>
 				<input
 					type="checkbox"
 					checked={agreed}
@@ -229,7 +224,7 @@ export default function TextHandle({ onAdd }) {
 					reproduce and sell the design, and that I am in full compliance with
 					SPIRIT HERO's Terms of Use.
 				</span>
-			</label>
+			</label> */}
 		</div>
 	)
 }

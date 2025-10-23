@@ -37,40 +37,90 @@
 
 .addBtn {
 	display: inline-block;
+	width: fit-content;
+
 	margin-top: 0.6rem;
-	padding: 0.6rem 1rem;
+	margin-bottom: 3.8rem;
+	padding: 0.8rem 1.6rem;
+
 	border-radius: 0.6rem;
-	background: #fff;
-	border: 0.1rem solid #ccc;
+	border: 1px solid #CACACA;
+
+	font-size: 1.2rem;
+	line-height: calc(16/12);
+	font-weight: 400;
+	color: #373239;
+
+	background: #FCFCFC;
+	transition: box-shadow 0.25s ease;
+
+	&:hover, &:focus {
+		box-shadow: 0px -3px 0px 0px #00000014 inset;
+	}
+
 	cursor: pointer;
 }
 
 .row {
 	display: flex;
+	align-items: stretch;
+	justify-content: space-between;
+
+	height: 4.4rem;
+
 	gap: 1.6rem;
-	align-items: center;
 	flex-wrap: wrap;
+
+}
+
+.row>* {
+	height: 100%;
+	box-sizing: border-box;
+}
+
+.column {
+	position: relative;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+
+	.input__label {
+		position: absolute;
+		top: -0.8rem;
+		left: 0;
+		translate: 0 -100%;
+
+		font-size: 1.4rem;
+		line-height: 1.57;
+
+		&.bold {
+			font-weight: 700;
+		}
+	}
+
 }
 
 
 .toggles {
 	display: flex;
+	align-items: center;
 	gap: 0.8rem;
+
 }
 
 .toggleBtn {
-	padding: 0.8rem 1rem;
-	border-radius: 0.6rem;
-	border: 0.1rem solid #ddd;
-	background: #fff;
+	padding: 1.2rem 0.8rem;
+
+	font-family: 'Lato';
+	font-size: 1.6rem;
+	line-height: 2.4;
+	font-weight: 700;
+
+	background: transparent;
 	cursor: pointer;
 }
 
-.colorSwatches {
-	display: flex;
-	gap: 0.8rem;
-	align-items: center;
-}
 
 .swatch {
 	width: 1.8rem;
@@ -85,11 +135,24 @@
 }
 
 .sizeInput {
-	width: 6.4rem;
-	padding: 0.8rem;
-	border-radius: 0.8rem;
-	border: 0.1rem solid #ddd;
-	text-align: center;
+	width: 12rem;
+	padding: 1rem 1.6rem;
+
+	font-size: 1.4rem;
+	line-height: 1.57;
+	color: #1C1B3D;
+
+	/* Hide number input spinners (scoped inside .sizeInput) */
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	& {
+		-moz-appearance: textfield;
+		appearance: textfield;
+	}
 }
 
 .agreeRow {
@@ -171,4 +234,32 @@
 	.fontpicker__item:hover {
 		background: rgba(0, 0, 0, 0.03);
 	}
+}
+
+.color__picker {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	width: 2.4rem;
+	height: 2.4rem;
+
+	border-radius: 50%;
+	border: 1px solid #CACACA;
+
+	cursor: pointer;
+
+	.input__emulator {
+		width: 1.8rem;
+		height: 1.8rem;
+
+		border-radius: 50%;
+		border: 1px solid #CACACA;
+	}
+}
+
+.colorPresets {
+	display: inline-flex;
+	gap: 0.6rem;
+	margin-left: 0.6rem;
 }

@@ -16,8 +16,10 @@
 		"font-picker-react": "^3.5.2",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
+		"react-moveable": "^0.56.0",
 		"react-router-dom": "^7.9.4",
-		"react-toastify": "^11.0.5"
+		"react-toastify": "^11.0.5",
+		"uuid": "^13.0.0"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.36.0",
