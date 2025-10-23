@@ -7,6 +7,25 @@
 	}
 
 	.image__box {
+		position: relative;
+
+		.custom__elements {
+			position: absolute;
+			inset: 0 0 0 0;
+		}
+
+		/* Ensure Moveable controls are visible above canvas */
+		:global(.moveable) {
+			z-index: 1000 !important;
+			pointer-events: auto !important;
+		}
+
+		:global(.moveable-control) {
+			background: #fff !important;
+			border: 1px solid rgba(0, 0, 0, 0.12) !important;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+		}
+
 		img {
 			width: 100%;
 			height: 100%;
@@ -84,7 +103,7 @@
 				}
 			}
 
-			.customizer__tools {}
+
 		}
 	}
 }

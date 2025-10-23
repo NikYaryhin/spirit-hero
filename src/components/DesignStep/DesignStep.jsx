@@ -23,33 +23,56 @@ export default function DesignStep({ myShopProducts }) {
 	const [customElements, setCustomElements] = useState([])
 	const [selectedId, setSelectedId] = useState(null)
 	const containerRef = useRef(null)
+	const scaleRef = useRef({})
 
-	// When uploaderFiles change, add new image elements to canvas
+	// When uploaderFiles change, sync image elements with canvas
 	useEffect(() => {
-		if (!uploaderFiles || uploaderFiles.length === 0) return
-		uploaderFiles.forEach((f) => {
-			setCustomElements((prev) => {
-				const exists = prev.some(
+		setCustomElements((prev) => {
+			const currentUrls = uploaderFiles.map((f) => f.url)
+			const updatedElements = prev.filter((el) => {
+				// Удаляем image элементы, которые больше не присутствуют в uploaderFiles
+				if (el.type === 'image' && el.content?.src) {
+					return currentUrls.includes(el.content.src)
+				}
+				// Оставляем все не-image элементы (например, текстовые)
+				return true
+			})
+
+			// Проверяем, был ли удален выбранный элемент
+			const selectedElementExists = updatedElements.some(
+				(el) => el.id === selectedId,
+			)
+			if (selectedId && !selectedElementExists) {
+				setSelectedId(null)
+			}
+
+			// Добавляем новые элементы для файлов, которых еще нет на канвасе
+			uploaderFiles.forEach((f) => {
+				const exists = updatedElements.some(
 					(el) => el.type === 'image' && el.content?.src === f.url,
 				)
-				if (exists) return prev
-				const id = uuidv4()
-				const el = {
-					id,
-					type: 'image',
-					x: 30,
-					y: 30,
-					width: 240,
-					height: 240,
-					rotation: 0,
-					zIndex: (prev.length || 0) + 1,
-					content: { src: f.url },
+				if (!exists) {
+					const id = uuidv4()
+					const el = {
+						id,
+						type: 'image',
+						x: 30,
+						y: 30,
+						width: 240,
+						height: 240,
+						rotation: 0,
+						zIndex: (updatedElements.length || 0) + 1,
+						content: { src: f.url },
+					}
+					updatedElements.push(el)
+					// Устанавливаем последний добавленный элемент как выбранный
+					setTimeout(() => setSelectedId(id), 0)
 				}
-				setSelectedId(id)
-				return [...prev, el]
 			})
+
+			return updatedElements
 		})
-	}, [uploaderFiles])
+	}, [uploaderFiles, selectedId])
 
 	// useEffect(() => {
 	// 	spiritHeroApi
@@ -66,11 +89,7 @@ export default function DesignStep({ myShopProducts }) {
 				<>
 					<div className={css.image__box}>
 						{/* Canvas area for custom elements */}
-						<div
-							ref={containerRef}
-							className={css.custom__elements}
-							style={{ position: 'relative' }}
-						>
+						<div ref={containerRef} className={css.custom__elements}>
 							{customElements.map((el) => (
 								<div
 									key={el.id}
@@ -107,42 +126,109 @@ export default function DesignStep({ myShopProducts }) {
 								</div>
 							))}
 
-							{selectedId && (
-								<Moveable
-									target={document.querySelector(`[data-id="${selectedId}"]`)}
-									container={containerRef.current}
-									draggable={true}
-									resizable={true}
-									rotatable={true}
-									throttleDrag={0}
-									throttleResize={0}
-									handleRotate={true}
-									onDrag={({ target, left, top }) => {
-										const id = target.getAttribute('data-id')
-										setCustomElements((prev) =>
-											prev.map((el) =>
-												el.id === id ? { ...el, x: left, y: top } : el,
-											),
-										)
-									}}
-									onResize={({ target, width, height }) => {
-										const id = target.getAttribute('data-id')
-										setCustomElements((prev) =>
-											prev.map((el) =>
-												el.id === id ? { ...el, width, height } : el,
-											),
-										)
-									}}
-									onRotate={({ target, dist }) => {
-										const id = target.getAttribute('data-id')
-										setCustomElements((prev) =>
-											prev.map((el) =>
-												el.id === id ? { ...el, rotation: dist } : el,
-											),
-										)
-									}}
-								/>
-							)}
+							{selectedId &&
+								document.querySelector(`[data-id="${selectedId}"]`) && (
+									<Moveable
+										target={document.querySelector(`[data-id="${selectedId}"]`)}
+										container={containerRef.current}
+										draggable={true}
+										resizable={true}
+										scalable={true}
+										rotatable={true}
+										throttleDrag={0}
+										throttleResize={0}
+										handleRotate={true}
+										renderDirections={[
+											'nw',
+											'n',
+											'ne',
+											'w',
+											'e',
+											'sw',
+											's',
+											'se',
+										]}
+										edge={false}
+										onDrag={({ target, left, top }) => {
+											const id = target.getAttribute('data-id')
+											const container = containerRef.current
+											if (!container) return
+											setCustomElements((prev) =>
+												prev.map((el) => {
+													if (el.id !== id) return el
+													// allow partial exit: at least 1px of element must remain visible
+													const minLeft = -((el.width || 0) - 50)
+													const maxLeft = container.clientWidth - 50
+													const minTop = -((el.height || 0) - 50)
+													const maxTop = container.clientHeight - 50
+													const newLeft = Math.max(
+														minLeft,
+														Math.min(left, maxLeft),
+													)
+													const newTop = Math.max(minTop, Math.min(top, maxTop))
+													return { ...el, x: newLeft, y: newTop }
+												}),
+											)
+										}}
+										onResize={({ target, width, height }) => {
+											const id = target.getAttribute('data-id')
+											const container = containerRef.current
+											if (!container) return
+											setCustomElements((prev) =>
+												prev.map((el) => {
+													if (el.id !== id) return el
+													// allow resize but keep minimum size of 1px; partial exit allowed
+													const newW = Math.max(1, Math.round(width))
+													const newH = Math.max(1, Math.round(height))
+													return { ...el, width: newW, height: newH }
+												}),
+											)
+										}}
+										onScaleStart={({ target }) => {
+											const id = target.getAttribute('data-id')
+											const el = customElements.find((x) => x.id === id)
+											if (el)
+												scaleRef.current[id] = {
+													w: el.width || 0,
+													h: el.height || 0,
+												}
+										}}
+										onScale={({ target, scale }) => {
+											const id = target.getAttribute('data-id')
+											const initial = scaleRef.current[id]
+											if (!initial) return
+											let sx = 1
+											let sy = 1
+											if (Array.isArray(scale)) {
+												sx = scale[0]
+												sy = scale[1]
+											} else if (typeof scale === 'number') {
+												sx = sy = scale
+											}
+											const newW = Math.max(1, Math.round(initial.w * sx))
+											const newH = Math.max(1, Math.round(initial.h * sy))
+											setCustomElements((prev) =>
+												prev.map((el) =>
+													el.id === id
+														? { ...el, width: newW, height: newH }
+														: el,
+												),
+											)
+										}}
+										onScaleEnd={({ target }) => {
+											const id = target.getAttribute('data-id')
+											delete scaleRef.current[id]
+										}}
+										onRotate={({ target, dist }) => {
+											const id = target.getAttribute('data-id')
+											setCustomElements((prev) =>
+												prev.map((el) =>
+													el.id === id ? { ...el, rotation: dist } : el,
+												),
+											)
+										}}
+									/>
+								)}
 						</div>
 
 						<img
