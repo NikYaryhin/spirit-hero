@@ -1,6 +1,4 @@
 import { Link } from 'react-router-dom'
-import { useEffect } from 'react'
-import spiritHeroApi from '@/api/spiritHeroApi'
 import bannerImage from '@/assets/SpiritHero__Banner.jpg'
 import ChatLogo from '@/assets/SpiritHero__Chat--Icon.svg'
 import ThunderLogo from '@/assets/SpiritHero__Thunder.svg'
@@ -8,20 +6,6 @@ import BoxLogo from '@/assets/SpiritHero__Box.svg'
 import css from './Home.module.css'
 
 export default function Home() {
-	// useEffect(() => {
-	// 	const fetchData = async () => {
-	// 		try {
-	// 			const login = await spiritHeroApi.login('admin@gmail.com', '12345678')
-	// 			const products = await spiritHeroApi.getProducts()
-	// 			console.log('Login', login)
-	// 			console.log('Products', products)
-	// 		} catch (error) {
-	// 			console.error('Error', error)
-	// 		}
-	// 	}
-
-	// 	fetchData()
-	// }, [])
 	return (
 		<section className={css.home__section}>
 			<div className={css.banner}>
@@ -47,7 +31,7 @@ export default function Home() {
 								</Link>
 							</li>
 							<li>
-								<Link to="/">
+								<Link to="/builder">
 									<img src={BoxLogo} alt="Box Logo" />
 									Place a Bulk Order
 								</Link>
@@ -62,7 +46,9 @@ export default function Home() {
 							<img src={ChatLogo} alt="Chat Logo" />
 						</div>
 						<p className={css['home__content--bottom__text']}>
-							<span className={css['home__content--bottom__label']}>Talk to an Experts </span>
+							<span className={css['home__content--bottom__label']}>
+								Talk to an Experts{' '}
+							</span>
 							<span className={css['home__content--bottom__sublabel']}>
 								Talk to an experts for free about your fundraising needs{' '}
 							</span>
