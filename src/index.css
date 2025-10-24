@@ -48,6 +48,7 @@ a.active {
   color: #535bf2;
 }
 
+
 body {
   margin: 0;
   min-width: 32rem;
@@ -80,7 +81,7 @@ button {
   background-color: #F1EEF4;
   color: #373239;
   cursor: pointer;
-  transition: border-color 0.25s, opacity 0.25s;
+  transition: border-color 0.25s, opacity 0.25s, scale 0.2s ease;
 }
 
 button:disabled {

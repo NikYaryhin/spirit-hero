@@ -132,7 +132,6 @@ export default function StoreDetailsForm({ setStoreId }) {
 									onInputHandle={colorInputHandle}
 									color={color}
 									name={name}
-									required={true}
 									inputName="color--input"
 								/>
 							</li>

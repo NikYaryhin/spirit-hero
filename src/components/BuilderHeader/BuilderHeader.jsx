@@ -12,7 +12,7 @@ const stepsArr = [
 	{ name: 'Fundraising', id: 4 },
 ]
 
-export default function BuilderHeader({ activeStep, setActiveStep }) {
+export default function BuilderHeader({ activeStep, setActiveStep, onNextStep }) {
 	const [steps, setSteps] = useState(stepsArr)
 
 	return (
@@ -56,7 +56,7 @@ export default function BuilderHeader({ activeStep, setActiveStep }) {
 
 					<button
 						className={`${css.step__button}`}
-						onClick={() => setActiveStep((prev) => Math.min(prev + 1, steps.length))}
+						onClick={onNextStep || (() => setActiveStep((prev) => Math.min(prev + 1, steps.length)))}
 					>
 						Next
 						<Chevron rotated={false} />

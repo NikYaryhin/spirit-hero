@@ -1,0 +1,26 @@
+.fundraising__section {
+	display: flex;
+	height: 100%;
+
+	.products__handle {
+		width: calc(100%*2 /3);
+
+		.products__container {
+			padding: 2.4rem 3.6rem;
+			background-color: #FBF8FD;
+
+			.products__categories {
+
+				background-color: #F1EEF4;
+			}
+		}
+	}
+
+	.handles {
+		height: 100%;
+		width: calc(100% /3);
+		background-color: #F1EEF4;
+	}
+
+
+}
