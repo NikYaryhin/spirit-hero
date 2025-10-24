@@ -15,16 +15,23 @@ export default function ImageUploader({
 	const inputRef = useRef(null)
 
 	const handleFiles = useCallback(
-		(newFiles) => {
+		async (newFiles) => {
 			const imageFiles = Array.from(newFiles).filter((f) =>
 				f.type.startsWith('image/'),
 			)
 			if (imageFiles.length === 0) return
 
-			const mapped = imageFiles.map((file) => ({
-				file,
-				url: URL.createObjectURL(file),
-			}))
+			const mapped = await Promise.all(
+				imageFiles.map(async (file) => ({
+					file,
+					url: URL.createObjectURL(file),
+					base64: await new Promise((resolve) => {
+						const reader = new FileReader()
+						reader.onload = () => resolve(reader.result)
+						reader.readAsDataURL(file)
+					})
+				}))
+			)
 			// update parent-controlled files
 			if (typeof setFiles === 'function') {
 				setFiles((prev) => (multiple ? [...prev, ...mapped] : mapped))
@@ -37,16 +44,16 @@ export default function ImageUploader({
 		[multiple, onChange, files, setFiles],
 	)
 
-	const onInputChange = (e) => {
-		handleFiles(e.target.files)
+	const onInputChange = async (e) => {
+		await handleFiles(e.target.files)
 		e.target.value = ''
 	}
 
-	const onDrop = (e) => {
+	const onDrop = async (e) => {
 		e.preventDefault()
 		setDragOver(false)
 		if (!agreed) return
-		handleFiles(e.dataTransfer.files)
+		await handleFiles(e.dataTransfer.files)
 	}
 
 	const onDragOver = (e) => {

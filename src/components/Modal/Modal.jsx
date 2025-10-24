@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import Portal from '../Portal/Portal'
 import css from './Modal.module.css'
+import Icon from '../Icon'
 
-export default function Modal({ isOpen, onClose, children }) {
+export default function Modal({ isOpen, onClose, className, children }) {
 	useEffect(() => {
 		if (!isOpen) return
 		const onKey = (e) => {
@@ -16,10 +17,10 @@ export default function Modal({ isOpen, onClose, children }) {
 
 	return (
 		<Portal>
-			<div className={css.overlay} onMouseDown={onClose}>
+			<div className={`${css.overlay} ${css[className]}`} onMouseDown={onClose}>
 				<div className={css.dialog} onMouseDown={(e) => e.stopPropagation()}>
 					<button className={css.close} onClick={onClose} aria-label="Close">
-						×
+						<Icon name="Cancel" />
 					</button>
 					{children}
 				</div>

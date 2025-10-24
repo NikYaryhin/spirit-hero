@@ -56,6 +56,13 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async getStore(store_id) {
+		const { data } = await this.http.get('/api/builder/get-store', {
+			params: { store_id },
+		})
+		return data
+	}
+
 	async getProducts() {
 		const { data } = await this.http.get('/api/builder/get-products')
 
@@ -64,13 +71,19 @@ class SpiritHeroApi {
 
 	async addToMyStoreProductsList(store_id, ids) {
 		const body = { store_id, ids }
-		const { data } = await this.http.post('/api/builder/add-to-my-store-products-list', body)
+		const { data } = await this.http.post(
+			'/api/builder/add-to-my-store-products-list',
+			body,
+		)
 		return data
 	}
 
 	async deleteFromMyStoreProducts(store_id, ids) {
 		const body = { store_id, ids }
-		const { data } = await this.http.post('/api/builder/delete-from-my-store-products', body)
+		const { data } = await this.http.post(
+			'/api/builder/delete-from-my-store-products',
+			body,
+		)
 		return data
 	}
 
@@ -92,9 +105,13 @@ class SpiritHeroApi {
 	}
 
 	async saveDesignImage(formData) {
-		const { data } = await this.http.post('/api/builder/save-design-image', formData, {
-			headers: { 'Content-Type': 'multipart/form-data' },
-		})
+		const { data } = await this.http.post(
+			'/api/builder/save-design-image',
+			formData,
+			{
+				headers: { 'Content-Type': 'multipart/form-data' },
+			},
+		)
 		return data
 	}
 
@@ -110,7 +127,10 @@ class SpiritHeroApi {
 	}
 
 	async saveFlashSaleSetting(payload) {
-		const { data } = await this.http.post('/api/builder/save-flash-sale-setting', payload)
+		const { data } = await this.http.post(
+			'/api/builder/save-flash-sale-setting',
+			payload,
+		)
 		return data
 	}
 }

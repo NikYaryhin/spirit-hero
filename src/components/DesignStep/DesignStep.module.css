@@ -12,7 +12,15 @@
 
 		.custom__elements {
 			position: absolute;
-			inset: 0 0 0 0;
+			top: 45%;
+			left: 50%;
+			translate: -50% -50%;
+
+			height: 25rem;
+			width: 25rem;
+
+			border: 2px dashed #4E008E;
+			overflow: hidden;
 		}
 
 		.deleteButton {
@@ -148,13 +156,47 @@
 
 		}
 
+		.products--list__by--category {
+			display: flex;
+			flex-direction: column;
+			gap: 1.6rem;
+			margin-top: 4rem;
+
+			details {
+				&[open] {
+					summary svg {
+						rotate: 180deg;
+					}
+				}
+
+				summary {
+					display: flex;
+					align-items: center;
+					gap: 1rem;
+
+					padding-bottom: 1.6rem;
+
+					font-size: 1.6rem;
+					line-height: 1.25;
+					color: #605767;
+
+					cursor: pointer;
+
+					strong {
+						font-weight: 700;
+					}
+				}
+			}
+
+		}
+
 		.products__list {
 			display: flex;
 			flex-direction: column;
 			gap: 1.6rem;
 
-			margin-top: 4rem;
-
+			padding-top: 0.2rem;
+			padding-left: 4rem;
 		}
 	}
 }

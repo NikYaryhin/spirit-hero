@@ -8,6 +8,7 @@ export default function ColorCheckbox({
 	required,
 	inputName,
 	checked = false,
+	className,
 }) {
 	const [isChecked, setIsChecked] = useState(checked)
 
@@ -18,9 +19,7 @@ export default function ColorCheckbox({
 		onInputHandle(checked, value)
 	}
 	return (
-		<label className={css.label}>
-			<span className={css.color} style={{ backgroundColor: color }}></span>
-			<span className={css.name}>{name}</span>
+		<label className={`${css.label} ${css[className]}`}>
 			<span className={css.checkbox__emulator}>
 				<svg
 					width="18"
@@ -38,6 +37,9 @@ export default function ColorCheckbox({
 					/>
 				</svg>
 			</span>
+			<span className={css.color} style={{ backgroundColor: color }}></span>
+			<span className={css.name}>{name}</span>
+
 			<input
 				checked={isChecked}
 				onChange={onInputChange}

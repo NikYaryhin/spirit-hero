@@ -1,23 +1,28 @@
-import { useEffect, useState, useRef } from 'react'
 import css from './DesignStep.module.css'
+import { useEffect, useState, useRef } from 'react'
 import ProductCustomizerCard from '../ProductCustomizerCard/ProductCustomizerCard'
-import Icon from '../Icon'
 import ImageUploader from '../ImageUploader/ImageUploader'
+import Icon from '../Icon'
+import Loader from '../Loader/Loader'
+import spiritHeroApi from '@/api/spiritHeroApi'
 import TextHandle from '../TextHandle/TextHandle'
 import Moveable from 'react-moveable'
 import { v4 as uuidv4 } from 'uuid'
 
-export default function DesignStep({ myShopProducts, storeId }) {
+export default function DesignStep({ storeId }) {
 	const [customizerType, setCustomizerType] = useState(null)
 
-	const [products, setProducts] = useState(
-		myShopProducts && myShopProducts.length > 0
-			? myShopProducts
-			: JSON.parse(localStorage.getItem('myShopArr')),
-	)
+	const [isLoading, setIsLoading] = useState(true)
+	const [products, setProducts] = useState(null)
+	const [productsByCategory, setProductsByCategory] = useState(null)
+	const [activeCardId, setActiveCardId] = useState(null)
+	const [customerLogos, setCustomerLogos] = useState({
+		elementsPositionImage: '',
+		customerLogos: [],
+		labels: [],
+	})
 
-	// console.log(products)
-	const [image, setImage] = useState(products[0].product_image)
+	const [image, setImage] = useState(null)
 
 	const [uploaderFiles, setUploaderFiles] = useState([])
 	const [uploaderAgreed, setUploaderAgreed] = useState(false)
@@ -30,12 +35,34 @@ export default function DesignStep({ myShopProducts, storeId }) {
 	const scaleRef = useRef({})
 
 	useEffect(() => {
-		if (products)
-			setProducts((prev) => {
-				return prev.map((prod, prodIdx) => {
-					return { ...prod, active: prodIdx === 0 ? true : false }
-				})
-			})
+		const fetchStoreData = async () => {
+			try {
+				const res = await spiritHeroApi.getStore(
+					storeId || +localStorage.getItem('storeId'),
+				)
+
+				const sortedProducts = res.products.reduce((acc, product, idx) => {
+					acc[product.category_id] = [
+						...(acc[product.category_id] || []),
+						product,
+					]
+					if (idx === 0) {
+						setActiveCardId(product.id)
+						setImage(product.product_image)
+					}
+					return acc
+				}, {})
+
+				console.log({ sortedProducts, products: res.products })
+
+				setProducts(res.products)
+				setProductsByCategory(sortedProducts)
+				setIsLoading(false)
+			} catch (error) {
+				console.error(`spiritHeroApi.getStore error`, error)
+			}
+		}
+		fetchStoreData()
 	}, [])
 
 	// When uploaderFiles change, sync image elements with canvas
@@ -87,330 +114,438 @@ export default function DesignStep({ myShopProducts, storeId }) {
 		})
 	}, [uploaderFiles, selectedId])
 
-	// useEffect(() => {
-	// 	spiritHeroApi
-	// 		.getTemplates()
-	// 		.then((res) => console.log(res))
-	// 		.catch((error) => console.error(error))
+	// Функция для обновления customerLogos на основе customElements
+	const updateCustomerLogos = async () => {
+		const labels = []
+		const customerLogos = []
 
-	// 	console.log('myShopProducts', myShopProducts)
-	// }, [myShopProducts])
+		for (const element of customElements) {
+			if (element.type === 'text') {
+				labels.push({
+					text: element.content,
+					fontFamily: element.style.fontFamily || 'Montserrat',
+					fontSize: element.style.fontSize || '54px',
+					color: element.style.color || '#000000',
+					bold: element.style.fontWeight === '700',
+					italic: element.style.fontStyle === 'italic',
+				})
+			} else if (element.type === 'image') {
+				// Находим соответствующий файл в uploaderFiles
+				const fileData = uploaderFiles.find(
+					(f) => f.url === element.content.src,
+				)
+				if (fileData && fileData.base64) {
+					customerLogos.push(fileData.base64)
+				}
+			}
+		}
 
-	return (
-		<div className={css.design_section}>
-			{products && products.length > 0 ? (
-				<>
-					<div className={css.image__box}>
-						{/* Canvas area for custom elements */}
-						<div ref={containerRef} className={css.custom__elements}>
-							{customElements.map((el) => (
-								<div
-									key={el.id}
-									data-id={el.id}
-									style={{
-										position: 'absolute',
-										left: el.x,
-										top: el.y,
-										width: el.width,
-										height: el.height,
-										transform: `rotate(${el.rotation}deg)`,
-										zIndex: el.zIndex,
-										border:
-											el.id === selectedId ? '1px dashed #4E008E' : 'none',
-										boxSizing: 'border-box',
-									}}
-									onMouseDown={() => setSelectedId(el.id)}
-								>
-									{el.type === 'image' ? (
-										<img
-											src={el.content.src}
-											alt="uploaded"
-											style={{
-												width: '100%',
-												height: '100%',
-												objectFit: 'contain',
-											}}
+		setCustomerLogos({
+			elementsPositionImage: '',
+			customerLogos: customerLogos,
+			labels: labels,
+		})
+	}
+
+	// Обновляем customerLogos при изменении customElements
+	useEffect(() => {
+		updateCustomerLogos()
+	}, [customElements, uploaderFiles])
+
+	// Функция для создания скриншота контейнера custom__elements
+	const getLogoParameters = async () => {
+		if (!containerRef.current) {
+			console.error('Container not found')
+			return null
+		}
+
+		try {
+			// Импортируем html2canvas динамически
+			const html2canvas = (await import('html2canvas')).default
+
+			// Создаем скриншот контейнера
+			const canvas = await html2canvas(containerRef.current, {
+				width: containerRef.current.offsetWidth,
+				height: containerRef.current.offsetHeight,
+				useCORS: true,
+				allowTaint: true,
+				backgroundColor: '#F1EEF4',
+				scale: 1,
+				// Исключаем Moveable элементы из скриншота
+				ignoreElements: (element) => {
+					return (
+						element.classList.contains('moveable-control') ||
+						element.classList.contains('moveable-direction') ||
+						element.tagName.toLowerCase() === 'button'
+					)
+				},
+			})
+
+			// Конвертируем в base64
+			const base64 = canvas.toDataURL('image/png')
+			console.log({ base64 })
+
+			// Обновляем elementsPositionImage в customerLogos
+			await setCustomerLogos((prev) => ({
+				...prev,
+				elementsPositionImage: base64,
+			}))
+
+			localStorage.setItem('customerLogos', JSON.stringify(customerLogos))
+		} catch (error) {
+			console.error('Error creating screenshot:', error)
+			return null
+		}
+	}
+
+	if (isLoading) return <Loader />
+	else
+		return (
+			<div className={css.design_section}>
+				{products && products.length > 0 && (
+					<>
+						<div className={css.image__box}>
+							{/* Canvas area for custom elements */}
+							<div
+								ref={containerRef}
+								className={css.custom__elements}
+								onClick={(e) => {
+									// Если клик был не по элементу, снимаем выделение
+									if (e.target === containerRef.current) {
+										setSelectedId(null)
+									}
+								}}
+							>
+								{customElements.map((el) => (
+									<div
+										key={el.id}
+										data-id={el.id}
+										style={{
+											position: 'absolute',
+											left: el.x,
+											top: el.y,
+											width: el.width,
+											height: el.height,
+											transform: `rotate(${el.rotation}deg)`,
+											transformOrigin: 'center center',
+											zIndex: el.zIndex,
+											border:
+												el.id === selectedId ? '1px dashed #4E008E' : 'none',
+											boxSizing: 'border-box',
+										}}
+										onMouseDown={() => setSelectedId(el.id)}
+									>
+										{el.type === 'image' ? (
+											<img
+												src={el.content.src}
+												alt="uploaded"
+												style={{
+													width: '100%',
+													height: '100%',
+													objectFit: 'contain',
+												}}
+											/>
+										) : (
+											<div
+												style={{
+													width: el.type === 'text' ? 'fit-content' : '100%',
+													height: el.type === 'text' ? 'fit-content' : '100%',
+													maxWidth: el.maxWidth || 'none',
+													...el.style,
+												}}
+											>
+												{el.content}
+											</div>
+										)}
+
+										{/* Кнопка удаления для текстовых элементов */}
+										{el.type === 'text' && (
+											<button
+												className={css.deleteButton}
+												onClick={(e) => {
+													e.stopPropagation()
+													setCustomElements((prev) =>
+														prev.filter((element) => element.id !== el.id),
+													)
+													if (selectedId === el.id) {
+														setSelectedId(null)
+													}
+												}}
+												title="Удалить текст"
+											>
+												<Icon name={'Cancel'} />
+											</button>
+										)}
+									</div>
+								))}
+
+								{selectedId &&
+									document.querySelector(`[data-id="${selectedId}"]`) &&
+									(() => {
+										const selectedElement = customElements.find(
+											(el) => el.id === selectedId,
+										)
+										const isTextElement = selectedElement?.type === 'text'
+
+										return (
+											<Moveable
+												target={document.querySelector(
+													`[data-id="${selectedId}"]`,
+												)}
+												container={containerRef.current}
+												draggable={true}
+												resizable={!isTextElement}
+												scalable={!isTextElement}
+												rotatable={true}
+												throttleDrag={0}
+												throttleResize={0}
+												throttleRotate={0}
+												handleRotate={true}
+												renderDirections={
+													isTextElement
+														? []
+														: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
+												}
+												edge={false}
+												rotationPosition={'top'}
+												onDrag={({ target, left, top }) => {
+													const id = target.getAttribute('data-id')
+													const container = containerRef.current
+													if (!container) return
+													setCustomElements((prev) =>
+														prev.map((el) => {
+															if (el.id !== id) return el
+
+															// Для текстовых элементов используем фиксированные размеры для расчета границ
+															const elementWidth =
+																el.type === 'text'
+																	? el.maxWidth || 300
+																	: el.width || 0
+															const elementHeight =
+																el.type === 'text' ? 60 : el.height || 0
+
+															// allow partial exit: at least 1px of element must remain visible
+															const minLeft = -(elementWidth - 50)
+															const maxLeft = container.clientWidth - 50
+															const minTop = -(elementHeight - 50)
+															const maxTop = container.clientHeight - 50
+															const newLeft = Math.max(
+																minLeft,
+																Math.min(left, maxLeft),
+															)
+															const newTop = Math.max(
+																minTop,
+																Math.min(top, maxTop),
+															)
+															return { ...el, x: newLeft, y: newTop }
+														}),
+													)
+												}}
+												onResize={({ target, width, height }) => {
+													const id = target.getAttribute('data-id')
+													const container = containerRef.current
+													if (!container) return
+													setCustomElements((prev) =>
+														prev.map((el) => {
+															if (el.id !== id) return el
+															// allow resize but keep minimum size of 1px; partial exit allowed
+															const newW = Math.max(1, Math.round(width))
+															const newH = Math.max(1, Math.round(height))
+															return { ...el, width: newW, height: newH }
+														}),
+													)
+												}}
+												onScaleStart={({ target }) => {
+													const id = target.getAttribute('data-id')
+													const el = customElements.find((x) => x.id === id)
+													if (el)
+														scaleRef.current[id] = {
+															w: el.width || 0,
+															h: el.height || 0,
+														}
+												}}
+												onScale={({ target, scale }) => {
+													const id = target.getAttribute('data-id')
+													const initial = scaleRef.current[id]
+													if (!initial) return
+													let sx = 1
+													let sy = 1
+													if (Array.isArray(scale)) {
+														sx = scale[0]
+														sy = scale[1]
+													} else if (typeof scale === 'number') {
+														sx = sy = scale
+													}
+													const newW = Math.max(1, Math.round(initial.w * sx))
+													const newH = Math.max(1, Math.round(initial.h * sy))
+													setCustomElements((prev) =>
+														prev.map((el) =>
+															el.id === id
+																? { ...el, width: newW, height: newH }
+																: el,
+														),
+													)
+												}}
+												onScaleEnd={({ target }) => {
+													const id = target.getAttribute('data-id')
+													delete scaleRef.current[id]
+												}}
+												onRotate={({ target, rotate, dist, angle }) => {
+													const id = target.getAttribute('data-id')
+													const rotationValue = rotate || dist || angle || 0
+													setCustomElements((prev) =>
+														prev.map((el) =>
+															el.id === id
+																? { ...el, rotation: rotationValue }
+																: el,
+														),
+													)
+												}}
+											/>
+										)
+									})()}
+							</div>
+
+							<img
+								src={image}
+								alt={'Customize product'}
+								onClick={() => setSelectedId(null)}
+							/>
+						</div>
+
+						<div className={css.settings__box}>
+							<button
+								onClick={getLogoParameters}
+								className={`${css.button} contrast_button_1`}
+							>
+								<Icon name={'Palette'} />
+								Request a custom design
+							</button>
+
+							<h1 className={css.title}>Create your design</h1>
+
+							<span className={css.subtitle}>
+								Choose options from ready solutions to the custom ones
+							</span>
+
+							<div className={css.customizer}>
+								<fieldset className={css.customizer__pickers}>
+									<label>
+										<Icon name={'Frame'} />
+										Add Image
+										<input
+											onChange={(event) =>
+												setCustomizerType(event.currentTarget.value)
+											}
+											value="image"
+											type="radio"
+											name="customizer--option"
+											className="visually-hidden"
 										/>
-									) : (
-										<div
-											style={{
-												width: el.type === 'text' ? 'fit-content' : '100%',
-												height: el.type === 'text' ? 'fit-content' : '100%',
-												maxWidth: el.maxWidth || 'none',
-												...el.style,
-											}}
-										>
-											{el.content}
-										</div>
+									</label>
+
+									<label>
+										<Icon name={'Letters'} />
+										Add Text
+										<input
+											onChange={(event) =>
+												setCustomizerType(event.currentTarget.value)
+											}
+											value="text"
+											type="radio"
+											name="customizer--option"
+											className="visually-hidden"
+										/>
+									</label>
+
+									<label>
+										<Icon name={'Edits'} />
+										Templates
+										<input
+											onChange={(event) =>
+												setCustomizerType(event.currentTarget.value)
+											}
+											value="template"
+											type="radio"
+											name="customizer--option"
+											className="visually-hidden"
+											disabled
+										/>
+									</label>
+								</fieldset>
+
+								<div className={css.customizer__tools}>
+									{customizerType === 'image' && (
+										<ImageUploader
+											files={uploaderFiles}
+											setFiles={setUploaderFiles}
+											agreed={uploaderAgreed}
+											setAgreed={setUploaderAgreed}
+											dragOver={uploaderDragOver}
+											setDragOver={setUploaderDragOver}
+										/>
 									)}
 
-									{/* Кнопка удаления для текстовых элементов */}
-									{el.type === 'text' && (
-										<button
-											className={css.deleteButton}
-											onClick={(e) => {
-												e.stopPropagation()
-												setCustomElements((prev) =>
-													prev.filter((element) => element.id !== el.id),
-												)
-												if (selectedId === el.id) {
-													setSelectedId(null)
+									{customizerType === 'text' && (
+										<TextHandle
+											onAdd={(text, options) => {
+												const id = uuidv4()
+												const el = {
+													id,
+													type: 'text',
+													x: 20,
+													y: 20,
+													width: 'fit-content',
+													maxWidth: 300,
+													height: 'fit-content',
+													rotation: 0,
+													zIndex: (customElements.length || 0) + 1,
+													content: text,
+													style: {
+														fontFamily: options.font,
+														fontSize: options.size,
+														fontWeight: options.bold ? 700 : 400,
+														fontStyle: options.italic ? 'italic' : 'normal',
+														color: options.color,
+													},
 												}
+												setCustomElements((p) => [...p, el])
+												setSelectedId(id)
 											}}
-											title="Удалить текст"
-										>
-											<Icon name={'Cancel'} />
-										</button>
+										/>
 									)}
 								</div>
-							))}
+							</div>
 
-							{selectedId &&
-								document.querySelector(`[data-id="${selectedId}"]`) &&
-								(() => {
-									const selectedElement = customElements.find(
-										(el) => el.id === selectedId,
-									)
-									const isTextElement = selectedElement?.type === 'text'
+							<div className={css['products--list__by--category']}>
+								{productsByCategory &&
+									Object.keys(productsByCategory).map((key) => (
+										<details key={key} open>
+											<summary>
+												<Icon name={'ChevronUp'} />
+												<strong>{key}</strong> (we use id until on the back
+												structure category names)
+											</summary>
 
-									return (
-										<Moveable
-											target={document.querySelector(
-												`[data-id="${selectedId}"]`,
-											)}
-											container={containerRef.current}
-											draggable={true}
-											resizable={!isTextElement}
-											scalable={!isTextElement}
-											rotatable={true}
-											throttleDrag={0}
-											throttleResize={0}
-											handleRotate={true}
-											renderDirections={
-												isTextElement
-													? []
-													: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
-											}
-											edge={false}
-											onDrag={({ target, left, top }) => {
-												const id = target.getAttribute('data-id')
-												const container = containerRef.current
-												if (!container) return
-												setCustomElements((prev) =>
-													prev.map((el) => {
-														if (el.id !== id) return el
-
-														// Для текстовых элементов используем фиксированные размеры для расчета границ
-														const elementWidth =
-															el.type === 'text'
-																? el.maxWidth || 300
-																: el.width || 0
-														const elementHeight =
-															el.type === 'text' ? 60 : el.height || 0
-
-														// allow partial exit: at least 1px of element must remain visible
-														const minLeft = -(elementWidth - 50)
-														const maxLeft = container.clientWidth - 50
-														const minTop = -(elementHeight - 50)
-														const maxTop = container.clientHeight - 50
-														const newLeft = Math.max(
-															minLeft,
-															Math.min(left, maxLeft),
-														)
-														const newTop = Math.max(
-															minTop,
-															Math.min(top, maxTop),
-														)
-														return { ...el, x: newLeft, y: newTop }
-													}),
-												)
-											}}
-											onResize={({ target, width, height }) => {
-												const id = target.getAttribute('data-id')
-												const container = containerRef.current
-												if (!container) return
-												setCustomElements((prev) =>
-													prev.map((el) => {
-														if (el.id !== id) return el
-														// allow resize but keep minimum size of 1px; partial exit allowed
-														const newW = Math.max(1, Math.round(width))
-														const newH = Math.max(1, Math.round(height))
-														return { ...el, width: newW, height: newH }
-													}),
-												)
-											}}
-											onScaleStart={({ target }) => {
-												const id = target.getAttribute('data-id')
-												const el = customElements.find((x) => x.id === id)
-												if (el)
-													scaleRef.current[id] = {
-														w: el.width || 0,
-														h: el.height || 0,
-													}
-											}}
-											onScale={({ target, scale }) => {
-												const id = target.getAttribute('data-id')
-												const initial = scaleRef.current[id]
-												if (!initial) return
-												let sx = 1
-												let sy = 1
-												if (Array.isArray(scale)) {
-													sx = scale[0]
-													sy = scale[1]
-												} else if (typeof scale === 'number') {
-													sx = sy = scale
-												}
-												const newW = Math.max(1, Math.round(initial.w * sx))
-												const newH = Math.max(1, Math.round(initial.h * sy))
-												setCustomElements((prev) =>
-													prev.map((el) =>
-														el.id === id
-															? { ...el, width: newW, height: newH }
-															: el,
-													),
-												)
-											}}
-											onScaleEnd={({ target }) => {
-												const id = target.getAttribute('data-id')
-												delete scaleRef.current[id]
-											}}
-											onRotate={({ target, dist }) => {
-												const id = target.getAttribute('data-id')
-												setCustomElements((prev) =>
-													prev.map((el) =>
-														el.id === id ? { ...el, rotation: dist } : el,
-													),
-												)
-											}}
-										/>
-									)
-								})()}
-						</div>
-
-						<img src={image} alt={'Customize product'} />
-					</div>
-
-					<div className={css.settings__box}>
-						<button className={`${css.button} contrast_button_1`}>
-							<Icon name={'Palette'} />
-							Request a custom design
-						</button>
-
-						<h1 className={css.title}>Create your design</h1>
-
-						<span className={css.subtitle}>
-							Choose options from ready solutions to the custom ones
-						</span>
-
-						<div className={css.customizer}>
-							<fieldset className={css.customizer__pickers}>
-								<label>
-									<Icon name={'Frame'} />
-									Add Image
-									<input
-										onChange={(event) =>
-											setCustomizerType(event.currentTarget.value)
-										}
-										value="image"
-										type="radio"
-										name="customizer--option"
-										className="visually-hidden"
-									/>
-								</label>
-
-								<label>
-									<Icon name={'Letters'} />
-									Add Text
-									<input
-										onChange={(event) =>
-											setCustomizerType(event.currentTarget.value)
-										}
-										value="text"
-										type="radio"
-										name="customizer--option"
-										className="visually-hidden"
-									/>
-								</label>
-
-								<label>
-									<Icon name={'Edits'} />
-									Templates
-									<input
-										onChange={(event) =>
-											setCustomizerType(event.currentTarget.value)
-										}
-										value="template"
-										type="radio"
-										name="customizer--option"
-										className="visually-hidden"
-										disabled
-									/>
-								</label>
-							</fieldset>
-
-							<div className={css.customizer__tools}>
-								{customizerType === 'image' && (
-									<ImageUploader
-										files={uploaderFiles}
-										setFiles={setUploaderFiles}
-										agreed={uploaderAgreed}
-										setAgreed={setUploaderAgreed}
-										dragOver={uploaderDragOver}
-										setDragOver={setUploaderDragOver}
-									/>
-								)}
-
-								{customizerType === 'text' && (
-									<TextHandle
-										onAdd={(text, options) => {
-											const id = uuidv4()
-											const el = {
-												id,
-												type: 'text',
-												x: 20,
-												y: 20,
-												width: 'fit-content',
-												maxWidth: 300,
-												height: 'fit-content',
-												rotation: 0,
-												zIndex: (customElements.length || 0) + 1,
-												content: text,
-												style: {
-													fontFamily: options.font,
-													fontSize: options.size,
-													fontWeight: options.bold ? 700 : 400,
-													fontStyle: options.italic ? 'italic' : 'normal',
-													color: options.color,
-												},
-											}
-											setCustomElements((p) => [...p, el])
-											setSelectedId(id)
-										}}
-									/>
-								)}
+											<ul className={css.products__list}>
+												{productsByCategory[key].map((product) => (
+													<ProductCustomizerCard
+														key={product.id}
+														setImage={setImage}
+														activeCardId={activeCardId}
+														setActiveCardId={setActiveCardId}
+														product={product}
+														storeId={storeId}
+														setProductsByCategory={setProductsByCategory}
+													/>
+												))}
+											</ul>
+										</details>
+									))}
 							</div>
 						</div>
-
-						<ul className={css.products__list}>
-							{products &&
-								products.length > 0 &&
-								products.map((product) => {
-									return (
-										<ProductCustomizerCard
-											key={product.id}
-											setImage={setImage}
-											setProducts={setProducts}
-											product={product}
-											storeId={storeId}
-										/>
-									)
-								})}
-						</ul>
-					</div>
-				</>
-			) : (
-				<h2>There is no products in your shop</h2>
-			)}
-		</div>
-	)
+					</>
+				)}
+			</div>
+		)
 }

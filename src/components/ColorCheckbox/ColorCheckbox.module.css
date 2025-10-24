@@ -24,6 +24,20 @@
 		}
 	}
 
+	&.horisontal {
+		flex-direction: row;
+		align-items: center;
+		gap: 1rem;
+
+		width: 100%;
+		padding: 0.8rem 1.6rem;
+		box-sizing: border-box;
+
+		.checkbox__emulator {
+			position: unset;
+		}
+	}
+
 	.color {
 		display: inline-block;
 

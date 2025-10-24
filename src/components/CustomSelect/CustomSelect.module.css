@@ -51,6 +51,9 @@
 		background-color: #FFFFFF;
 
 
+		/* Firefox */
+		scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+		scrollbar-width: thin;
 
 		&::-webkit-scrollbar-track {
 			background: transparent;
@@ -61,9 +64,6 @@
 			border-radius: 1.2rem;
 		}
 
-		/* Firefox */
-		scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
-		scrollbar-width: thin;
 
 		li {
 			flex: 1;
