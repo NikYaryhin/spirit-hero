@@ -10,6 +10,7 @@ export default function Home() {
 		<section className={css.home__section}>
 			<div className={css.banner}>
 				<img
+					loading="lazy"
 					src={bannerImage}
 					alt="Group of fans in red and white Chargers shirts cheering and waving pom-poms in the stands."
 				/>
@@ -26,13 +27,13 @@ export default function Home() {
 						<ul>
 							<li>
 								<Link to="/builder">
-									<img src={ThunderLogo} alt="Thunder Logo" />
+									<img src={ThunderLogo} alt="Thunder Logo" loading="lazy" />
 									Start on Line Store?
 								</Link>
 							</li>
 							<li>
 								<Link to="/builder">
-									<img src={BoxLogo} alt="Box Logo" />
+									<img src={BoxLogo} alt="Box Logo" loading="lazy" />
 									Place a Bulk Order
 								</Link>
 							</li>
@@ -43,7 +44,7 @@ export default function Home() {
 				<div className={css['home__content--bottom__wrapper']}>
 					<div className={css['home__content--bottom']}>
 						<div className={css['home__content--bottom__icon']}>
-							<img src={ChatLogo} alt="Chat Logo" />
+							<img src={ChatLogo} alt="Chat Logo" loading="lazy" />
 						</div>
 						<p className={css['home__content--bottom__text']}>
 							<span className={css['home__content--bottom__label']}>

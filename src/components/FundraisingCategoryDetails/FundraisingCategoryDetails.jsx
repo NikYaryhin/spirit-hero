@@ -7,30 +7,81 @@ export default function FundraisingCategoryDetails({
 	keyIdx,
 	categoryKey,
 	productsByCategory,
+	profitValue,
+	amountProfit,
+	setSellAtCostProducts,
+	setProductsByCategory,
+	setSelectedProducts,
+	isFundraise,
+	pricesEnd,
 }) {
-	return (
-		<details
-			className={css.category__details}
-			key={categoryKey}
-			open={keyIdx === 0 ? true : false}
-		>
-			<summary>
-				<Icon name={'ChevronUp'} />
-				<label className={`${css.label}`}>
-					<span className={css.checkbox__emulator}>
-						<Icon name={'InputChecked'} />
-					</span>
+	const [isChecked, setIsChecked] = useState(false)
+	const [isChildChecked, setIsChildChecked] = useState(false)
 
-					<input type="checkbox" className="visually-hidden" />
-				</label>
-				{categoryKey} ({productsByCategory[categoryKey].length} items)
-			</summary>
+	const onCheckboxChange = (e) => {
+		const { checked } = e.target
 
-			<ul className={css.product__list}>
-				{productsByCategory[categoryKey].map((product) => (
-					<FundraisingProductCard product={product} key={product.id} />
-				))}
-			</ul>
-		</details>
-	)
+		setIsChecked(checked)
+		setIsChildChecked(checked)
+
+		const categoryProducts = productsByCategory[categoryKey] || []
+
+		setSelectedProducts((prev) => {
+			if (checked) {
+				// add all products from category, ensure uniqueness by id
+				const existingIds = new Set(prev.map((p) => p.id))
+				const toAdd = categoryProducts.filter((p) => !existingIds.has(p.id))
+				return [...prev, ...toAdd]
+			} else {
+				// remove all products of this category
+				const removeIds = new Set(categoryProducts.map((p) => p.id))
+				return prev.filter((p) => !removeIds.has(p.id))
+			}
+		})
+	}
+
+	if (productsByCategory[categoryKey].length > 0)
+		return (
+			<details
+				className={css.category__details}
+				key={categoryKey}
+				open={keyIdx === 0 ? true : false}
+			>
+				<summary>
+					<Icon name={'ChevronUp'} />
+					<label className={`${css.label}`}>
+						<span className={css.checkbox__emulator}>
+							<Icon name={'InputChecked'} />
+						</span>
+
+						<input
+							onChange={(e) => onCheckboxChange(e)}
+							type="checkbox"
+							className="visually-hidden"
+							value={categoryKey}
+							checked={isChecked}
+						/>
+					</label>
+					{categoryKey} ({productsByCategory[categoryKey].length} items)
+				</summary>
+
+				<ul className={css.product__list}>
+					{productsByCategory[categoryKey].map((product) => (
+						<FundraisingProductCard
+							product={product}
+							key={product.id}
+							profitValue={profitValue}
+							amountProfit={amountProfit}
+							checked={isChildChecked}
+							categoryKey={categoryKey}
+							setSellAtCostProducts={setSellAtCostProducts}
+							setProductsByCategory={setProductsByCategory}
+							setSelectedProducts={setSelectedProducts}
+							isFundraise={isFundraise}
+							pricesEnd={pricesEnd}
+						/>
+					))}
+				</ul>
+			</details>
+		)
 }

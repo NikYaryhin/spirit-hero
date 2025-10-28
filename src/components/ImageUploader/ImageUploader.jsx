@@ -29,8 +29,8 @@ export default function ImageUploader({
 						const reader = new FileReader()
 						reader.onload = () => resolve(reader.result)
 						reader.readAsDataURL(file)
-					})
-				}))
+					}),
+				})),
 			)
 			// update parent-controlled files
 			if (typeof setFiles === 'function') {
@@ -75,6 +75,8 @@ export default function ImageUploader({
 			return next
 		})
 	}
+
+	const onSellAtCoastClick = () => {}
 
 	return (
 		<div className={css.image__tool}>
@@ -135,7 +137,7 @@ export default function ImageUploader({
 									</button>
 
 									<div className={css.preview__image}>
-										<img src={p.url} alt={p.file.name} />
+										<img src={p.url} alt={p.file.name} loading="lazy" />
 									</div>
 								</div>
 							))}

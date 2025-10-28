@@ -12,13 +12,17 @@ const stepsArr = [
 	{ name: 'Fundraising', id: 4 },
 ]
 
-export default function BuilderHeader({ activeStep, setActiveStep, onNextStep }) {
+export default function BuilderHeader({
+	activeStep,
+	setActiveStep,
+	onNextStep,
+}) {
 	const [steps, setSteps] = useState(stepsArr)
 
 	return (
 		<div className={css.header}>
 			<div className={css.logo}>
-				<img src={logoImage} alt="SpiritHero Logo" />
+				<img src={logoImage} alt="SpiritHero Logo" loading="lazy" />
 			</div>
 
 			<ul className={css.steps}>
@@ -56,7 +60,10 @@ export default function BuilderHeader({ activeStep, setActiveStep, onNextStep })
 
 					<button
 						className={`${css.step__button}`}
-						onClick={onNextStep || (() => setActiveStep((prev) => Math.min(prev + 1, steps.length)))}
+						onClick={
+							onNextStep ||
+							(() => setActiveStep((prev) => Math.min(prev + 1, steps.length)))
+						}
 					>
 						Next
 						<Chevron rotated={false} />

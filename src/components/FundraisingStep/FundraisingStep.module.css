@@ -1,15 +1,242 @@
 .fundraising__section {
-	display: flex;
+	position: relative;
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	align-items: stretch;
+	width: 100%;
 	height: 100%;
+	overflow: auto;
 
 	.products__handle {
-		width: calc(100%*2 /3);
+		width: auto;
+		height: 100%;
+		overflow: visible;
+
+		.fundraising__head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+
+			padding: 2.5rem 5.6rem;
+			background-color: #F1EEF4;
+
+			.fundraising__search--form {
+				position: relative;
+
+
+				input {
+					width: 34.3rem;
+					border: 1px solid #605767;
+
+					font-size: 1.4rem;
+					line-height: 1.57;
+					color: #605767;
+
+					background-color: transparent;
+				}
+
+				button {
+					position: absolute;
+					top: 50%;
+					right: 0.8rem;
+					translate: 0 -50%;
+
+					height: 3.2rem;
+
+					padding: 0;
+					background-color: transparent;
+					border: unset;
+
+					transition: scale 0.2s ease-in;
+
+
+					&:hover, &:focus {
+						scale: 1.15;
+					}
+				}
+			}
+
+			.fundraising__head--buttons__box {
+				display: flex;
+				gap: 0.8rem;
+			}
+		}
 
 		.products__container {
 			padding: 2.4rem 3.6rem;
 			background-color: #FBF8FD;
 
+			.warning {
+				display: flex;
+				gap: 1rem;
+				max-width: 78.2rem;
+
+				margin-bottom: 1.6rem;
+				padding: 1rem;
+				border: 1px solid #FBB041;
+				border-radius: 0.6rem;
+				box-sizing: border-box;
+
+				font-size: 1.4rem;
+				line-height: 1.57;
+				font-weight: 400;
+				color: #373239;
+
+				background-color: #FAF2E5;
+
+				svg {
+					min-width: 2.4rem;
+					width: 2.4rem;
+					height: 2.4rem;
+				}
+			}
+
+			.categories__container {
+				display: flex;
+				align-items: flex-end;
+				justify-content: space-between;
+
+				.products__categories--switchers {
+					display: flex;
+					gap: 0.4rem;
+					padding-left: 0.4rem;
+
+					.category--picker, .category--picker__active {
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						gap: 0.8rem;
+
+						padding: 1rem 1.4rem;
+						border-radius: 2.2rem 2.2rem 0rem 0rem;
+						border: 1px solid #CACACA;
+
+						font-size: 1.4rem;
+						line-height: 1.57;
+						color: #605767;
+
+						background-color: #FCFCFC;
+						transition: border 0.15s ease-in-out, color 0.15s ease-in-out, background 0.15s ease-in-out;
+
+						.icon {
+							display: flex;
+							align-items: center;
+							justify-content: center;
+
+							width: 1.8rem;
+							height: 1.8rem;
+
+							border: 1.5px solid #CACACA;
+							border-radius: 50%;
+
+							svg {
+
+								path {
+									stroke: #cacaca;
+
+								}
+							}
+						}
+
+						.count {
+							display: flex;
+							align-items: center;
+							justify-content: center;
+
+							padding: 0.2rem 0.8rem;
+							border: 1px solid #9B9AA5;
+							border-radius: 2rem;
+							line-height: 1;
+
+							font-weight: 400;
+							text-align: center;
+							color: #373239;
+						}
+
+
+						&:hover, &:focus {
+							border-color: #3D145E;
+							outline: unset;
+						}
+					}
+
+					.category--picker__active {
+						font-weight: 700;
+						color: #FCFCFC;
+
+						background-color: #3D145E;
+						box-shadow: 0px 0px 5px 2px #914CB845;
+
+
+						.icon {
+							border: 2px solid #9569BA;
+							background: #9569BA;
+
+							svg {
+
+								path {
+									stroke: #FCFCFC;
+								}
+							}
+						}
+
+						.count {
+							background-color: #FBB041;
+						}
+					}
+				}
+
+				.category__group {
+					position: relative;
+					display: flex;
+					flex-direction: column;
+					gap: 0.8rem;
+
+					padding-bottom: 1.2rem;
+
+					font-size: 1.4rem;
+					line-height: 1.57;
+
+					select {
+						min-width: 18rem;
+						border-radius: 1.2rem;
+						padding: 1rem 1.6rem;
+
+						font-size: 1.4rem;
+						line-height: 1.57;
+						color: #605767;
+						background-color: transparent;
+
+						cursor: pointer;
+
+						appearance: none;
+						/* убирает стрелку в большинстве браузеров */
+						-webkit-appearance: none;
+						-moz-appearance: none;
+
+
+					}
+
+					&::after {
+						content: "";
+						position: absolute;
+						top: 56%;
+						right: 1.6rem;
+						width: 0.8rem;
+						height: 0.8rem;
+						pointer-events: none;
+						transform: translateY(-50%) rotate(45deg);
+						border-right: 2px solid #555;
+						border-bottom: 2px solid #555;
+					}
+				}
+			}
+
+
 			.products__categories {
+				display: flex;
+				flex-direction: column;
+				gap: 0.8rem;
 
 				background-color: #F1EEF4;
 			}
@@ -17,9 +244,126 @@
 	}
 
 	.handles {
+		position: relative;
+		width: auto;
 		height: 100%;
-		width: calc(100% /3);
+
+		padding-left: 2.6rem;
 		background-color: #F1EEF4;
+
+		.handles__container {
+			position: sticky;
+			top: 0;
+
+			display: flex;
+			flex-direction: column;
+			gap: 4rem;
+
+			width: 100%;
+			box-sizing: border-box;
+
+			padding: 4rem 1.6rem;
+		}
+
+		.handle__item {
+			list-style-type: disc;
+
+			fieldset {
+				display: flex;
+				flex-direction: column;
+				gap: 0.8rem;
+
+				margin-top: 2.4rem;
+				padding: 0;
+				border: unset;
+
+				font-size: 1.4rem;
+				line-height: 1.57;
+
+				&.row {
+					flex-direction: row;
+				}
+
+
+				.profit__label {
+
+					display: flex;
+					align-items: center;
+					justify-content: center;
+
+					width: 7.5rem;
+					padding: 0.5rem 1.2rem;
+					border-radius: 2.4rem;
+					border: 1px solid #CACACA;
+
+					font-size: 1.4rem;
+					line-height: 1.57;
+					box-sizing: border-box;
+
+					cursor: pointer;
+
+					&:has(input:disabled) {
+						opacity: 0.9;
+						cursor: no-drop;
+					}
+
+					&:has(input:checked) {
+						border-color: #4E008E;
+
+						font-weight: 700;
+						line-height: 1.29;
+					}
+				}
+
+				.radio__label {
+					display: flex;
+					gap: 0.8rem;
+					align-items: center;
+
+					cursor: pointer;
+
+					&:has(input:checked) {
+						.input__emulator {
+							position: relative;
+							border-color: #4E008E;
+
+							&::before {
+								content: '';
+
+								position: absolute;
+								top: 50%;
+								left: 50%;
+								translate: -50% -50%;
+
+								display: inline-block;
+								width: 1rem;
+								height: 1rem;
+								border-radius: 50%;
+
+								background-color: #4E008E;
+							}
+						}
+					}
+
+					.input__emulator {
+						border-radius: 50%;
+						border: 2px solid #9B9AA5;
+
+						display: inline-block;
+						width: 1.6rem;
+						height: 1.6rem;
+					}
+
+				}
+
+			}
+
+			.handle__title {
+				font-size: 1.6rem;
+				line-height: 1.25;
+				font-weight: 600;
+			}
+		}
 	}
 
 

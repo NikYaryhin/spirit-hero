@@ -251,6 +251,7 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 											height: '100%',
 											objectFit: 'contain',
 										}}
+										loading="lazy"
 									/>
 								) : (
 									<div
@@ -411,6 +412,7 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 					<img
 						src={image}
 						alt={'Customize product'}
+						loading="lazy"
 						onClick={() => setSelectedId(null)}
 					/>
 				</div>

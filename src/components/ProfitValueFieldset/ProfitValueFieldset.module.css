@@ -1,0 +1,109 @@
+fieldset {
+	display: flex;
+	gap: 0.8rem;
+
+	width: 100%;
+	padding: 0;
+	border: unset;
+
+	font-size: 1.4rem;
+	line-height: 1.57;
+
+	.handle__title {
+		font-size: 1.6rem;
+		line-height: 1.25;
+		font-weight: 600;
+	}
+
+	.label__container {
+		display: flex;
+		gap: 0.8rem;
+	}
+
+	.profit__label {
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		width: 7.5rem;
+		padding: 0.5rem 1.2rem;
+		border-radius: 2.4rem;
+		border: 1px solid #CACACA;
+
+		font-size: 1.4rem;
+		line-height: 1.57;
+		box-sizing: border-box;
+
+		cursor: pointer;
+
+		&:has(input:disabled) {
+			opacity: 0.9;
+			cursor: no-drop;
+		}
+
+		&:has(input:checked) {
+			border-color: #4E008E;
+
+			font-weight: 700;
+			line-height: 1.29;
+		}
+	}
+
+	.profit__custom__input {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.label {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+
+		cursor: pointer;
+
+		&:has(input:checked) {
+			.checkbox__emulator {
+				svg {
+					visibility: visible;
+				}
+			}
+		}
+
+		.checkbox__emulator {
+			display: inline-block;
+			width: 1.6rem;
+			height: 1.6rem;
+
+			border: 1px solid #9B9AA5;
+			border-radius: 0.2rem;
+
+			svg {
+				visibility: hidden;
+			}
+		}
+	}
+
+	.profit__custom__input--number {
+		width: 7.4rem;
+
+		padding: 0.5rem 1.2rem;
+		border-radius: 2.4rem;
+		border: 1px solid #9B9AA5;
+		box-shadow: 0px 0px 0px 3px #3639AA1A;
+
+		font-size: 1.4rem;
+		line-height: 1;
+		color: #4E008E;
+		text-align: center;
+
+		background-color: transparent;
+
+		&::-webkit-outer-spin-button,
+		&::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+	}
+}

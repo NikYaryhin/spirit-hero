@@ -85,7 +85,7 @@ export default function ProductCustomiserCard({
 			id={id}
 		>
 			<div className={css.image__box}>
-				<img src={product_image} alt={product_title} />
+				<img src={product_image} alt={product_title} loading="lazy" />
 			</div>
 
 			<div className={css.info}>

@@ -18,7 +18,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle }) {
 		<li className={`${css.product__item}`} key={id} id={id}>
 			<span className={css.name}>{product_title}</span>
 			<div className={css.image}>
-				<img src={image} alt={product_title} />
+				<img src={image} alt={product_title} loading="lazy" />
 			</div>
 
 			{/* {params && <span className={css.price}>${price}</span>} */}

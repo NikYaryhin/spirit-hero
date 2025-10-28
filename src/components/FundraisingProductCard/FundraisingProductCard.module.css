@@ -7,10 +7,12 @@
 
 	height: 9.6rem;
 	padding: 0.8rem 2.4rem;
+	border-bottom: 1px solid #CACACA;
 
 	.image__box {
 		height: 8rem;
 		width: 8rem;
+		min-width: 8rem;
 
 		img {
 			width: 100%;
@@ -30,9 +32,28 @@
 		height: 100%;
 		width: 22rem;
 
+		&.fullwidth {
+			width: 70%;
+		}
+
 		.product__title {
 			font-size: 1.4rem;
 			line-height: 1.57;
+		}
+	}
+
+	.input__wrapper {
+		position: relative;
+
+		.input__unit {
+			position: absolute;
+			top: 50%;
+			left: 1.6rem;
+			translate: 0 -50%;
+
+			font-size: 1.4rem;
+			line-height: 1.57;
+			color: #373239;
 		}
 	}
 
@@ -40,6 +61,7 @@
 		width: 9rem;
 
 		padding: 1rem 1.6rem;
+		padding-left: 2.6rem;
 		border-radius: 1.2rem;
 		border: 1px solid #9B9AA5;
 
@@ -49,7 +71,6 @@
 		line-height: 1.57;
 		color: #373239;
 
-		box-sizing: border-box;
 
 		&::-webkit-outer-spin-button,
 		&::-webkit-inner-spin-button {

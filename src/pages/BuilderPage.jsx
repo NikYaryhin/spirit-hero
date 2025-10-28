@@ -8,7 +8,7 @@ import { useState, useRef } from 'react'
 
 export default function Builder() {
 	const [myShopProducts, setMyShopProducts] = useState([])
-	const [activeStep, setActiveStep] = useState(1)
+	const [activeStep, setActiveStep] = useState(4)
 	const [storeId, setStoreId] = useState(null)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const designStepRef = useRef(null)

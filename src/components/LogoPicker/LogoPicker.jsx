@@ -22,15 +22,22 @@ export default function LogoPicker() {
 	return (
 		<div className={css['logo--picker']}>
 			<div className={css['logo--picker__image']}>
-				<img src={image} alt="" />
+				<img src={image} alt="" loading="lazy" />
 
-				<span className={css['logo--picker__label']}>Add your own custom background</span>
+				<span className={css['logo--picker__label']}>
+					Add your own custom background
+				</span>
 			</div>
 
 			<label className={css['logo--picker__button']}>
 				<span>Your logo</span>
 				<Upload />
-				<input onChange={onInputChange} className="visually-hidden" type="file" accept="image/*" />
+				<input
+					onChange={onInputChange}
+					className="visually-hidden"
+					type="file"
+					accept="image/*"
+				/>
 			</label>
 		</div>
 	)

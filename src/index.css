@@ -11,8 +11,6 @@
   font-family: 'Dense';
 }
 
-
-
 :root {
   font-family: 'Poppins', sans-serif;
   font-size: 10px;
@@ -30,11 +28,32 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .app--header {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
+}
+
+input {
+
+  padding: 1rem 1.6rem;
+  border-radius: 1.2rem;
+  border: 1px solid #9B9AA5;
+
+  background-color: #FCFCFC;
+
+  font-size: 1.4rem;
+  line-height: 1.57;
+  color: #373239;
+
+  box-sizing: border-box;
 }
 
 a {
@@ -56,9 +75,12 @@ body {
   font-size: 10px;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 main {
-  height: 100dvh;
-  overflow: auto;
+  min-height: 100dvh;
 }
 
 h1 {
