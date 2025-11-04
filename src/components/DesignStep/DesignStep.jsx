@@ -218,7 +218,6 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 						ref={containerRef}
 						className={css.custom__elements}
 						onClick={(e) => {
-							// Если клик был не по элементу, снимаем выделение
 							if (e.target === containerRef.current) {
 								setSelectedId(null)
 							}

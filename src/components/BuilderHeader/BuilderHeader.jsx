@@ -10,6 +10,7 @@ const stepsArr = [
 	{ name: 'Products', id: 2 },
 	{ name: 'Design', id: 3 },
 	{ name: 'Fundraising', id: 4 },
+	{ name: 'Flash sale Settings', id: 5 },
 ]
 
 export default function BuilderHeader({

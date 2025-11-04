@@ -1,5 +1,346 @@
 export default function Icon({ name, className }) {
 	switch (name) {
+		case 'Van':
+			return (
+				<svg
+					className={className}
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M18 19.5C19.2426 19.5 20.25 18.4926 20.25 17.25C20.25 16.0074 19.2426 15 18 15C16.7574 15 15.75 16.0074 15.75 17.25C15.75 18.4926 16.7574 19.5 18 19.5Z"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M7.5 19.5C8.74264 19.5 9.75 18.4926 9.75 17.25C9.75 16.0074 8.74264 15 7.5 15C6.25736 15 5.25 16.0074 5.25 17.25C5.25 18.4926 6.25736 19.5 7.5 19.5Z"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M15.75 17.25H9.75"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M20.25 17.25H22.5C22.6989 17.25 22.8897 17.171 23.0303 17.0303C23.171 16.8897 23.25 16.6989 23.25 16.5V10.5L18.975 5.51906C18.9046 5.43481 18.8166 5.36705 18.7171 5.32056C18.6176 5.27407 18.5092 5.24998 18.3994 5.25H3C2.80109 5.25 2.61032 5.32902 2.46967 5.46967C2.32902 5.61032 2.25 5.80109 2.25 6V16.5C2.25 16.6989 2.32902 16.8897 2.46967 17.0303C2.61032 17.171 2.80109 17.25 3 17.25H5.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M2.25 10.5H23.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M15.75 5.25V10.5"
+						stroke="#FBB041"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M9 5.25V10.5"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				</svg>
+			)
+		case 'Clock':
+			return (
+				<svg
+					className={className}
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<g clipPath="url(#clip0_4230_133820)">
+						<path
+							d="M3 12C3 13.1819 3.23279 14.3522 3.68508 15.4442C4.13738 16.5361 4.80031 17.5282 5.63604 18.364C6.47177 19.1997 7.46392 19.8626 8.55585 20.3149C9.64778 20.7672 10.8181 21 12 21C13.1819 21 14.3522 20.7672 15.4442 20.3149C16.5361 19.8626 17.5282 19.1997 18.364 18.364C19.1997 17.5282 19.8626 16.5361 20.3149 15.4442C20.7672 14.3522 21 13.1819 21 12C21 10.8181 20.7672 9.64778 20.3149 8.55585C19.8626 7.46392 19.1997 6.47177 18.364 5.63604C17.5282 4.80031 16.5361 4.13738 15.4442 3.68508C14.3522 3.23279 13.1819 3 12 3C10.8181 3 9.64778 3.23279 8.55585 3.68508C7.46392 4.13738 6.47177 4.80031 5.63604 5.63604C4.80031 6.47177 4.13738 7.46392 3.68508 8.55585C3.23279 9.64778 3 10.8181 3 12Z"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M12 12L15 14"
+							stroke="#4E008E"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M12 7V12"
+							stroke="#FBB041"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_4230_133820">
+							<rect width="24" height="24" fill="white" />
+						</clipPath>
+					</defs>
+				</svg>
+			)
+		case 'Minus':
+			return (
+				<svg
+					className={className}
+					width="16"
+					height="16"
+					viewBox="0 0 16 16"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M5.5 8H10.5"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeMiterlimit="10"
+					/>
+				</svg>
+			)
+
+		case 'Burger':
+			return (
+				<svg
+					className={className}
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M3.75 12H20.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M3.75 6H20.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M3.75 18H20.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				</svg>
+			)
+
+		case 'Crown':
+			return (
+				<svg
+					width="40"
+					height="40"
+					viewBox="0 0 40 40"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M40 18.596C40 37.4186 29.3675 37.4186 18.9189 37.4186C8.47029 37.4186 0 28.9914 0 18.596C0 8.20053 8.47029 3 18.9189 3C29.3675 3 40 8.20053 40 18.596Z"
+						fill="#F1EEF4"
+					/>
+					<path
+						d="M13.1312 26.749H26.873C27.0494 26.7491 27.2201 26.687 27.3552 26.5736C27.4903 26.4603 27.5811 26.303 27.6118 26.1293L29.7399 16.3793C29.7666 16.2189 29.7405 16.0541 29.6654 15.9098C29.5903 15.7655 29.4703 15.6496 29.3236 15.5794C29.1768 15.5093 29.0112 15.4887 28.8518 15.5209C28.6923 15.5531 28.5477 15.6362 28.4396 15.7578L24.5021 19.999L20.6827 11.435C20.6226 11.3051 20.5266 11.1951 20.406 11.118C20.2854 11.041 20.1452 11 20.0021 11C19.859 11 19.7188 11.041 19.5982 11.118C19.4776 11.1951 19.3816 11.3051 19.3215 11.435L15.5021 19.999L11.5646 15.7578C11.4568 15.6344 11.3115 15.5498 11.151 15.5168C10.9905 15.4838 10.8237 15.5043 10.6759 15.5751C10.5282 15.6459 10.4077 15.7631 10.3328 15.9088C10.258 16.0546 10.2329 16.2208 10.2615 16.3821L12.3896 26.1321C12.4209 26.3058 12.5124 26.4628 12.6481 26.5756C12.7837 26.6884 12.9547 26.7498 13.1312 26.749Z"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M20.5234 19.75C20.7305 19.75 20.8984 19.9179 20.8984 20.125C20.8984 20.3321 20.7305 20.5 20.5234 20.5C20.3163 20.5 20.1484 20.3321 20.1484 20.125C20.1484 19.9179 20.3163 19.75 20.5234 19.75Z"
+						fill="#FBB041"
+						stroke="#FBB041"
+						strokeWidth="1.5"
+					/>
+				</svg>
+			)
+
+		case 'People':
+			return (
+				<svg
+					width="40"
+					height="40"
+					viewBox="0 0 40 40"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M40 18.596C40 37.4186 29.3675 37.4186 18.9189 37.4186C8.47029 37.4186 0 28.9914 0 18.596C0 8.20053 8.47029 3 18.9189 3C29.3675 3 40 8.20053 40 18.596Z"
+						fill="#F1EEF4"
+					/>
+					<path
+						d="M26 19.25C26.8734 19.2493 27.7349 19.4524 28.516 19.843C29.2972 20.2335 29.9765 20.8009 30.5 21.5"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M9.5 21.5C10.0235 20.8009 10.7028 20.2335 11.484 19.843C12.2651 19.4524 13.1266 19.2493 14 19.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M20 25.25C22.0711 25.25 23.75 23.5711 23.75 21.5C23.75 19.4289 22.0711 17.75 20 17.75C17.9289 17.75 16.25 19.4289 16.25 21.5C16.25 23.5711 17.9289 25.25 20 25.25Z"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M14.75 28.25C15.2884 27.3364 16.0559 26.579 16.9767 26.0529C17.8974 25.5267 18.9395 25.25 20 25.25C21.0605 25.25 22.1026 25.5267 23.0233 26.0529C23.9441 26.579 24.7116 27.3364 25.25 28.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M23.0938 15.5C23.234 14.9568 23.5238 14.4638 23.9302 14.077C24.3366 13.6902 24.8433 13.4251 25.3927 13.3118C25.9422 13.1985 26.5125 13.2416 27.0387 13.4361C27.5649 13.6306 28.0261 13.9688 28.3697 14.4123C28.7134 14.8557 28.9258 15.3867 28.9829 15.9448C29.04 16.5029 28.9394 17.0659 28.6926 17.5697C28.4458 18.0735 28.0627 18.4981 27.5867 18.7951C27.1108 19.0921 26.561 19.2497 26 19.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M13.9985 19.25C13.4375 19.2497 12.8877 19.0921 12.4118 18.7951C11.9358 18.4981 11.5527 18.0735 11.3059 17.5697C11.0591 17.0659 10.9585 16.5029 11.0156 15.9448C11.0726 15.3867 11.2851 14.8557 11.6288 14.4123C11.9724 13.9688 12.4336 13.6306 12.9598 13.4361C13.486 13.2416 14.0563 13.1985 14.6058 13.3118C15.1552 13.4251 15.6619 13.6902 16.0683 14.077C16.4747 14.4638 16.7645 14.9568 16.9047 15.5"
+						stroke="#FBB041"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				</svg>
+			)
+
+		case 'Build':
+			return (
+				<svg
+					width="40"
+					height="40"
+					viewBox="0 0 40 40"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					className={className}
+				>
+					<path
+						d="M40 18.596C40 37.4186 29.3675 37.4186 18.9189 37.4186C8.47029 37.4186 0 28.9914 0 18.596C0 8.20053 8.47029 3 18.9189 3C29.3675 3 40 8.20053 40 18.596Z"
+						fill="#F1EEF4"
+					/>
+					<path
+						d="M9.5 28.25H30.5"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M29 28.25V14.75H24.5V11.75H15.5V17.75H11V28.25"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M19.25 14.75H20.75"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M19.25 17.75H20.75"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M24.5 17.75H26"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M14 20.75H15.5"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M14 23.75H15.5"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M19.25 20.75H20.75"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M24.5 20.75H26"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M24.5 23.75H26"
+						stroke="#4E008E"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M18.5 28.25V23.75H21.5V28.25"
+						stroke="#FBB041"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				</svg>
+			)
 		case 'Coins':
 			return (
 				<svg

@@ -207,6 +207,100 @@ h1, h2, h3, h4, h5, h6, p {
   }
 }
 
+.width-100 {
+  width: 100%;
+}
+
+.width-50 {
+  width: calc((100% - 1.6rem) / 2);
+}
+
+.width-33 {
+  width: calc((100% - 2 * 1.6rem) / 3);
+}
+
+.rdp-root {
+  --rdp-accent-color: indigo;
+  /* Change the accent color to indigo. */
+  --rdp-accent-background-color: #f0f0f0;
+  /* Change the accent background color. */
+  /* Add more CSS variables here. */
+}
+
+.rdp-root {
+  padding: 0.4rem 0;
+
+  .rdp-months {
+    padding: 1.6rem;
+    background-color: #FCFCFC;
+    box-shadow: 0px 0px 1px 0px #091E424F;
+
+    box-shadow: 0px 3px 5px 0px #091E4233;
+
+  }
+
+  .rdp-month_caption {
+    .rdp-caption_label {
+      font-size: 1.6rem;
+      line-height: 1;
+      font-weight: 700;
+      color: #373239;
+    }
+  }
+
+  .rdp-chevron {
+    color: #3732398f;
+    fill: currentColor;
+  }
+
+  .rdp-weekdays {
+    .rdp-weekday {
+      padding-top: 2rem;
+
+      font-size: 1.6rem;
+      line-height: 1;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #605767;
+
+      opacity: unset;
+    }
+  }
+
+  .rdp-today {
+    &.rdp-selected {
+      button {
+        color: #FBB041;
+      }
+    }
+
+    button {
+      color: #4E008E;
+    }
+  }
+
+  .rdp-day_button {
+    font-size: 1.4rem;
+    line-height: 1.33;
+    font-weight: 400;
+  }
+
+  .rdp-range_start, .rdp-range_end {
+    background: #4E008E;
+
+    button {
+      background-color: transparent;
+      border: unset;
+    }
+  }
+
+  .rdp-selected {
+    color: #FCFCFC;
+    background-color: #4E008E;
+  }
+}
+
+
 @supports (interpolate-size: allow-keywords) {
   ::details-content {
     transition:
