@@ -1,11 +1,14 @@
 import { Routes, Route, Link, NavLink, Navigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
+import { Provider } from 'react-redux'
+import { store } from './app/store'
 import HomePage from './pages/HomePage.jsx'
 import Builder from './pages/BuilderPage.jsx'
 
 export default function App() {
 	return (
 		<>
+			<Provider store={store}>
 			<main>
 				<Routes>
 					<Route path="/" element={<HomePage />} />
@@ -13,6 +16,7 @@ export default function App() {
 					<Route path="*" element={<Navigate to="/" replace />} />
 				</Routes>
 			</main>
+			</Provider>
 
 			<ToastContainer
 				position="top-right"

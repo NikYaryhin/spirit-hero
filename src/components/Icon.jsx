@@ -1,5 +1,39 @@
 export default function Icon({ name, className }) {
 	switch (name) {
+		case 'Frandise':
+			return (
+				<svg
+					width="40"
+					height="40"
+					viewBox="0 0 40 40"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					className={className}
+				>
+					<path
+						d="M35 32.5H5V7.5"
+						stroke="#4E008E"
+						strokeWidth="3"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M31.25 11.25L20 22.5L15 17.5L5 27.5"
+						stroke="#4E008E"
+						strokeWidth="3"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+					<path
+						d="M31.25 17.5V11.25H25"
+						stroke="#FBB041"
+						strokeWidth="3"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				</svg>
+			)
+
 		case 'Van':
 			return (
 				<svg

@@ -19,7 +19,7 @@ export default function FundraisingProductCard({
 	const [isChecked, setIsChecked] = useState(checked)
 	const [profit, setProfit] = useState(profitValue)
 	const [sellingPrice, setSellingPrice] = useState(
-		params.on_demand_price + profit,
+		+params.on_demand_price + profit,
 	)
 
 	useEffect(() => {
@@ -38,14 +38,37 @@ export default function FundraisingProductCard({
 	}, [checked])
 
 	useEffect(() => {
-		setSellingPrice(
-			amountProfit
-				? params.on_demand_price + profit
-				: ((params.on_demand_price * profit) / 100 + params.on_demand_price)
-						.toFixed(2)
-						.toString()
-						.replace(/\.[^.]+$/, `${pricesEnd}`),
-		)
+		if (amountProfit) setSellingPrice(+params.on_demand_price + profit)
+		else {
+			const countedPrice = (
+				(+params.on_demand_price * profit) / 100 +
+				+params.on_demand_price
+			).toFixed(2)
+
+			setSellingPrice(
+				pricesEnd
+					? countedPrice.replace(/\.[^.]+$/, `${pricesEnd}`)
+					: countedPrice,
+			)
+		}
+		// setSellingPrice(
+		// 	amountProfit
+		// 		? +params.on_demand_price + profit
+		// 		: ((+params.on_demand_price * profit) / 100 + +params.on_demand_price)
+		// 				.toFixed(2)
+		// 				.toString()
+		// 				.replace(/\.[^.]+$/, `${pricesEnd}`),
+		// )
+
+		console.log({
+			percent: (
+				(+params.on_demand_price * profit) / 100 +
+				+params.on_demand_price
+			).toFixed(2),
+			on_demand_price: +params.on_demand_price,
+			profit,
+			pricesEnd,
+		})
 	}, [profit, amountProfit])
 
 	const onSellAtCost = () => {

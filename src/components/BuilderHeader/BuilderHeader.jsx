@@ -1,25 +1,15 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { prevStep } from '@/features/navigation/navigationSlice'
 import css from './BuilderHeader.module.css'
 import logoImage from '@/assets/SpiritHero__Logo.png'
 import Chevron from '../Icons/Chevron'
 import Account from '../Icons/Account'
+import { steps } from '@/helpers/const'
 
-const stepsArr = [
-	{ name: 'Details', id: 1 },
-	{ name: 'Products', id: 2 },
-	{ name: 'Design', id: 3 },
-	{ name: 'Fundraising', id: 4 },
-	{ name: 'Flash sale Settings', id: 5 },
-]
-
-export default function BuilderHeader({
-	activeStep,
-	setActiveStep,
-	onNextStep,
-}) {
-	const [steps, setSteps] = useState(stepsArr)
-
+export default function BuilderHeader({ onNextStep }) {
+	const dispatch = useDispatch()
+	const activeStep = useSelector((state) => state.navigation.activeStep)
 	return (
 		<div className={css.header}>
 			<div className={css.logo}>
@@ -45,27 +35,21 @@ export default function BuilderHeader({
 			</ul>
 
 			<div className={css.actions}>
-				<Link to="/" className={css.save__button}>
+				{/* <Link to="/" className={css.save__button}>
 					Save and Exit
-				</Link>
+				</Link> */}
 
 				<div className={css.buttons__box}>
 					<button
 						className={`${css.step__button} ${css.prev}`}
 						disabled={activeStep === 1}
-						onClick={() => setActiveStep((prev) => Math.max(prev - 1, 1))}
+						onClick={() => dispatch(prevStep())}
 					>
 						<Chevron rotated={true} />
 						Back
 					</button>
 
-					<button
-						className={`${css.step__button}`}
-						onClick={
-							onNextStep ||
-							(() => setActiveStep((prev) => Math.min(prev + 1, steps.length)))
-						}
-					>
+					<button className={`${css.step__button}`} onClick={onNextStep}>
 						Next
 						<Chevron rotated={false} />
 					</button>

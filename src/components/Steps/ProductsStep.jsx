@@ -2,6 +2,8 @@ import css from './ProductsStep.module.css'
 import Lightning from '../Icons/Lightning'
 import ProductsSection from '../Products/ProductsSection'
 import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { setFlashSale } from '../../features/flashSale/flashSaleSlice'
 import Icon from '../Icon'
 import Modal from '../Modal/Modal'
 import InkModal from '../InkModal/InkModal'
@@ -9,17 +11,17 @@ import InkModal from '../InkModal/InkModal'
 export default function ProductsStep({
 	myShopProducts,
 	setMyShopProducts,
-	setActiveStep,
 	storeId,
 }) {
-	const [isFlashSale, setIsFlashSale] = useState(false)
+	const dispatch = useDispatch()
+	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 
 	const flashSaleInputHandle = (event) => {
 		const { checked } = event.currentTarget
-
-		setIsFlashSale(checked)
+		dispatch(setFlashSale(checked))
 	}
+
 	return (
 		<section>
 			<div className={css.products_head}>
@@ -48,6 +50,7 @@ export default function ProductsStep({
 								type="checkbox"
 								className="visually-hidden"
 								onChange={flashSaleInputHandle}
+								checked={isFlashSale}
 							/>
 						</label>
 					</div>

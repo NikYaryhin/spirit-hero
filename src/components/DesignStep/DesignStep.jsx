@@ -46,6 +46,8 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 					storeId || +localStorage.getItem('storeId'),
 				)
 
+				console.log('spiritHeroApi.getStore', res)
+
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [
 						...(acc[product.category_id] || []),

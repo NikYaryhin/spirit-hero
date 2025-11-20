@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { nextStep } from '@/features/navigation/navigationSlice'
 import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 import css from './StoreDetailsForm.module.css'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import { COLORS } from '@/helpers/const'
 
-export default function StoreDetailsForm({ setStoreId, setActiveStep }) {
+export default function StoreDetailsForm({ setStoreId }) {
+  const dispatch = useDispatch()
 	const [storeName, setStoreName] = useState('')
 	const [storeURL, setStoreURL] = useState('')
 	const [firstSocial, setFirstSocial] = useState('')
@@ -31,7 +34,7 @@ export default function StoreDetailsForm({ setStoreId, setActiveStep }) {
 			setStoreId(res.store.id)
 			localStorage.setItem('storeId', res.store.id)
 
-			setActiveStep(2)
+			dispatch(nextStep())
 		} catch (error) {
 			console.error('spiritHeroApi.saveStore() error', error)
 		}

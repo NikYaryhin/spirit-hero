@@ -17,8 +17,11 @@ export default function Modal({ isOpen, onClose, className, children }) {
 
 	return (
 		<Portal>
-			<div className={`${css.overlay} ${css[className]}`} onMouseDown={onClose}>
-				<div className={css.dialog} onMouseDown={(e) => e.stopPropagation()}>
+			<div className={`${css.overlay}`} onMouseDown={onClose}>
+				<div
+					className={`${css.dialog} ${className}`}
+					onMouseDown={(e) => e.stopPropagation()}
+				>
 					<button className={css.close} onClick={onClose} aria-label="Close">
 						<Icon name="Cancel" />
 					</button>

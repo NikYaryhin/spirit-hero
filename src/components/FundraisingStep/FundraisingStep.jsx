@@ -16,11 +16,6 @@ export default function FundraisingStep() {
 	const [isLoading, setIsLoading] = useState(true)
 	const [isFundraise, setIsFundraise] = useState(true)
 
-	const [initialProductsByCategory, setInitialProductsByCategory] =
-		useState(null)
-	const [initialSellAtCoastProducts, setInitialSellAtCoastProducts] =
-		useState(null)
-
 	const [productsByCategory, setProductsByCategory] = useState(null)
 	const [sellAtCostProducts, setSellAtCostProducts] = useState(null)
 

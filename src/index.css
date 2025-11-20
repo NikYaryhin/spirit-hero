@@ -219,6 +219,28 @@ h1, h2, h3, h4, h5, h6, p {
   width: calc((100% - 2 * 1.6rem) / 3);
 }
 
+.validation--modal {
+  position: relative;
+  width: 70rem !important;
+  padding: 4rem !important;
+
+  button[aria-label="Close"] {
+    top: 4rem;
+    right: 4rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 3.2rem;
+    height: 3.2rem;
+
+    padding: unset;
+    border: 1px solid #CACACA;
+    border-radius: 50%;
+  }
+}
+
 .rdp-root {
   --rdp-accent-color: indigo;
   /* Change the accent color to indigo. */
@@ -298,6 +320,21 @@ h1, h2, h3, h4, h5, h6, p {
     color: #FCFCFC;
     background-color: #4E008E;
   }
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  max-height: 100dvh !important;
+  height: 100dvh;
+  width: 36rem !important;
+
+  margin-left: auto;
+  padding: 8rem 4rem !important;
+  border-radius: unset !important;
+  box-sizing: border-box;
 }
 
 

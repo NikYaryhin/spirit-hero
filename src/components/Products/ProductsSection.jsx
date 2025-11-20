@@ -225,12 +225,10 @@ export default function ProductsSection({
 			ids: Array.from(selectedIds).map((p) => +p),
 		}
 
-		console.log(payload)
-
 		spiritHeroApi
 			.addToMyStoreProductsList(payload.store_id, payload.ids)
 			.then((res) => {
-				console.log(res)
+				console.log('spiritHeroApi.addToMyStoreProductsList res', res)
 				showToast(
 					`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully added to your store.`,
 				)
@@ -288,7 +286,7 @@ export default function ProductsSection({
 		spiritHeroApi
 			.deleteFromMyStoreProducts(payload.store_id, payload.ids)
 			.then((res) => {
-				console.log(res)
+				console.log('spiritHeroApi.deleteFromMyStoreProducts res', res)
 				showToast(
 					`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully removed from your store.`,
 				)

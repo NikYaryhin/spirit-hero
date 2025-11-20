@@ -51,6 +51,7 @@ export default function FlashSale() {
 			<details
 				className={css['flash--sale__details--form']}
 				name="flash--sale--details"
+				open
 			>
 				<summary>
 					<span className={css['details--form__number']}>1</span>
@@ -397,7 +398,6 @@ export default function FlashSale() {
 			<details
 				className={css['flash--sale__details--form']}
 				name="flash--sale--details"
-				open
 			>
 				<summary>
 					<span className={css['details--form__number']}>5</span>

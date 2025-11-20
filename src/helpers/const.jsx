@@ -1,3 +1,11 @@
+export const steps = [
+	{ name: 'Details', id: 1 },
+	{ name: 'Products', id: 2 },
+	{ name: 'Design', id: 3 },
+	{ name: 'Fundraising', id: 4 },
+	{ name: 'Flash sale Settings', id: 5 },
+]
+
 export const COLORS = [
 	{ color: '#41FB8B', name: 'Green', id: 1 },
 	{ color: '#373239', name: 'Black', id: 2 },

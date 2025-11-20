@@ -1,0 +1,210 @@
+.modal__content {
+	display: flex;
+	flex-direction: column;
+
+	.title {
+		margin-bottom: 1.6rem;
+
+		font-size: 2.4rem;
+		line-height: 1.5;
+		font-weight: 700;
+	}
+
+	.fieldset {
+		display: flex;
+		flex-direction: column;
+		gap: 1.6rem;
+
+		margin-bottom: 1.6rem;
+
+		.label {
+			display: flex;
+			align-items: center;
+			gap: 0.4rem;
+
+			font-size: 1.4rem;
+			line-height: 1.43;
+			font-weight: 700;
+			letter-spacing: 0.1rem;
+			text-transform: uppercase;
+
+			cursor: pointer;
+
+			&:has(input:checked) {
+				.checkbox__emulator {
+					svg {
+						visibility: visible;
+					}
+				}
+			}
+
+			.checkbox__emulator {
+				top: 1.6rem;
+				left: 1.2rem;
+
+				display: inline-block;
+				width: 1.6rem;
+				height: 1.6rem;
+
+				border: 1px solid #9B9AA5;
+				border-radius: 0.2rem;
+
+				svg {
+					visibility: hidden;
+				}
+			}
+		}
+	}
+
+	.text__wrap {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+
+		margin-bottom: 1.6rem;
+
+		font-size: 1.4rem;
+		line-height: 1.57;
+		color: #47424A;
+
+		.text {
+			display: flex;
+			flex-direction: column;
+		}
+	}
+
+	.link__label {
+		margin-bottom: 0.6rem;
+
+		font-weight: 700;
+		font-size: 1.4rem;
+		line-height: 1.3;
+	}
+
+	.link {
+		margin-bottom: 1.6rem;
+
+		font-size: 1.4rem;
+		line-height: 1.57;
+		color: #4E008E;
+		text-decoration: underline;
+	}
+
+	.checkbox__label {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+
+		font-size: 1.2rem;
+		line-height: 1.33;
+		color: #605767;
+
+		cursor: pointer;
+
+		&:has(input:checked) {
+			.checkbox__emulator {
+				svg {
+					visibility: visible;
+				}
+			}
+		}
+
+		.checkbox__emulator {
+			top: 1.6rem;
+			left: 1.2rem;
+
+			display: inline-block;
+			width: 1.6rem;
+			height: 1.6rem;
+
+			border: 1px solid #9B9AA5;
+			border-radius: 0.2rem;
+
+			svg {
+				visibility: hidden;
+			}
+		}
+	}
+
+	.button__box {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 0.8rem;
+		margin-top: 3.2rem;
+
+		&>button {
+			font-weight: 400;
+		}
+
+		.not__sure {
+			margin-right: auto;
+			padding: 1rem 1.8rem;
+			border-radius: 1.2rem;
+			border: 1px solid #9569BA;
+
+			font-size: 1.4rem;
+			line-height: 1.57;
+			color: white;
+			background-color: #2E2C30;
+
+			&:hover, &:focus {
+				color: #9569BA;
+			}
+		}
+	}
+
+	.features__box {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+
+
+		.features {
+			width: fit-content;
+			font-size: 1.4rem;
+			line-height: 1.3;
+			font-weight: 700;
+
+			.features__list {
+				display: flex;
+				flex-direction: column;
+				gap: 1.6rem;
+
+				margin: 0.8rem 0;
+
+				line-height: 1.57;
+				font-weight: 400;
+
+				li {
+					display: flex;
+					align-items: center;
+					gap: 0.8rem;
+
+					&.approve::before {
+						content: '';
+
+						display: inline-block;
+						width: 2.4rem;
+						height: 2.4rem;
+						background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><path d='M21.7949 7.545L9.79492 19.545C9.6904 19.6499 9.56621 19.7331 9.42947 19.7899C9.29272 19.8467 9.14611 19.8759 8.99804 19.8759C8.84998 19.8759 8.70337 19.8467 8.56662 19.7899C8.42988 19.7331 8.30569 19.6499 8.20117 19.545L2.95117 14.295C2.84652 14.1904 2.76351 14.0661 2.70688 13.9294C2.65024 13.7927 2.62109 13.6461 2.62109 13.4981C2.62109 13.3501 2.65024 13.2036 2.70688 13.0669C2.76351 12.9301 2.84652 12.8059 2.95117 12.7012C3.05582 12.5966 3.18005 12.5136 3.31678 12.457C3.45351 12.4003 3.60005 12.3712 3.74805 12.3712C3.89604 12.3712 4.04258 12.4003 4.17931 12.457C4.31604 12.5136 4.44027 12.5966 4.54492 12.7012L8.99898 17.1553L20.203 5.95312C20.4144 5.74178 20.701 5.62305 20.9999 5.62305C21.2988 5.62305 21.5854 5.74178 21.7968 5.95312C22.0081 6.16447 22.1269 6.45111 22.1269 6.75C22.1269 7.04888 22.0081 7.33553 21.7968 7.54687L21.7949 7.545Z' fill='%2367783D'/></svg>") no-repeat center/contain;
+					}
+
+					&.disapprove::before {
+						content: '';
+
+						display: inline-block;
+						width: 2.4rem;
+						height: 2.4rem;
+						background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><path d='M18.75 5.25L5.25 18.75' stroke='%23C33E36' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/><path d='M18.75 18.75L5.25 5.25' stroke='%23C33E36' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat center/contain;
+					}
+				}
+			}
+		}
+
+		.link__label, .link {
+			width: 100%;
+			text-align: center;
+		}
+	}
+}

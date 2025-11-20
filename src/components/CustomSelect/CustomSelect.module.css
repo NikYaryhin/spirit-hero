@@ -1,8 +1,4 @@
 .custom__select {
-	display: flex;
-	flex-direction: column;
-	gap: 0.8rem;
-
 	&[open] {
 
 		.current__value svg {
@@ -31,7 +27,8 @@
 		display: flex;
 		gap: 0.4rem;
 
-		margin-bottom: 0.8rem;
+
+		margin: 0.8rem 0;
 		padding: 0 1rem;
 		text-wrap: balance;
 	}
