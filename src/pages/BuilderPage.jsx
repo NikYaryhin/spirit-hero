@@ -4,12 +4,13 @@ import ProductsStep from '@/components/Steps/ProductsStep'
 import DesignStep from '@/components/DesignStep/DesignStep'
 import FundraisingStep from '@/components/FundraisingStep/FundraisingStep'
 import Modal from '@/components/Modal/Modal'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { nextStep } from '@/features/navigation/navigationSlice'
 import FlashSale from '@/components/FlashSale/FlashSale'
 import ProductStepValidationModal from '@/components/ProductStepValidationModal/ProductStepValidationModal'
 import FundraisingNextStepModal from '@/components/FundraisingNextStepModal/FundraisingNextStepModal'
+import spiritHeroApi from '@/api/spiritHeroApi'
 
 export default function Builder() {
 	const [myShopProducts, setMyShopProducts] = useState([])
@@ -18,6 +19,15 @@ export default function Builder() {
 	const [storeId, setStoreId] = useState(null)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const designStepRef = useRef(null)
+
+	useEffect(() => {
+		if (!localStorage.getItem('access_token')) {
+			spiritHeroApi
+				.login('admin@gmail.com', '12345678')
+				.then((res) => console.log('Login res', res))
+				.catch((err) => console.error('Login Error', err))
+		}
+	}, [])
 
 	// Функция для обработки перехода на следующий шаг
 	const handleNextStep = async () => {

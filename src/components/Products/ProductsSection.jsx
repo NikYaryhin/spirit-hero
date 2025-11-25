@@ -103,13 +103,13 @@ export default function ProductsSection({
 	useEffect(() => {
 		const getProducts = async () => {
 			try {
-				if (!localStorage.getItem('access_token')) {
-					const loginRes = await spiritHeroApi.login(
-						'admin@gmail.com',
-						'12345678',
-					)
-					console.log('loginRes', loginRes)
-				}
+				// if (!localStorage.getItem('access_token')) {
+				// 	const loginRes = await spiritHeroApi.login(
+				// 		'admin@gmail.com',
+				// 		'12345678',
+				// 	)
+				// 	console.log('loginRes', loginRes)
+				// }
 				const res = await spiritHeroApi.getProducts()
 				console.log('spiritHeroApi.getProducts() res', res)
 
