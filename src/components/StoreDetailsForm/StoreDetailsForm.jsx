@@ -1,18 +1,51 @@
-import { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { nextStep } from '@/features/navigation/navigationSlice'
 import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 import css from './StoreDetailsForm.module.css'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import { COLORS } from '@/helpers/const'
+import {
+	setStoreId as setStoreIdAction,
+	setStoreInfo,
+} from '@/features/flashSale/flashSaleSlice'
 
-export default function StoreDetailsForm({ setStoreId }) {
-  const dispatch = useDispatch()
-	const [storeName, setStoreName] = useState('')
-	const [storeURL, setStoreURL] = useState('')
-	const [firstSocial, setFirstSocial] = useState('')
-	const [secondSocial, setSecondSocial] = useState('')
-	const [color, setColor] = useState([])
+const slugify = (value) =>
+	value
+		.trim()
+		.toLocaleLowerCase()
+		.replace(/\s+/g, '-')
+		.replace(/[^a-z0-9-]/g, '')
+
+export default function StoreDetailsForm({ image }) {
+	const dispatch = useDispatch()
+
+	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
+	const storeId = useSelector((state) => state.flashSale.storeId)
+
+	const [storeName, setStoreName] = useState(storeInfo?.store?.name || '')
+	const [storeURL, setStoreURL] = useState(storeInfo?.store?.website_url || '')
+	const [firstSocial, setFirstSocial] = useState(
+		storeInfo?.store?.social_media_1 || '',
+	)
+	const [secondSocial, setSecondSocial] = useState(
+		storeInfo?.store?.social_media_2 || '',
+	)
+	const [colors, setColors] = useState(storeInfo?.store?.color || [])
+
+	useEffect(() => {
+		if (storeInfo?.store) {
+			setStoreName(storeInfo.store.name || '')
+			setStoreURL(storeInfo.store.website_url || '')
+			setFirstSocial(storeInfo.store.social_media_1 || '')
+			setSecondSocial(storeInfo.store.social_media_2 || '')
+			setColors(storeInfo.store.color || [])
+		}
+	}, [storeInfo])
+
+	useEffect(() => {
+		console.log({ colors })
+	}, [colors])
 
 	const onFormSubmit = async (event) => {
 		event.preventDefault()
@@ -24,16 +57,38 @@ export default function StoreDetailsForm({ setStoreId }) {
 			website_url: storeURL,
 			social_media_1: firstSocial || '',
 			social_media_2: secondSocial || '',
-			color,
+			color: colors,
+			background_image: image || storeInfo?.store?.background_image,
 		}
 
 		try {
-			const res = await spiritHeroApi.saveStore(payload)
-			console.log('spiritHeroApi.saveStore()', res)
+			let res
 
-			setStoreId(res.store.id)
-			localStorage.setItem('storeId', res.store.id)
+			if (storeId && storeInfo) {
+				console.log('payload', {
+					...payload,
+					store_id: +storeId,
+				})
 
+				res = await spiritHeroApi.updateStore({
+					...payload,
+					store_id: storeId,
+				})
+				console.log('spiritHeroApi.updateStore()', res)
+			} else {
+				res = await spiritHeroApi.saveStore(payload)
+				console.log('spiritHeroApi.saveStore()', res)
+
+				dispatch(setStoreIdAction(res.store.id))
+				localStorage.setItem('storeId', res.store.id)
+			}
+
+			dispatch(
+				setStoreInfo({
+					...(storeInfo || {}),
+					store: res,
+				}),
+			)
 			dispatch(nextStep())
 		} catch (error) {
 			console.error('spiritHeroApi.saveStore() error', error)
@@ -41,7 +96,7 @@ export default function StoreDetailsForm({ setStoreId }) {
 	}
 
 	const colorInputHandle = (checked, value) => {
-		setColor((prev) => {
+		setColors((prev) => {
 			const nextColors = checked
 				? [...prev, value]
 				: prev.filter((color) => color !== value)
@@ -64,7 +119,9 @@ export default function StoreDetailsForm({ setStoreId }) {
 						<input
 							onChange={(event) => {
 								setStoreName(event.currentTarget.value)
+								setStoreURL(slugify(event.currentTarget.value))
 							}}
+							value={storeName}
 							type="text"
 							placeholder="Enter name of your store"
 							required
@@ -75,8 +132,9 @@ export default function StoreDetailsForm({ setStoreId }) {
 						<span className={css['input--label']}>Add Website URL</span>
 						<input
 							onChange={(event) => {
-								setStoreURL('ex.spirithero.com/' + event.currentTarget.value)
+								setStoreURL(slugify(event.currentTarget.value))
 							}}
+							value={storeURL}
 							type="text"
 							placeholder="abc-spirit-wear-store"
 							required
@@ -92,6 +150,7 @@ export default function StoreDetailsForm({ setStoreId }) {
 								onChange={(event) => {
 									setFirstSocial(event.currentTarget.value)
 								}}
+								value={firstSocial}
 								type="url"
 								placeholder="https://tiktok.com"
 							/>
@@ -105,6 +164,7 @@ export default function StoreDetailsForm({ setStoreId }) {
 								onChange={(event) => {
 									setSecondSocial(event.currentTarget.value)
 								}}
+								value={secondSocial}
 								type="url"
 								placeholder="https://x.com"
 							/>
@@ -126,18 +186,23 @@ export default function StoreDetailsForm({ setStoreId }) {
 						</span>
 					</p>
 
-					<ul className={css['color--picker__list']}>
-						{COLORS.map(({ color, name, id }) => (
-							<li key={id}>
-								<ColorCheckbox
-									onInputHandle={colorInputHandle}
-									color={color}
-									name={name}
-									inputName="color--input"
-								/>
-							</li>
-						))}
-					</ul>
+					{colors.length > 0 && (
+						<ul className={css['color--picker__list']}>
+							{COLORS.map(({ color, name, id }) => {
+								return (
+									<li key={id}>
+										<ColorCheckbox
+											onInputHandle={colorInputHandle}
+											color={color}
+											name={name}
+											checked={colors.includes(color)}
+											inputName="color--input"
+										/>
+									</li>
+								)
+							})}
+						</ul>
+					)}
 				</fieldset>
 
 				<div className={css['next__button--box']}>

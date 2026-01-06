@@ -1,10 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import css from './LogoPicker.module.css'
 import placeholderImage from '@/assets/SpiritHero__Image--Picker--Banner.jpg'
 import Upload from '../Icons/Upload'
 
-export default function LogoPicker() {
-	const [image, setImage] = useState(placeholderImage)
+export default function LogoPicker({ setCustomerImage }) {
+	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
+
+	const [image, setImage] = useState(
+		storeInfo?.store?.background_image || placeholderImage,
+	)
+
+	useEffect(() => {
+		if (storeInfo?.store?.background_image)
+			setImage(storeInfo?.store?.background_image)
+	}, [storeInfo])
 
 	const onInputChange = (e) => {
 		const file = e.target.files[0]
@@ -14,6 +24,7 @@ export default function LogoPicker() {
 			const reader = new FileReader()
 			reader.onload = () => {
 				setImage(reader.result)
+				setCustomerImage(reader.result)
 			}
 			reader.readAsDataURL(file)
 		}

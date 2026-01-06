@@ -56,6 +56,11 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async updateStore(payload) {
+		const { data } = await this.http.put('/api/builder/update-store', payload)
+		return data
+	}
+
 	async getStore(store_id) {
 		const { data } = await this.http.get('/api/builder/get-store', {
 			params: { store_id },

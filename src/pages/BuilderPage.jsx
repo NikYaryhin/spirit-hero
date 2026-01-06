@@ -11,23 +11,56 @@ import FlashSale from '@/components/FlashSale/FlashSale'
 import ProductStepValidationModal from '@/components/ProductStepValidationModal/ProductStepValidationModal'
 import FundraisingNextStepModal from '@/components/FundraisingNextStepModal/FundraisingNextStepModal'
 import spiritHeroApi from '@/api/spiritHeroApi'
+import {
+	setStoreId as setStoreIdAction,
+	setStoreInfo,
+} from '@/features/flashSale/flashSaleSlice'
 
 export default function Builder() {
 	const [myShopProducts, setMyShopProducts] = useState([])
 	const dispatch = useDispatch()
 	const activeStep = useSelector((state) => state.navigation.activeStep)
-	const [storeId, setStoreId] = useState(null)
+	const storeId = useSelector((state) => state.flashSale.storeId)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const designStepRef = useRef(null)
 
 	useEffect(() => {
-		if (!localStorage.getItem('access_token')) {
-			spiritHeroApi
-				.login('admin@gmail.com', '12345678')
-				.then((res) => console.log('Login res', res))
-				.catch((err) => console.error('Login Error', err))
+		const initBuilder = async () => {
+			try {
+				if (!localStorage.getItem('access_token')) {
+					const res = await spiritHeroApi.login('admin@gmail.com', '12345678')
+					console.log('Login res', res)
+				}
+
+				const params = new URLSearchParams(window.location.search)
+				const storeIdFromQuery = params.get('store_id')
+
+				console.log('storeIdFromQuery', storeIdFromQuery)
+
+				if (storeIdFromQuery) {
+					dispatch(setStoreIdAction(storeIdFromQuery))
+
+					try {
+						const storeData = await spiritHeroApi.getStore(storeIdFromQuery)
+						console.log('storeData', storeData)
+
+						dispatch(setStoreInfo(storeData))
+					} catch (error) {
+						console.error('Error fetching store info:', error)
+						alert(
+							error?.response?.data?.message ||
+								error?.message ||
+								'Data fetching error',
+						)
+					}
+				}
+			} catch (err) {
+				console.error('Login Error', err)
+			}
 		}
-	}, [])
+
+		initBuilder()
+	}, [dispatch])
 
 	// Функция для обработки перехода на следующий шаг
 	const handleNextStep = async () => {
@@ -48,7 +81,7 @@ export default function Builder() {
 		<>
 			<BuilderHeader onNextStep={handleNextStep} />
 
-			{activeStep === 1 && <Details setStoreId={setStoreId} />}
+			{activeStep === 1 && <Details />}
 			{activeStep === 2 && (
 				<ProductsStep
 					myShopProducts={myShopProducts}
