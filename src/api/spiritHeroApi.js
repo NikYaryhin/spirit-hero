@@ -126,6 +126,14 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async updateFundraisingStatus(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/update-fundraising',
+			payload,
+		)
+		return data
+	}
+
 	async receiveFunds(payload) {
 		const { data } = await this.http.post('/api/builder/receive-funds', payload)
 		return data
@@ -135,6 +143,13 @@ class SpiritHeroApi {
 		const { data } = await this.http.post(
 			'/api/builder/save-flash-sale-setting',
 			payload,
+		)
+		return data
+	}
+
+	async getFlashSaleSettings(storeId) {
+		const { data } = await this.http.get(
+			`/api/builder/get-store-flash_sale?store_id=${storeId}`,
 		)
 		return data
 	}

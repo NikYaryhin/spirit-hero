@@ -1,17 +1,53 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import Icon from '../Icon'
 import css from './FlashSale.module.css'
 import { DayPicker } from 'react-day-picker'
-import { format } from 'date-fns'
+import { format, set } from 'date-fns'
 import 'react-day-picker/dist/style.css'
+import { useSelector } from 'react-redux'
+import spiritHeroApi from '@/api/spiritHeroApi'
 
 export default function FlashSale() {
+	const storeId = useSelector((state) => state.flashSale.storeId)
+
 	const [ordersFiles, setOrdersFiles] = useState([])
 	const [range, setRange] = useState({ from: undefined, to: undefined })
 	const [shippingValue, setShippingValue] = useState('location')
+	const [shippingData, setShippingData] = useState({
+		first_name: '',
+		last_name: '',
+		organization_name: '',
+		address_1: '',
+		address_2: '',
+		city: '',
+		state: '',
+		zip_code: '',
+		fundraising_goal_amount: '',
+	})
 	const [isOnDemandChecked, setIsOnDemandChecked] = useState(false)
 	const [isFundaraisingChecked, setIsFundaraisingChecked] = useState(false)
+
+	const params = new URLSearchParams(window.location.search)
+	const storeIdFromQuery = params.get('store_id')
+
+	useEffect(() => {
+		async function fetchFlashSaleSettings() {
+			try {
+				console.log({ storeId: storeId || storeIdFromQuery })
+
+				const response = await spiritHeroApi.getFlashSaleSettings(
+					storeId || storeIdFromQuery,
+				)
+
+				console.debug('spiritHeroApi.getFlashSaleSettings response', response)
+			} catch (error) {
+				console.error('Error fetching flash sale settings:', error)
+			}
+		}
+
+		fetchFlashSaleSettings()
+	}, [])
 
 	const handleFilesChange = (e) => {
 		const files = Array.from(e.target.files || [])
@@ -26,6 +62,33 @@ export default function FlashSale() {
 		e.preventDefault()
 		const { id } = e.currentTarget
 		setOrdersFiles((prev) => prev.filter((file) => file.id != id))
+	}
+
+	const onSaveClick = async () => {
+		const payload = {
+			store_id: storeId || storeIdFromQuery,
+			type_id: 1,
+			first_name: shippingData.first_name || '',
+			last_name: shippingData.last_name || '',
+			organization_name: shippingData.organization_name || '',
+			address_1: shippingData.address_1 || '',
+			address_2: shippingData.address_2 || '',
+			city: shippingData.city || '',
+			state: shippingData.state || '',
+			zip_code: shippingData.zip_code || '',
+
+			flash_sale_end_date: range.to || '',
+			on_demand_ordering: isOnDemandChecked,
+			fundraising_progress_bar: isFundaraisingChecked,
+			fundraising_goal_amount: 12.99,
+		}
+
+		try {
+			const response = await spiritHeroApi.saveFlashSaleSetting(payload)
+			console.debug('spiritHeroApi.saveFlashSaleSetting response', response)
+		} catch (error) {
+			console.error('Error saving flash sale settings:', error)
+		}
 	}
 
 	return (
@@ -134,6 +197,10 @@ export default function FlashSale() {
 							<input
 								id="first-name"
 								onChange={(e) => {
+									setShippingData((prev) => ({
+										...prev,
+										first_name: e.target.value,
+									}))
 									console.log(e.target.value)
 								}}
 								type="text"
@@ -147,6 +214,10 @@ export default function FlashSale() {
 							<input
 								id="last-name"
 								onChange={(e) => {
+									setShippingData((prev) => ({
+										...prev,
+										last_name: e.target.value,
+									}))
 									console.log(e.target.value)
 								}}
 								type="text"
@@ -162,6 +233,10 @@ export default function FlashSale() {
 							<input
 								id="school-organization-name"
 								onChange={(e) => {
+									setShippingData((prev) => ({
+										...prev,
+										organization_name: e.target.value,
+									}))
 									console.log(e.target.value)
 								}}
 								type="text"
@@ -175,6 +250,10 @@ export default function FlashSale() {
 							<input
 								id="address-1"
 								onChange={(e) => {
+									setShippingData((prev) => ({
+										...prev,
+										address_1: e.target.value,
+									}))
 									console.log(e.target.value)
 								}}
 								type="text"
@@ -188,6 +267,10 @@ export default function FlashSale() {
 							<input
 								id="address-2"
 								onChange={(e) => {
+									setShippingData((prev) => ({
+										...prev,
+										address_2: e.target.value,
+									}))
 									console.log(e.target.value)
 								}}
 								type="text"
@@ -200,6 +283,7 @@ export default function FlashSale() {
 							<input
 								id="city"
 								onChange={(e) => {
+									setShippingData((prev) => ({ ...prev, city: e.target.value }))
 									console.log(e.target.value)
 								}}
 								type="text"
@@ -213,6 +297,10 @@ export default function FlashSale() {
 							<input
 								id="state"
 								onChange={(e) => {
+									setShippingData((prev) => ({
+										...prev,
+										state: e.target.value,
+									}))
 									console.log(e.target.value)
 								}}
 								type="text"
@@ -226,6 +314,10 @@ export default function FlashSale() {
 							<input
 								id="zip-code"
 								onChange={(e) => {
+									setShippingData((prev) => ({
+										...prev,
+										zip_code: e.target.value,
+									}))
 									console.log(e.target.value)
 								}}
 								type="text"
@@ -427,7 +519,10 @@ export default function FlashSale() {
 						<input
 							id="first-name"
 							onChange={(e) => {
-								console.log(e.target.value)
+								setShippingData((prev) => ({
+									...prev,
+									fundraising_goal_amount: e.target.value,
+								}))
 							}}
 							min={0}
 							type="number"
@@ -441,6 +536,13 @@ export default function FlashSale() {
 					</label>
 				</div>
 			</details>
+
+			<button
+				className={css['flash--sale__head--button']}
+				onClick={onSaveClick}
+			>
+				Save
+			</button>
 		</section>
 	)
 }

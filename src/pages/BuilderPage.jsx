@@ -14,6 +14,7 @@ import spiritHeroApi from '@/api/spiritHeroApi'
 import {
 	setStoreId as setStoreIdAction,
 	setStoreInfo,
+	setFlashSale,
 } from '@/features/flashSale/flashSaleSlice'
 import {
 	setMyShopProducts,
@@ -50,6 +51,7 @@ export default function Builder() {
 					if (storeData.products) {
 						dispatch(setMyShopProducts(storeData.products))
 						dispatch(setInitialMyShopProducts(storeData.products))
+						dispatch(setFlashSale(storeData.store.is_flash_sale ? true : false))
 					}
 
 					dispatch(fetchProducts())
@@ -89,7 +91,7 @@ export default function Builder() {
 			<BuilderHeader onNextStep={handleNextStep} />
 
 			{activeStep === 1 && <Details />}
-			{activeStep === 2 && <ProductsStep storeId={storeId} />}
+			{activeStep === 2 && <ProductsStep />}
 			{activeStep === 3 && <DesignStep ref={designStepRef} storeId={storeId} />}
 
 			{activeStep === 4 && <FundraisingStep />}
@@ -104,7 +106,10 @@ export default function Builder() {
 					<ProductStepValidationModal setIsModalOpen={setIsModalOpen} />
 				)}
 				{activeStep === 4 && (
-					<FundraisingNextStepModal setIsModalOpen={setIsModalOpen} />
+					<FundraisingNextStepModal
+						setIsModalOpen={setIsModalOpen}
+						closeModal={() => setIsModalOpen(false)}
+					/>
 				)}
 			</Modal>
 		</>

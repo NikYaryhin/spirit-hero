@@ -49,7 +49,11 @@ export default function BuilderHeader({ onNextStep }) {
 						Back
 					</button>
 
-					<button className={`${css.step__button}`} onClick={onNextStep}>
+					<button
+						className={`${css.step__button}`}
+						onClick={onNextStep}
+						disabled={activeStep === 5}
+					>
 						Next
 						<Chevron rotated={false} />
 					</button>

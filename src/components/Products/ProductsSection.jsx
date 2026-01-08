@@ -24,6 +24,7 @@ import {
 	selectInitialMyShopProducts,
 	setInitialMyShopProducts,
 	setInitialCatalogProducts,
+	fetchProducts,
 } from '@/features/products/productsSlice'
 
 export default function ProductsSection({ isFlashSale }) {
@@ -47,6 +48,12 @@ export default function ProductsSection({ isFlashSale }) {
 		categories: [],
 		colorFamilies: [],
 	})
+	useEffect(() => {
+		async function fetchData() {
+			dispatch(fetchProducts())
+		}
+		if (catalogProducts.length < 1) fetchData()
+	}, [])
 
 	useEffect(() => {
 		const hasAnyFilters =
@@ -278,8 +285,6 @@ export default function ProductsSection({ isFlashSale }) {
 			ids: Array.from(selectedIds).map((p) => +p),
 		}
 
-		console.log(payload)
-
 		spiritHeroApi
 			.deleteFromMyStoreProducts(payload.store_id, payload.ids)
 			.then((res) => {
@@ -323,8 +328,6 @@ export default function ProductsSection({ isFlashSale }) {
 
 		dispatch(setSortingBy(value))
 	}
-
-	console.log({ catalogProducts, isCatalog })
 
 	return (
 		<div className={css['products__section']}>

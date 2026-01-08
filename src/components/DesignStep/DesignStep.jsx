@@ -14,8 +14,11 @@ import spiritHeroApi from '@/api/spiritHeroApi'
 import TextHandle from '../TextHandle/TextHandle'
 import Moveable from 'react-moveable'
 import { v4 as uuidv4 } from 'uuid'
+import { useSelector } from 'react-redux'
 
-const DesignStep = forwardRef(({ storeId }, ref) => {
+const DesignStep = forwardRef((ref) => {
+	const storeId = useSelector((state) => state.flashSale.storeId)
+
 	const [customizerType, setCustomizerType] = useState(null)
 
 	const [isLoading, setIsLoading] = useState(true)
@@ -42,11 +45,9 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 	useEffect(() => {
 		const fetchStoreData = async () => {
 			try {
-				const res = await spiritHeroApi.getStore(
-					storeId || +localStorage.getItem('storeId'),
-				)
+				const res = await spiritHeroApi.getStore(storeId)
 
-				console.log('spiritHeroApi.getStore', res)
+				console.debug('spiritHeroApi.getStore', res)
 
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [

@@ -7,15 +7,22 @@ import { setFlashSale } from '../../features/flashSale/flashSaleSlice'
 import Icon from '../Icon'
 import Modal from '../Modal/Modal'
 import InkModal from '../InkModal/InkModal'
+import spiritHeroApi from '@/api/spiritHeroApi'
 
-export default function ProductsStep({ storeId }) {
+export default function ProductsStep() {
 	const dispatch = useDispatch()
+	const storeId = useSelector((state) => state.flashSale.storeId)
 	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 
 	const flashSaleInputHandle = (event) => {
 		const { checked } = event.currentTarget
 		dispatch(setFlashSale(checked))
+
+		console.debug({ storeId, is_flash_sale: checked })
+
+		if (storeId)
+			spiritHeroApi.updateStore({ is_flash_sale: checked, store_id: storeId })
 	}
 
 	return (

@@ -8,6 +8,7 @@ const initialState = {
 	catalogProducts: [],
 	initialCatalogProducts: [],
 	initialMyShopProducts: [],
+	productsByCategory: [],
 	filters: null,
 	sortingBy: '',
 	activeFilters: {
@@ -25,14 +26,26 @@ export const fetchProducts = createAsyncThunk(
 		try {
 			const response = await spiritHeroApi.getProducts()
 
-			console.log({ response })
-
 			return response
 		} catch (error) {
 			return rejectWithValue(error.message)
 		}
 	},
 )
+
+// export const fetchStoreProducts = createAsyncThunk(
+// 	'products/fetchStoreProducts',
+// 	async (storeId, { rejectWithValue }) => {
+// 		try {
+// 			const response = await spiritHeroApi.getStore(storeId)
+// 			console.log({response});
+
+// 			return response
+// 		} catch (error) {
+// 			return rejectWithValue(error.message)
+// 		}
+// 	},
+// )
 
 const productsSlice = createSlice({
 	name: 'products',
@@ -99,7 +112,6 @@ const productsSlice = createSlice({
 				const filteredCatalogProducts = action.payload.products.filter(
 					(product) => !myShopProductIds.has(String(product.id)),
 				)
-
 				state.isLoading = false
 				state.catalogProducts = filteredCatalogProducts
 				state.initialCatalogProducts = filteredCatalogProducts

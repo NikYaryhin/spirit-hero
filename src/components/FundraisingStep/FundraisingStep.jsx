@@ -11,8 +11,15 @@ import {
 	fundraisingPercentageValues,
 	fundraisingPriceEndsValues,
 } from '@/helpers/const'
+import { useSelector } from 'react-redux'
 
 export default function FundraisingStep() {
+	const params = new URLSearchParams(window.location.search)
+	const storeIdFromQuery = params.get('store_id')
+
+	const storeId =
+		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
+
 	const [isLoading, setIsLoading] = useState(true)
 	const [isFundraise, setIsFundraise] = useState(true)
 
@@ -31,9 +38,9 @@ export default function FundraisingStep() {
 	useEffect(() => {
 		const fetchStoreData = async () => {
 			try {
-				const res = await spiritHeroApi.getStore(
-					+localStorage.getItem('storeId'),
-				)
+				const res = await spiritHeroApi.getStore(storeId)
+
+				console.debug('spiritHeroApi.getStore res', res)
 
 				const sortedProducts = res.products.reduce((acc, product) => {
 					acc[product.category_id] = [
@@ -43,11 +50,10 @@ export default function FundraisingStep() {
 					return acc
 				}, {})
 
-				console.log({ sortedProducts })
-
 				setProductsByCategory(sortedProducts)
 				setSellAtCostProducts(() => {
 					const sellAtCostSorted = { ...sortedProducts }
+					console.log({ sellAtCostSorted })
 
 					for (const key in sellAtCostSorted) {
 						sellAtCostSorted[key] = []
