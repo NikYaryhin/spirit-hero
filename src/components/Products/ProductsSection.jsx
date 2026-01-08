@@ -8,20 +8,40 @@ import Filters from '../Filters/Filters'
 import Loader from '../Loader/Loader'
 import { showToast } from '@/helpers/toastCall'
 
-export default function ProductsSection({
-	myShopProducts,
+import { useDispatch, useSelector } from 'react-redux'
+import {
+	selectCatalogProducts,
+	selectMyShopProducts,
+	selectIsLoading,
+	selectFilters,
+	selectSortingBy,
+	setSortingBy,
+	toggleProductSelection,
+	selectAllProducts as selectAllProductsAction,
 	setMyShopProducts,
-	isFlashSale,
-	storeId,
-}) {
-	const [isLoading, setIsLoading] = useState(true)
-	const [sortingBy, setSortingBy] = useState('')
+	setCatalogProducts,
+	selectInitialCatalogProducts,
+	selectInitialMyShopProducts,
+	setInitialMyShopProducts,
+	setInitialCatalogProducts,
+} from '@/features/products/productsSlice'
+
+export default function ProductsSection({ isFlashSale }) {
+	const dispatch = useDispatch()
+
+	const storeId = useSelector((state) => state.flashSale.storeId)
+	const catalogProducts = useSelector(selectCatalogProducts)
+	const myShopProducts = useSelector(selectMyShopProducts)
+	const isLoading = useSelector(selectIsLoading)
+	const filters = useSelector(selectFilters)
+	const sortingBy = useSelector(selectSortingBy)
+
+	const initialCatalogProducts = useSelector(selectInitialCatalogProducts)
+	const initialMyShopProducts = useSelector(selectInitialMyShopProducts)
+
 	const [selectedCount, setSelectedCount] = useState(0)
 	const [isCatalog, setIsCatalog] = useState(true)
-	const [catalogProducts, setCatalogProducts] = useState([])
-	const [filters, setFilters] = useState(null)
-	const [initialCatalogProducts, setInitialCatalogProducts] = useState([])
-	const [initialMyShopProducts, setInitialMyShopProducts] = useState([])
+
 	const [activeFilters, setActiveFilters] = useState({
 		brands: [],
 		categories: [],
@@ -96,120 +116,103 @@ export default function ProductsSection({
 				: initialMyShopProducts,
 		)
 
-		setCatalogProducts(nextCatalog)
-		setMyShopProducts(nextShop)
+		dispatch(setCatalogProducts(nextCatalog))
+		dispatch(setMyShopProducts(nextShop))
 	}, [activeFilters, sortingBy, initialCatalogProducts, initialMyShopProducts])
 
 	useEffect(() => {
-		const getProducts = async () => {
-			try {
-				// if (!localStorage.getItem('access_token')) {
-				// 	const loginRes = await spiritHeroApi.login(
-				// 		'admin@gmail.com',
-				// 		'12345678',
-				// 	)
-				// 	console.log('loginRes', loginRes)
-				// }
-				const res = await spiritHeroApi.getProducts()
-				console.log('spiritHeroApi.getProducts() res', res)
-
-				setCatalogProducts(res.products)
-				setInitialCatalogProducts(res.products)
-				setFilters(res.filters)
-				setIsLoading(false)
-			} catch (error) {
-				console.error(error)
-			}
-		}
-		getProducts()
-	}, [])
-
-	useEffect(() => {
-		if (!catalogProducts) return
-
-		const count = isCatalog
-			? catalogProducts.filter((product) => product.selected).length
-			: myShopProducts.filter((product) => product.selected).length
+		const targetArray = isCatalog ? catalogProducts : myShopProducts
+		const count = targetArray.filter((product) => product.selected).length
 
 		setSelectedCount(count)
 	}, [catalogProducts, myShopProducts, isCatalog])
 
 	useEffect(() => {
 		if (sortingBy === 'expensive') {
-			setCatalogProducts((prev) => {
-				return [...prev].sort(
-					(a, b) => b.params.on_demand_price - a.params.on_demand_price,
-				)
-			})
-			setMyShopProducts((prev) => {
-				return [...prev].sort(
-					(a, b) => b.params.on_demand_price - a.params.on_demand_price,
-				)
-			})
+			dispatch(
+				setCatalogProducts(
+					[...catalogProducts].sort(
+						(a, b) => b.params.on_demand_price - a.params.on_demand_price,
+					),
+				),
+			)
+
+			dispatch(
+				setMyShopProducts(
+					[...myShopProducts].sort(
+						(a, b) => b.params.on_demand_price - a.params.on_demand_price,
+					),
+				),
+			)
 		}
 		if (sortingBy === 'cheap') {
-			setCatalogProducts((prev) => {
-				return [...prev].sort(
-					(a, b) => a.params.on_demand_price - b.params.on_demand_price,
-				)
-			})
-			setMyShopProducts((prev) => {
-				return [...prev].sort(
-					(a, b) => a.params.on_demand_price - b.params.on_demand_price,
-				)
-			})
+			dispatch(
+				setCatalogProducts(
+					[...catalogProducts].sort(
+						(a, b) => a.params.on_demand_price - b.params.on_demand_price,
+					),
+				),
+			)
+			dispatch(
+				setMyShopProducts(
+					[...myShopProducts].sort(
+						(a, b) => a.params.on_demand_price - b.params.on_demand_price,
+					),
+				),
+			)
 		}
 		if (sortingBy === 'name') {
-			setCatalogProducts((prev) => {
-				return [...prev].sort((a, b) =>
-					a.product_title.localeCompare(b.product_title),
-				)
-			})
-			setMyShopProducts((prev) => {
-				return [...prev].sort((a, b) =>
-					a.product_title.localeCompare(b.product_title),
-				)
-			})
+			dispatch(
+				setCatalogProducts(
+					[...catalogProducts].sort((a, b) =>
+						a.product_title.localeCompare(b.product_title),
+					),
+				),
+			)
+			dispatch(
+				setMyShopProducts(
+					[...myShopProducts].sort((a, b) =>
+						a.product_title.localeCompare(b.product_title),
+					),
+				),
+			)
 		}
 	}, [sortingBy])
 
 	const onCatalogCardClick = (event) => {
 		const { value, checked } = event.currentTarget
 
-		setCatalogProducts((prev) =>
-			prev.map((product) =>
-				String(product.id) === String(value)
-					? { ...product, selected: checked }
-					: product,
-			),
+		dispatch(
+			toggleProductSelection({
+				productId: value,
+				isSelected: checked,
+				isCatalog: true,
+			}),
 		)
 	}
 
 	const onMyShopCardClick = (event) => {
 		const { value, checked } = event.currentTarget
 
-		setMyShopProducts((prev) =>
-			prev.map((product) =>
-				String(product.id) === String(value)
-					? { ...product, selected: checked }
-					: product,
-			),
+		dispatch(
+			toggleProductSelection({
+				productId: value,
+				isSelected: checked,
+				isCatalog: false,
+			}),
 		)
 	}
 
 	const onSelectAllClick = () => {
-		if (isCatalog)
-			setCatalogProducts((prev) =>
-				prev.map((product) => {
-					return { ...product, selected: true }
-				}),
-			)
-		else
-			setMyShopProducts((prev) =>
-				prev.map((product) => {
-					return { ...product, selected: true }
-				}),
-			)
+		const targetArray = isCatalog ? catalogProducts : myShopProducts
+		const hasUnselected = targetArray.some((product) => !product.selected)
+
+		dispatch(
+			selectAllProductsAction({
+				isCatalog,
+				select: hasUnselected,
+			}),
+		)
 	}
 
 	const addToStoreButtonHandle = () => {
@@ -240,33 +243,27 @@ export default function ProductsSection({
 				)
 			})
 
-		setInitialCatalogProducts((prevInitialCatalog) => {
-			if (!Array.isArray(prevInitialCatalog) || prevInitialCatalog.length === 0)
-				return prevInitialCatalog
+		dispatch(
+			setInitialCatalogProducts(
+				initialCatalogProducts.filter((p) => !selectedIds.has(String(p.id))),
+			),
+		)
 
-			const nextInitialCatalog = prevInitialCatalog.filter(
-				(p) => !selectedIds.has(String(p.id)),
-			)
-			return nextInitialCatalog
-		})
+		const toAppend = initialCatalogProducts.filter((p) =>
+			selectedIds.has(String(p.id)),
+		)
 
-		setInitialMyShopProducts((prevInitialMyShop) => {
-			const toAppend = (initialCatalogProducts || []).filter((p) =>
-				selectedIds.has(String(p.id)),
-			)
-			if (!toAppend || toAppend.length === 0) return prevInitialMyShop
-
-			const existing = new Set(prevInitialMyShop.map((p) => String(p.id)))
+		if (toAppend.length > 0) {
+			const existing = new Set(initialMyShopProducts.map((p) => String(p.id)))
 			const append = toAppend
 				.filter((p) => !existing.has(String(p.id)))
 				.map((p) => ({ ...p }))
 
-			const arrayToReturn = append.length
-				? [...prevInitialMyShop, ...append]
-				: prevInitialMyShop
-
-			return arrayToReturn
-		})
+			if (append.length > 0)
+				dispatch(
+					setInitialMyShopProducts([...initialMyShopProducts, ...append]),
+				)
+		}
 	}
 
 	const deleteFromTheStoreButtonHandle = () => {
@@ -298,34 +295,36 @@ export default function ProductsSection({
 				)
 			})
 
-		setInitialMyShopProducts((prevInitialMyShop) => {
-			const nextInitialMyShop = prevInitialMyShop.filter(
-				(p) => !selectedIds.has(String(p.id)),
-			)
-			return nextInitialMyShop
-		})
+		dispatch(
+			setInitialMyShopProducts(
+				initialMyShopProducts.filter((p) => !selectedIds.has(String(p.id))),
+			),
+		)
 
-		setInitialCatalogProducts((prevInitialCatalog) => {
-			const toAppend = (initialMyShopProducts || []).filter((p) =>
-				selectedIds.has(String(p.id)),
-			)
-			if (!toAppend || toAppend.length === 0) return prevInitialCatalog
+		const toAppend = (initialMyShopProducts || []).filter((p) =>
+			selectedIds.has(String(p.id)),
+		)
 
-			const existing = new Set(prevInitialCatalog.map((p) => String(p.id)))
+		if (toAppend.length > 0) {
+			const existing = new Set(initialCatalogProducts.map((p) => String(p.id)))
 			const append = toAppend
 				.filter((p) => !existing.has(String(p.id)))
 				.map((p) => ({ ...p }))
-			return append.length
-				? [...append, ...prevInitialCatalog]
-				: prevInitialCatalog
-		})
+
+			if (append.length > 0)
+				dispatch(
+					setInitialCatalogProducts([...initialCatalogProducts, ...append]),
+				)
+		}
 	}
 
 	const sortingSelectHandle = (event) => {
 		const { value } = event.currentTarget
 
-		setSortingBy(value)
+		dispatch(setSortingBy(value))
 	}
+
+	console.log({ catalogProducts, isCatalog })
 
 	return (
 		<div className={css['products__section']}>
@@ -426,27 +425,23 @@ export default function ProductsSection({
 						</div>
 
 						<ul className={css.products__list}>
-							{catalogProducts &&
-								isCatalog &&
-								catalogProducts.map((product) => (
-									<ProductCard
-										key={product.id}
-										inputHandle={onCatalogCardClick}
-										product={product}
-										isFlashSale={isFlashSale}
-									/>
-								))}
-
-							{myShopProducts &&
-								!isCatalog &&
-								myShopProducts.map((product) => (
-									<ProductCard
-										key={product.id}
-										inputHandle={onMyShopCardClick}
-										product={product}
-										isFlashSale={isFlashSale}
-									/>
-								))}
+							{isCatalog
+								? catalogProducts.map((product) => (
+										<ProductCard
+											key={product.id}
+											inputHandle={onCatalogCardClick}
+											product={product}
+											isFlashSale={isFlashSale}
+										/>
+									))
+								: myShopProducts.map((product) => (
+										<ProductCard
+											key={product.id}
+											inputHandle={onMyShopCardClick}
+											product={product}
+											isFlashSale={isFlashSale}
+										/>
+									))}
 						</ul>
 					</div>
 				</>

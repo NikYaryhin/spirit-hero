@@ -15,9 +15,13 @@ import {
 	setStoreId as setStoreIdAction,
 	setStoreInfo,
 } from '@/features/flashSale/flashSaleSlice'
+import {
+	setMyShopProducts,
+	setInitialMyShopProducts,
+	fetchProducts,
+} from '@/features/products/productsSlice'
 
 export default function Builder() {
-	const [myShopProducts, setMyShopProducts] = useState([])
 	const dispatch = useDispatch()
 	const activeStep = useSelector((state) => state.navigation.activeStep)
 	const storeId = useSelector((state) => state.flashSale.storeId)
@@ -35,24 +39,27 @@ export default function Builder() {
 				const params = new URLSearchParams(window.location.search)
 				const storeIdFromQuery = params.get('store_id')
 
-				console.log('storeIdFromQuery', storeIdFromQuery)
+				if (!storeIdFromQuery) return
 
-				if (storeIdFromQuery) {
-					dispatch(setStoreIdAction(storeIdFromQuery))
+				dispatch(setStoreIdAction(storeIdFromQuery))
+				try {
+					const storeData = await spiritHeroApi.getStore(storeIdFromQuery)
+					console.log('storeData', storeData)
 
-					try {
-						const storeData = await spiritHeroApi.getStore(storeIdFromQuery)
-						console.log('storeData', storeData)
-
-						dispatch(setStoreInfo(storeData))
-					} catch (error) {
-						console.error('Error fetching store info:', error)
-						alert(
-							error?.response?.data?.message ||
-								error?.message ||
-								'Data fetching error',
-						)
+					dispatch(setStoreInfo(storeData))
+					if (storeData.products) {
+						dispatch(setMyShopProducts(storeData.products))
+						dispatch(setInitialMyShopProducts(storeData.products))
 					}
+
+					dispatch(fetchProducts())
+				} catch (error) {
+					console.error('Error fetching store info:', error)
+					alert(
+						error?.response?.data?.message ||
+							error?.message ||
+							'Data fetching error. Please, try again',
+					)
 				}
 			} catch (err) {
 				console.error('Login Error', err)
@@ -82,13 +89,7 @@ export default function Builder() {
 			<BuilderHeader onNextStep={handleNextStep} />
 
 			{activeStep === 1 && <Details />}
-			{activeStep === 2 && (
-				<ProductsStep
-					myShopProducts={myShopProducts}
-					setMyShopProducts={setMyShopProducts}
-					storeId={storeId}
-				/>
-			)}
+			{activeStep === 2 && <ProductsStep storeId={storeId} />}
 			{activeStep === 3 && <DesignStep ref={designStepRef} storeId={storeId} />}
 
 			{activeStep === 4 && <FundraisingStep />}

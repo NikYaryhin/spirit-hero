@@ -64,6 +64,8 @@ export default function StoreDetailsForm({ image }) {
 		try {
 			let res
 
+			console.log({ storeId, storeInfo })
+
 			if (storeId && storeInfo) {
 				console.log('payload', {
 					...payload,
@@ -91,7 +93,7 @@ export default function StoreDetailsForm({ image }) {
 			)
 			dispatch(nextStep())
 		} catch (error) {
-			console.error('spiritHeroApi.saveStore() error', error)
+			console.error('save/update store error', error)
 		}
 	}
 

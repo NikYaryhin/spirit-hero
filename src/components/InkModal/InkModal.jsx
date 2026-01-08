@@ -2,6 +2,7 @@ import css from './InkModal.module.css'
 import Icon from '../Icon'
 import CustomSelect from '../CustomSelect/CustomSelect'
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
 const COLOR_SELECT_VALUES = [
@@ -13,7 +14,9 @@ const COLOR_SELECT_VALUES = [
 	{ value: '5 Colors', id: 5, quantity: 5 },
 ]
 
-export default function InkModal({ storeId }) {
+export default function InkModal() {
+	const storeId = useSelector((state) => state.flashSale.storeId)
+
 	const [price, setPrice] = useState(0)
 	const [frontColorsCount, setFrontColorsCount] = useState(0)
 	const [backColorsCount, setBackColorsCount] = useState(0)

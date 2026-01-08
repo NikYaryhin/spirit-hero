@@ -8,11 +8,7 @@ import Icon from '../Icon'
 import Modal from '../Modal/Modal'
 import InkModal from '../InkModal/InkModal'
 
-export default function ProductsStep({
-	myShopProducts,
-	setMyShopProducts,
-	storeId,
-}) {
+export default function ProductsStep({ storeId }) {
 	const dispatch = useDispatch()
 	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
 	const [isModalOpen, setIsModalOpen] = useState(false)
@@ -81,12 +77,7 @@ export default function ProductsStep({
 				</div>
 			</div>
 
-			<ProductsSection
-				myShopProducts={myShopProducts}
-				setMyShopProducts={setMyShopProducts}
-				storeId={storeId}
-				isFlashSale={isFlashSale}
-			/>
+			<ProductsSection isFlashSale={isFlashSale} />
 
 			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
 				<InkModal storeId={storeId} />
