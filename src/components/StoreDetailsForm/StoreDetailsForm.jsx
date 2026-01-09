@@ -57,6 +57,8 @@ export default function StoreDetailsForm({ image }) {
 			color: colors,
 		}
 
+		if (image) payload.background_image = image
+
 		try {
 			let res
 
@@ -74,7 +76,6 @@ export default function StoreDetailsForm({ image }) {
 				res = await spiritHeroApi.saveStore({
 					...payload,
 					current_page: 2,
-					background_image: image || '',
 				})
 				console.log('spiritHeroApi.saveStore()', res)
 
