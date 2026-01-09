@@ -16,8 +16,11 @@ import Moveable from 'react-moveable'
 import { v4 as uuidv4 } from 'uuid'
 import { useSelector } from 'react-redux'
 
-const DesignStep = forwardRef((ref) => {
-	const storeId = useSelector((state) => state.flashSale.storeId)
+const DesignStep = forwardRef((props, ref) => {
+	const params = new URLSearchParams(window.location.search)
+	const storeIdFromQuery = params.get('store_id')
+	const storeId =
+		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 
 	const [customizerType, setCustomizerType] = useState(null)
 
@@ -48,6 +51,8 @@ const DesignStep = forwardRef((ref) => {
 				const res = await spiritHeroApi.getStore(storeId)
 
 				console.debug('spiritHeroApi.getStore', res)
+
+				setCustomerLogos({ ...res.design })
 
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [
@@ -174,7 +179,7 @@ const DesignStep = forwardRef((ref) => {
 				height: containerRef.current.offsetHeight,
 				useCORS: true,
 				allowTaint: true,
-				backgroundColor: '#F1EEF4',
+				backgroundColor: 'transparent',
 				scale: 1,
 				// Исключаем Moveable элементы из скриншота
 				ignoreElements: (element) => {
@@ -188,7 +193,6 @@ const DesignStep = forwardRef((ref) => {
 
 			// Конвертируем в base64
 			const base64 = canvas.toDataURL('image/png')
-			console.log({ base64 })
 
 			// Обновляем elementsPositionImage в customerLogos
 			setCustomerLogos((prev) => ({
@@ -200,6 +204,17 @@ const DesignStep = forwardRef((ref) => {
 				'customerLogos',
 				JSON.stringify({ ...customerLogos, elementsPositionImage: base64 }),
 			)
+
+			const payload = {
+				...customerLogos,
+				elementsPositionImage: base64,
+				store_id: storeId,
+			}
+
+			console.log({ payload })
+
+			const response = await spiritHeroApi.createDesign(storeId, payload)
+			console.log('spiritHeroApi.createDesign response', response)
 		} catch (error) {
 			console.error('Error creating screenshot:', error)
 			return null
@@ -226,6 +241,18 @@ const DesignStep = forwardRef((ref) => {
 							}
 						}}
 					>
+						{customerLogos.elementsPositionImage !== '' &&
+							customerLogos.elementsPositionImage && (
+								<img
+									src={customerLogos.elementsPositionImage}
+									alt="elements position"
+									style={{
+										width: '100%',
+										height: '100%',
+										objectFit: 'contain',
+									}}
+								/>
+							)}
 						{customElements.map((el) => (
 							<div
 								key={el.id}

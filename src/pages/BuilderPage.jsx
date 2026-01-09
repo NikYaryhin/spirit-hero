@@ -25,7 +25,7 @@ import {
 export default function Builder() {
 	const dispatch = useDispatch()
 	const activeStep = useSelector((state) => state.navigation.activeStep)
-	const storeId = useSelector((state) => state.flashSale.storeId)
+	// const storeId = useSelector((state) => state.flashSale.storeId)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const designStepRef = useRef(null)
 
@@ -45,7 +45,7 @@ export default function Builder() {
 				dispatch(setStoreIdAction(storeIdFromQuery))
 				try {
 					const storeData = await spiritHeroApi.getStore(storeIdFromQuery)
-					console.log('storeData', storeData)
+					console.log('getStore', storeData)
 
 					dispatch(setStoreInfo(storeData))
 					if (storeData.products) {
@@ -92,7 +92,7 @@ export default function Builder() {
 
 			{activeStep === 1 && <Details />}
 			{activeStep === 2 && <ProductsStep />}
-			{activeStep === 3 && <DesignStep ref={designStepRef} storeId={storeId} />}
+			{activeStep === 3 && <DesignStep ref={designStepRef} />}
 
 			{activeStep === 4 && <FundraisingStep />}
 			{activeStep === 5 && <FlashSale />}

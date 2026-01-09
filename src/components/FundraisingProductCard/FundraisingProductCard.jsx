@@ -64,10 +64,12 @@ export default function FundraisingProductCard({
 		try {
 			const response = await spiritHeroApi.updateFundraisingStatus({
 				store_id: storeId,
-				products_info: {
-					id,
-					is_fundraising,
-				},
+				products_info: [
+					{
+						id,
+						is_fundraising,
+					},
+				],
 			})
 			console.debug('spiritHeroApi.updateFundraisingStatus response:', response)
 		} catch (error) {

@@ -42,25 +42,44 @@ export default function FundraisingStep() {
 
 				console.debug('spiritHeroApi.getStore res', res)
 
-				const sortedProducts = res.products.reduce((acc, product) => {
-					acc[product.category_id] = [
-						...(acc[product.category_id] || []),
-						product,
-					]
-					return acc
-				}, {})
+				const sortedProducts =
+					res.products.reduce((acc, product) => {
+						acc[product.category_id] = [
+							...(acc[product.category_id] || []),
+							product,
+						]
+						return acc
+					}, {}) || {}
 
-				setProductsByCategory(sortedProducts)
-				setSellAtCostProducts(() => {
-					const sellAtCostSorted = { ...sortedProducts }
-					console.log({ sellAtCostSorted })
+				const isFundraisingProducts = {}
+				const isSellAtCostProducts = {}
 
-					for (const key in sellAtCostSorted) {
-						sellAtCostSorted[key] = []
-					}
+				Object.keys(sortedProducts).forEach((key) => {
+					isFundraisingProducts[key] = [...sortedProducts[key]].filter(
+						(product) => {
+							return product.is_fundraise
+						},
+					)
 
-					return sellAtCostSorted
+					isSellAtCostProducts[key] = [...sortedProducts[key]].filter(
+						(product) => !product.is_fundraise,
+					)
 				})
+
+				console.log({ isFundraisingProducts, isSellAtCostProducts })
+
+				setProductsByCategory(isFundraisingProducts)
+				setSellAtCostProducts(isSellAtCostProducts)
+				// setProductsByCategory(sortedProducts)
+				// setSellAtCostProducts(() => {
+				// 	const sellAtCostSorted = { ...sortedProducts }
+
+				// 	for (const key in sellAtCostSorted) {
+				// 		sellAtCostSorted[key] = []
+				// 	}
+
+				// 	return sellAtCostSorted
+				// })
 				setIsLoading(false)
 			} catch (error) {
 				console.error(`spiritHeroApi.getStore error`, error)
@@ -89,6 +108,23 @@ export default function FundraisingStep() {
 		setSellOutCount(sellOutProductsCount)
 	}, [sellAtCostProducts])
 
+	const updateFundraisingStatus = async (status) => {
+		const selectedProductIds = selectedProducts.map((p) => {
+			return { id: p.id, is_fundraising: status }
+		})
+
+		try {
+			const response = await spiritHeroApi.updateFundraisingStatus({
+				store_id: storeId,
+				products_info: selectedProductIds,
+			})
+
+			console.debug('spiritHeroApi.updateFundraisingStatus response', response)
+		} catch (error) {
+			console.error('spiritHeroApi.updateProducts error:', error)
+		}
+	}
+
 	const onMoveToSellAtCoast = () => {
 		if (selectedProducts.length < 1) return
 
@@ -97,6 +133,8 @@ export default function FundraisingStep() {
 			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
 			return acc
 		}, {})
+
+		updateFundraisingStatus(false)
 
 		setProductsByCategory((prev) => {
 			const next = { ...prev }
@@ -108,7 +146,6 @@ export default function FundraisingStep() {
 			return next
 		})
 
-		// Add to sellAtCostProducts
 		setSellAtCostProducts((prev) => {
 			if (!prev) return prev
 			const next = { ...prev }
@@ -118,10 +155,10 @@ export default function FundraisingStep() {
 				)
 				next[cat] = [...(next[cat] || []), ...itemsToAdd]
 			})
+
 			return next
 		})
 
-		// Clear selection
 		setSelectedProducts([])
 	}
 
@@ -131,6 +168,8 @@ export default function FundraisingStep() {
 			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
 			return acc
 		}, {})
+
+		updateFundraisingStatus(true)
 
 		setSellAtCostProducts((prev) => {
 			const next = { ...prev }

@@ -62,9 +62,9 @@ class SpiritHeroApi {
 	}
 
 	async getStore(store_id) {
-		const { data } = await this.http.get('/api/builder/get-store', {
-			params: { store_id },
-		})
+		const { data } = await this.http.get(
+			`/api/builder/get-store?store_id=${store_id}`,
+		)
 		return data
 	}
 
@@ -100,6 +100,8 @@ class SpiritHeroApi {
 
 	async createDesign(store_id, design) {
 		const body = { store_id, design }
+		console.log(body)
+
 		const { data } = await this.http.post('/api/builder/create-design', body)
 		return data
 	}

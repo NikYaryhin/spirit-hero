@@ -2,12 +2,12 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 3.2rem 5.6rem;
+	padding: 3.2rem clamp(1.6rem, 4dvw, 5.6rem);
 
 	background-color: #4E008E;
 
 	.logo {
-		width: 18.6rem;
+		width: clamp(8.6rem, 13dvw, 18.6rem);
 		height: 4.1rem;
 
 		img {
@@ -28,7 +28,7 @@
 			align-items: center;
 			gap: 0.8rem;
 
-			font-size: 1.4rem;
+			font-size: clamp(1rem, 1dvw, 1.4rem);
 			line-height: 1.28;
 			font-weight: 700;
 			color: #CACACA;
@@ -42,36 +42,34 @@
 				}
 			}
 
-			&.complete {
+			&.complete span {
+				position: relative;
+				overflow: hidden;
 
-				span {
-					position: relative;
-					overflow: hidden;
+				border: 2px solid #FBB041;
+				background-color: #FBB041;
 
-					border: 2px solid #FBB041;
+				&::before {
+					content: '';
+					position: absolute;
+					inset: 0 0 0 0;
+
+					background-image: url("../../assets/SpiritHero__Check.svg");
+					background-size: cover;
+					background-repeat: no-repeat;
+					background-position: center;
 					background-color: #FBB041;
-
-					&::before {
-						content: '';
-						position: absolute;
-						inset: 0 0 0 0;
-
-						background-image: url("../../assets/SpiritHero__Check.svg");
-						background-size: cover;
-						background-repeat: no-repeat;
-						background-position: center;
-						background-color: #FBB041;
-					}
 				}
 			}
+
 
 			span {
 				display: flex;
 				align-items: center;
 				justify-content: center;
 
-				width: 4rem;
-				height: 4rem;
+				width: clamp(2rem, 3dvw, 4rem);
+				height: clamp(2rem, 3dvw, 4rem);
 
 				border: 2px solid #CACACA;
 				border-radius: 5rem;
