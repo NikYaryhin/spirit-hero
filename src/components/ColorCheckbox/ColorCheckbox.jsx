@@ -7,10 +7,10 @@ export default function ColorCheckbox({
 	name,
 	required,
 	inputName,
-	checked = false,
+	checkedColor,
 	className,
 }) {
-	const [isChecked, setIsChecked] = useState(checked)
+	const [isChecked, setIsChecked] = useState(checkedColor)
 
 	const onInputChange = (e) => {
 		setIsChecked(!isChecked)

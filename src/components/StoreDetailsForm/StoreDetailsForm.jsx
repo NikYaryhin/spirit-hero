@@ -8,6 +8,7 @@ import { COLORS } from '@/helpers/const'
 import {
 	setStoreId as setStoreIdAction,
 	setStoreInfo,
+	setFlashSale,
 } from '@/features/flashSale/flashSaleSlice'
 
 const slugify = (value) =>
@@ -31,7 +32,7 @@ export default function StoreDetailsForm({ image }) {
 	const [secondSocial, setSecondSocial] = useState(
 		storeInfo?.store?.social_media_2 || '',
 	)
-	const [colors, setColors] = useState(storeInfo?.store?.color || [])
+	const [colors, setColors] = useState([])
 
 	useEffect(() => {
 		if (storeInfo?.store) {
@@ -42,10 +43,6 @@ export default function StoreDetailsForm({ image }) {
 			setColors(storeInfo.store.color || [])
 		}
 	}, [storeInfo])
-
-	useEffect(() => {
-		console.log({ colors })
-	}, [colors])
 
 	const onFormSubmit = async (event) => {
 		event.preventDefault()
@@ -58,25 +55,24 @@ export default function StoreDetailsForm({ image }) {
 			social_media_1: firstSocial || '',
 			social_media_2: secondSocial || '',
 			color: colors,
-			background_image: image || storeInfo?.store?.background_image,
+			background_image: image || storeInfo?.store?.background_image || '',
 		}
 
 		try {
 			let res
 
-			if (storeId && storeInfo) {
-				console.log('payload', {
-					...payload,
-					store_id: +storeId,
-				})
+			console.log({ storeId, storeInfo })
 
+			if (storeId && storeInfo) {
 				res = await spiritHeroApi.updateStore({
 					...payload,
 					store_id: storeId,
 				})
 				console.log('spiritHeroApi.updateStore()', res)
+
+				dispatch(setFlashSale(res?.store?.is_flash_sale || false))
 			} else {
-				res = await spiritHeroApi.saveStore(payload)
+				res = await spiritHeroApi.saveStore({ ...payload, current_page: 2 })
 				console.log('spiritHeroApi.saveStore()', res)
 
 				dispatch(setStoreIdAction(res.store.id))
@@ -91,7 +87,7 @@ export default function StoreDetailsForm({ image }) {
 			)
 			dispatch(nextStep())
 		} catch (error) {
-			console.error('spiritHeroApi.saveStore() error', error)
+			console.error('save/update store error', error)
 		}
 	}
 
@@ -186,23 +182,23 @@ export default function StoreDetailsForm({ image }) {
 						</span>
 					</p>
 
-					{colors.length > 0 && (
-						<ul className={css['color--picker__list']}>
-							{COLORS.map(({ color, name, id }) => {
+					<ul className={css['color--picker__list']}>
+						{colors.length > 0 &&
+							COLORS.map(({ color, name, id }) => {
 								return (
 									<li key={id}>
 										<ColorCheckbox
 											onInputHandle={colorInputHandle}
 											color={color}
+											colors={colors}
 											name={name}
-											checked={colors.includes(color)}
+											checkedColor={colors.includes(color)}
 											inputName="color--input"
 										/>
 									</li>
 								)
 							})}
-						</ul>
-					)}
+					</ul>
 				</fieldset>
 
 				<div className={css['next__button--box']}>

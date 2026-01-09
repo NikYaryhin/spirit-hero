@@ -4,7 +4,7 @@ import css from './FundraisingNextStepModal.module.css'
 import { useDispatch } from 'react-redux'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 
-export default function FundraisingNextStepModal() {
+export default function FundraisingNextStepModal({ closeModal }) {
 	const dispatch = useDispatch()
 
 	const [isCheck, setIsCheck] = useState(false)
@@ -33,6 +33,7 @@ export default function FundraisingNextStepModal() {
 		console.log({ checkData, achData })
 
 		dispatch(setActiveStep(5))
+		closeModal()
 	}
 
 	return (

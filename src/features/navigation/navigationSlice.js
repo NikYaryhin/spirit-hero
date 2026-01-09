@@ -3,7 +3,7 @@ import { steps } from '@/helpers/const'
 
 const initialState = {
 	activeStep: 1,
-	totalSteps: steps.length, // Общее количество шагов
+	totalSteps: steps.length,
 }
 
 const navigationSlice = createSlice({
@@ -17,7 +17,6 @@ const navigationSlice = createSlice({
 			state.activeStep = Math.max(state.activeStep - 1, 1)
 		},
 		setActiveStep: (state, action) => {
-			// Проверяем, что шаг в допустимых пределах
 			const newStep = Number(action.payload)
 			if (newStep >= 1 && newStep <= state.totalSteps) {
 				state.activeStep = newStep

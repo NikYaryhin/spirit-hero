@@ -1,6 +1,8 @@
 import css from './FundraisingProductCard.module.css'
 import Icon from '../Icon'
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import spiritHeroApi from '@/api/spiritHeroApi'
 
 export default function FundraisingProductCard({
 	product,
@@ -14,6 +16,11 @@ export default function FundraisingProductCard({
 	isFundraise,
 	pricesEnd,
 }) {
+	const url_params = new URLSearchParams(window.location.search)
+	const storeIdFromQuery = url_params.get('store_id')
+
+	const storeId =
+		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 	const { id, product_title, product_image, params } = product
 
 	const [isChecked, setIsChecked] = useState(checked)
@@ -51,27 +58,26 @@ export default function FundraisingProductCard({
 					: countedPrice,
 			)
 		}
-		// setSellingPrice(
-		// 	amountProfit
-		// 		? +params.on_demand_price + profit
-		// 		: ((+params.on_demand_price * profit) / 100 + +params.on_demand_price)
-		// 				.toFixed(2)
-		// 				.toString()
-		// 				.replace(/\.[^.]+$/, `${pricesEnd}`),
-		// )
-
-		console.log({
-			percent: (
-				(+params.on_demand_price * profit) / 100 +
-				+params.on_demand_price
-			).toFixed(2),
-			on_demand_price: +params.on_demand_price,
-			profit,
-			pricesEnd,
-		})
 	}, [profit, amountProfit])
 
-	const onSellAtCost = () => {
+	const updateFundraisingStatus = async (is_fundraising) => {
+		try {
+			const response = await spiritHeroApi.updateFundraisingStatus({
+				store_id: storeId,
+				products_info: [
+					{
+						id,
+						is_fundraising,
+					},
+				],
+			})
+			console.debug('spiritHeroApi.updateFundraisingStatus response:', response)
+		} catch (error) {
+			console.error('spiritHeroApi.updateFundraisingStatus error:', error)
+		}
+	}
+
+	const onSellAtCost = async () => {
 		setProductsByCategory((prev) => {
 			const newProductsByCategory = { ...prev }
 
@@ -89,9 +95,11 @@ export default function FundraisingProductCard({
 
 			return newSellAtCost
 		})
+
+		await updateFundraisingStatus(false)
 	}
 
-	const onFundraiseClick = () => {
+	const onFundraiseClick = async () => {
 		setSellAtCostProducts((prev) => {
 			const dataToReturn = { ...prev }
 			dataToReturn[categoryKey] = prev[categoryKey].filter(
@@ -107,6 +115,8 @@ export default function FundraisingProductCard({
 
 			return dataToReturn
 		})
+
+		await updateFundraisingStatus(true)
 	}
 
 	const onCheckboxChange = (e) => {
@@ -119,10 +129,6 @@ export default function FundraisingProductCard({
 				? [...prev, product]
 				: prev.filter((prod) => prod.id !== id)
 		})
-	}
-
-	const onNumberInputChange = (e) => {
-		const { value } = e.target
 	}
 
 	return (

@@ -14,11 +14,19 @@ export default function ProductCustomiserCard({
 	product,
 	storeId,
 }) {
-	const { id, product_title, product_image, colors, active, category_id } =
-		product
+	const {
+		id,
+		product_title,
+		product_image,
+		choosed_colors,
+		active,
+		category_id,
+	} = product
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
-	const [colorsArray, setColorsArray] = useState([...colors].splice(0, 3))
+	const [colorsArray, setColorsArray] = useState(
+		[...choosed_colors].splice(0, 3),
+	)
 
 	const onCardClick = () => {
 		if (active) return
@@ -67,7 +75,7 @@ export default function ProductCustomiserCard({
 			let nextColors
 
 			if (checked) {
-				let selectedColor = colors.find(({ color }) => color === value)
+				let selectedColor = choosed_colors.find(({ color }) => color === value)
 				nextColors = [...prev, selectedColor]
 			} else {
 				nextColors = prev.filter(({ color }) => color !== value)
@@ -129,12 +137,12 @@ export default function ProductCustomiserCard({
 			>
 				<h3 className={css.modal__title}>Select Colours</h3>
 				<span className={css.modal__subtitle}>
-					{colorsArray.length} of {colors.length} color
+					{colorsArray.length} of {choosed_colors.length} color
 					{colorsArray.length !== 1 ? 's' : ''} selected
 				</span>
 				<ul className={css['modal__color--pickers']}>
-					{colors &&
-						colors.map((item) => (
+					{choosed_colors &&
+						choosed_colors.map((item) => (
 							<li key={item.color} className={css.color__item}>
 								<ColorCheckbox
 									onInputHandle={colorInputHandle}

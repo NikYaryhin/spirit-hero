@@ -14,8 +14,14 @@ import spiritHeroApi from '@/api/spiritHeroApi'
 import TextHandle from '../TextHandle/TextHandle'
 import Moveable from 'react-moveable'
 import { v4 as uuidv4 } from 'uuid'
+import { useSelector } from 'react-redux'
 
-const DesignStep = forwardRef(({ storeId }, ref) => {
+const DesignStep = forwardRef((props, ref) => {
+	const params = new URLSearchParams(window.location.search)
+	const storeIdFromQuery = params.get('store_id')
+	const storeId =
+		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
+
 	const [customizerType, setCustomizerType] = useState(null)
 
 	const [isLoading, setIsLoading] = useState(true)
@@ -42,11 +48,11 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 	useEffect(() => {
 		const fetchStoreData = async () => {
 			try {
-				const res = await spiritHeroApi.getStore(
-					storeId || +localStorage.getItem('storeId'),
-				)
+				const res = await spiritHeroApi.getStore(storeId)
 
-				console.log('spiritHeroApi.getStore', res)
+				console.debug('spiritHeroApi.getStore', res)
+
+				setCustomerLogos({ ...res.design })
 
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [
@@ -173,7 +179,7 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 				height: containerRef.current.offsetHeight,
 				useCORS: true,
 				allowTaint: true,
-				backgroundColor: '#F1EEF4',
+				backgroundColor: 'transparent',
 				scale: 1,
 				// Исключаем Moveable элементы из скриншота
 				ignoreElements: (element) => {
@@ -187,7 +193,6 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 
 			// Конвертируем в base64
 			const base64 = canvas.toDataURL('image/png')
-			console.log({ base64 })
 
 			// Обновляем elementsPositionImage в customerLogos
 			setCustomerLogos((prev) => ({
@@ -199,6 +204,17 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 				'customerLogos',
 				JSON.stringify({ ...customerLogos, elementsPositionImage: base64 }),
 			)
+
+			const payload = {
+				...customerLogos,
+				elementsPositionImage: base64,
+				store_id: storeId,
+			}
+
+			console.log({ payload })
+
+			const response = await spiritHeroApi.createDesign(storeId, payload)
+			console.log('spiritHeroApi.createDesign response', response)
 		} catch (error) {
 			console.error('Error creating screenshot:', error)
 			return null
@@ -225,6 +241,19 @@ const DesignStep = forwardRef(({ storeId }, ref) => {
 							}
 						}}
 					>
+						{customerLogos.elementsPositionImage !== '' &&
+							customerLogos.elementsPositionImage && (
+								<img
+									src={customerLogos.elementsPositionImage}
+									alt="elements position"
+									style={{
+										width: '100%',
+										height: '100%',
+										objectFit: 'contain',
+										objectPosition: 'center',
+									}}
+								/>
+							)}
 						{customElements.map((el) => (
 							<div
 								key={el.id}
