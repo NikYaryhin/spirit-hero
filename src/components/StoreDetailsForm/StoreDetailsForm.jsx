@@ -55,7 +55,6 @@ export default function StoreDetailsForm({ image }) {
 			social_media_1: firstSocial || '',
 			social_media_2: secondSocial || '',
 			color: colors,
-			background_image: image || storeInfo?.store?.background_image || '',
 		}
 
 		try {
@@ -72,7 +71,11 @@ export default function StoreDetailsForm({ image }) {
 
 				dispatch(setFlashSale(res?.store?.is_flash_sale || false))
 			} else {
-				res = await spiritHeroApi.saveStore({ ...payload, current_page: 2 })
+				res = await spiritHeroApi.saveStore({
+					...payload,
+					current_page: 2,
+					background_image: image || '',
+				})
 				console.log('spiritHeroApi.saveStore()', res)
 
 				dispatch(setStoreIdAction(res.store.id))
