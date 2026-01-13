@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import css from './ColorCheckbox.module.css'
 
 export default function ColorCheckbox({
@@ -10,8 +9,6 @@ export default function ColorCheckbox({
 	checkedColor,
 	className,
 }) {
-	// const [isChecked, setIsChecked] = useState(checkedColor)
-
 	const onInputChange = (e) => {
 		const { checked, value } = e.currentTarget
 

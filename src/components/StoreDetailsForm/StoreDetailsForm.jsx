@@ -65,15 +65,12 @@ export default function StoreDetailsForm({ image }) {
 
 		try {
 			let res
-
-			console.log({ storeId, storeInfo })
-
 			if (storeId && storeInfo) {
 				res = await spiritHeroApi.updateStore({
 					...payload,
 					store_id: storeId,
 				})
-				console.log('spiritHeroApi.updateStore()', res)
+				console.debug('spiritHeroApi.updateStore()', res)
 
 				dispatch(setFlashSale(res?.store?.is_flash_sale || false))
 			} else {
@@ -81,7 +78,7 @@ export default function StoreDetailsForm({ image }) {
 					...payload,
 					current_page: 2,
 				})
-				console.log('spiritHeroApi.saveStore()', res)
+				console.debug('spiritHeroApi.saveStore()', res)
 
 				dispatch(setStoreIdAction(res.store.id))
 				localStorage.setItem('storeId', res.store.id)

@@ -31,11 +31,9 @@ export default function InkModal() {
 		const front_side = frontColorsCount
 		const back_side = backColorsCount
 
-		console.log('payload', { store_id, front_side, back_side })
-
 		try {
 			const res = spiritHeroApi.editInkColor(store_id, front_side, back_side)
-			console.log('editInkColor res', res)
+			console.debug('editInkColor res', res)
 		} catch (error) {
 			console.error('spiritHeroApi.editInkColor()', error)
 		}

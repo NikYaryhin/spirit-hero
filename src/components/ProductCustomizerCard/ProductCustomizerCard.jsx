@@ -19,13 +19,14 @@ export default function ProductCustomiserCard({
 		product_title,
 		product_image,
 		choosed_colors,
+		colors,
 		active,
 		category_id,
 	} = product
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [colorsArray, setColorsArray] = useState(
-		[...choosed_colors].splice(0, 3),
+		choosed_colors.length > 0 ? choosed_colors : [...colors].slice(0, 3),
 	)
 
 	const onCardClick = () => {
@@ -47,7 +48,7 @@ export default function ProductCustomiserCard({
 				payload.ids,
 			)
 
-			console.log('spiritHeroApi.deleteFromMyStoreProducts res', res)
+			console.debug('spiritHeroApi.deleteFromMyStoreProducts res', res)
 			showToast(`${product_title} was delete from your store`)
 
 			setProductsByCategory((prev) => {
@@ -75,7 +76,7 @@ export default function ProductCustomiserCard({
 			let nextColors
 
 			if (checked) {
-				let selectedColor = choosed_colors.find(({ color }) => color === value)
+				let selectedColor = colors.find(({ color }) => color === value)
 				nextColors = [...prev, selectedColor]
 			} else {
 				nextColors = prev.filter(({ color }) => color !== value)
@@ -83,6 +84,22 @@ export default function ProductCustomiserCard({
 
 			return nextColors
 		})
+	}
+
+	const onModalClose = async () => {
+		try {
+			const payload = {
+				product_id: id,
+				choose_colors_ids: [...colorsArray].map((p) => p.id),
+			}
+
+			const response = await spiritHeroApi.setColorsOfProduct(payload)
+			console.debug('setColorsOfProduct response', response)
+
+			setIsModalOpen(false)
+		} catch (error) {
+			console.error('setColorsOfProduct error', error)
+		}
 	}
 
 	return (
@@ -130,29 +147,31 @@ export default function ProductCustomiserCard({
 				<Icon name={'Colors'} />
 			</button>
 
-			<Modal
-				isOpen={isModalOpen}
-				onClose={() => setIsModalOpen(false)}
-				className="side"
-			>
+			<Modal isOpen={isModalOpen} onClose={onModalClose} className="side">
 				<h3 className={css.modal__title}>Select Colours</h3>
 				<span className={css.modal__subtitle}>
-					{colorsArray.length} of {choosed_colors.length} color
+					{colorsArray.length} of {colors.length} color
 					{colorsArray.length !== 1 ? 's' : ''} selected
 				</span>
 				<ul className={css['modal__color--pickers']}>
-					{choosed_colors &&
-						choosed_colors.map((item) => (
-							<li key={item.color} className={css.color__item}>
-								<ColorCheckbox
-									onInputHandle={colorInputHandle}
-									color={item.color}
-									name={item.name}
-									checked={colorsArray.find((c) => c.color === item.color)}
-									className={'horisontal'}
-								/>
-							</li>
-						))}
+					{colors &&
+						colors.map((item) => {
+							return (
+								<li key={item.color} className={css.color__item}>
+									<ColorCheckbox
+										onInputHandle={colorInputHandle}
+										color={item.color}
+										name={item.name}
+										checkedColor={
+											colorsArray.find((c) => c.color === item.color)
+												? true
+												: false
+										}
+										className={'horisontal'}
+									/>
+								</li>
+							)
+						})}
 				</ul>
 			</Modal>
 		</li>

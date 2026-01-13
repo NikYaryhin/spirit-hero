@@ -66,8 +66,6 @@ export default function FundraisingStep() {
 					)
 				})
 
-				console.log({ isFundraisingProducts, isSellAtCostProducts })
-
 				setProductsByCategory(isFundraisingProducts)
 				setSellAtCostProducts(isSellAtCostProducts)
 				// setProductsByCategory(sortedProducts)

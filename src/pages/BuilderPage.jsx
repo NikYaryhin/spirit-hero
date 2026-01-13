@@ -36,7 +36,7 @@ export default function Builder() {
 			try {
 				if (!localStorage.getItem('access_token')) {
 					const res = await spiritHeroApi.login('admin@gmail.com', '12345678')
-					console.log('Login res', res)
+					console.debug('Login res', res)
 				}
 
 				const params = new URLSearchParams(window.location.search)
@@ -47,7 +47,7 @@ export default function Builder() {
 				dispatch(setStoreIdAction(storeIdFromQuery))
 				try {
 					const storeData = await spiritHeroApi.getStore(storeIdFromQuery)
-					console.log('getStore', storeData)
+					console.debug('getStore', storeData)
 
 					dispatch(setStoreInfo(storeData))
 					if (storeData.products) {

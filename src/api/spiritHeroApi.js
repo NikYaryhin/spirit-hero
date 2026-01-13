@@ -33,7 +33,7 @@ export function setToken(token) {
 		return config
 	})
 
-	console.log('bearerToken', bearerToken)
+	console.debug('bearerToken', bearerToken)
 }
 
 class SpiritHeroApi {
@@ -83,6 +83,14 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async setColorsOfProduct(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/product-chose-colors',
+			payload,
+		)
+		return data
+	}
+
 	async deleteFromMyStoreProducts(store_id, ids) {
 		const body = { store_id, ids }
 		const { data } = await this.http.post(
@@ -100,8 +108,6 @@ class SpiritHeroApi {
 
 	async createDesign(store_id, design) {
 		const body = { design, store_id }
-		console.log('create-design body', body)
-
 		const { data } = await this.http.post('/api/builder/create-design', body)
 		return data
 	}

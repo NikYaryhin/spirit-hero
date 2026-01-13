@@ -39,7 +39,6 @@ const DesignStep = forwardRef((props, ref) => {
 	const [uploaderAgreed, setUploaderAgreed] = useState(false)
 	const [uploaderDragOver, setUploaderDragOver] = useState(false)
 
-	// custom elements on the canvas
 	const [customElements, setCustomElements] = useState([])
 	const [selectedId, setSelectedId] = useState(null)
 	const containerRef = useRef(null)
@@ -54,12 +53,10 @@ const DesignStep = forwardRef((props, ref) => {
 
 				setCustomerLogos({ ...res.design })
 
-				// Создаём customElements из данных с сервера
 				const loadedElements = []
 				const serverImageFiles = []
 				let zIndex = 1
 
-				// Загружаем изображения из customerLogos
 				if (
 					res.design.customerLogos &&
 					Array.isArray(res.design.customerLogos)
@@ -75,23 +72,21 @@ const DesignStep = forwardRef((props, ref) => {
 							height: logoData.height || 100,
 							rotation: 0,
 							zIndex: zIndex++,
-							content: { src: logoData.image }, // URL изображения с сервера
-							isServerImage: true, // Флаг для различения серверных изображений
+							content: { src: logoData.image },
+							isServerImage: true,
 						})
 
-						// Создаём объект для uploaderFiles
 						serverImageFiles.push({
 							url: logoData.image,
-							base64: logoData.image, // Для серверных изображений используем URL как base64
-							file: { name: `Server image ${index + 1}` }, // Псевдо-файл для отображения
+							base64: logoData.image,
+							file: { name: `Server image ${index + 1}` },
 							isServerImage: true,
 						})
 					})
 				}
-			console.debug('Server image files:', serverImageFiles)
-			setUploaderFiles(serverImageFiles)
+				console.debug('Server image files:', serverImageFiles)
+				setUploaderFiles(serverImageFiles)
 
-				// Загружаем текстовые элементы из labels
 				if (res.design.labels && Array.isArray(res.design.labels)) {
 					res.design.labels.forEach((labelData) => {
 						const id = uuidv4()
@@ -144,20 +139,17 @@ const DesignStep = forwardRef((props, ref) => {
 		fetchStoreData()
 	}, [])
 
-	// When uploaderFiles change, sync image elements with canvas
 	useEffect(() => {
 		setCustomElements((prev) => {
 			const currentUrls = uploaderFiles.map((f) => f.url)
 			const updatedElements = prev.filter((el) => {
-				// Удаляем все image элементы (и серверные, и загруженные), которые больше не присутствуют в uploaderFiles
 				if (el.type === 'image' && el.content?.src) {
 					return currentUrls.includes(el.content.src)
 				}
-				// Оставляем все не-image элементы (например, текстовые)
+
 				return true
 			})
 
-			// Проверяем, был ли удален выбранный элемент
 			const selectedElementExists = updatedElements.some(
 				(el) => el.id === selectedId,
 			)
@@ -165,7 +157,6 @@ const DesignStep = forwardRef((props, ref) => {
 				setSelectedId(null)
 			}
 
-			// Добавляем новые элементы для файлов, которых еще нет на канвасе
 			uploaderFiles.forEach((f) => {
 				const exists = updatedElements.some(
 					(el) => el.type === 'image' && el.content?.src === f.url,
@@ -182,10 +173,10 @@ const DesignStep = forwardRef((props, ref) => {
 						rotation: 0,
 						zIndex: (updatedElements.length || 0) + 1,
 						content: { src: f.url },
-						isServerImage: false, // Загруженное изображение
+						isServerImage: false,
 					}
 					updatedElements.push(el)
-					// Устанавливаем последний добавленный элемент как выбранный
+
 					setTimeout(() => setSelectedId(id), 0)
 				}
 			})
@@ -194,7 +185,6 @@ const DesignStep = forwardRef((props, ref) => {
 		})
 	}, [uploaderFiles, selectedId])
 
-	// Функция для обновления customerLogos на основе customElements
 	const updateCustomerLogos = async () => {
 		const labels = []
 		const customerLogos = []
@@ -215,7 +205,6 @@ const DesignStep = forwardRef((props, ref) => {
 				})
 			} else if (element.type === 'image') {
 				if (element.isServerImage) {
-					// Серверное изображение - сохраняем URL как есть
 					customerLogos.push({
 						image: element.content.src,
 						x: element.x,
@@ -224,7 +213,6 @@ const DesignStep = forwardRef((props, ref) => {
 						height: element.height,
 					})
 				} else {
-					// Загруженное изображение - находим base64
 					const fileData = uploaderFiles.find(
 						(f) => f.url === element.content.src,
 					)
@@ -302,10 +290,8 @@ const DesignStep = forwardRef((props, ref) => {
 				store_id: storeId,
 			}
 
-			console.log({ payload })
-
 			const response = await spiritHeroApi.createDesign(storeId, payload)
-			console.log('spiritHeroApi.createDesign response', response)
+			console.debug('spiritHeroApi.createDesign response', response)
 		} catch (error) {
 			console.error('Error creating screenshot:', error)
 			return null
@@ -657,8 +643,7 @@ const DesignStep = forwardRef((props, ref) => {
 								<details key={key} open>
 									<summary>
 										<Icon name={'ChevronUp'} />
-										<strong>{key}</strong> (we use id until on the back
-										structure category names)
+										<strong>{key}</strong>
 									</summary>
 
 									<ul className={css.products__list}>

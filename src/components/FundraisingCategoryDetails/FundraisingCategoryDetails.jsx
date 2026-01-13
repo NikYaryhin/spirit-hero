@@ -66,21 +66,23 @@ export default function FundraisingCategoryDetails({
 				</summary>
 
 				<ul className={css.product__list}>
-					{productsByCategory[categoryKey].map((product) => (
-						<FundraisingProductCard
-							product={product}
-							key={product.id}
-							profitValue={profitValue}
-							amountProfit={amountProfit}
-							checked={isChildChecked}
-							categoryKey={categoryKey}
-							setSellAtCostProducts={setSellAtCostProducts}
-							setProductsByCategory={setProductsByCategory}
-							setSelectedProducts={setSelectedProducts}
-							isFundraise={isFundraise}
-							pricesEnd={pricesEnd}
-						/>
-					))}
+					{productsByCategory[categoryKey].map((product) => {
+						return (
+							<FundraisingProductCard
+								product={product}
+								key={product.id}
+								profitValue={product.percent || profitValue}
+								amountProfit={amountProfit}
+								checked={isChildChecked}
+								categoryKey={categoryKey}
+								setSellAtCostProducts={setSellAtCostProducts}
+								setProductsByCategory={setProductsByCategory}
+								setSelectedProducts={setSelectedProducts}
+								isFundraise={isFundraise}
+								pricesEnd={pricesEnd}
+							/>
+						)
+					})}
 				</ul>
 			</details>
 		)

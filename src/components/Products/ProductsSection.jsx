@@ -238,7 +238,7 @@ export default function ProductsSection({ isFlashSale }) {
 		spiritHeroApi
 			.addToMyStoreProductsList(payload.store_id, payload.ids)
 			.then((res) => {
-				console.log('spiritHeroApi.addToMyStoreProductsList res', res)
+				console.debug('spiritHeroApi.addToMyStoreProductsList res', res)
 				showToast(
 					`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully added to your store.`,
 				)
@@ -279,7 +279,6 @@ export default function ProductsSection({ isFlashSale }) {
 		)
 		if (selectedIds.size === 0) return
 
-		console.log(Array.from(selectedIds))
 		const payload = {
 			store_id: +storeId || +localStorage.getItem('storeId'),
 			ids: Array.from(selectedIds).map((p) => +p),
@@ -288,7 +287,7 @@ export default function ProductsSection({ isFlashSale }) {
 		spiritHeroApi
 			.deleteFromMyStoreProducts(payload.store_id, payload.ids)
 			.then((res) => {
-				console.log('spiritHeroApi.deleteFromMyStoreProducts res', res)
+				console.debug('spiritHeroApi.deleteFromMyStoreProducts res', res)
 				showToast(
 					`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully removed from your store.`,
 				)

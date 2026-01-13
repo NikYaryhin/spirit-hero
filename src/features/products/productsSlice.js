@@ -33,20 +33,6 @@ export const fetchProducts = createAsyncThunk(
 	},
 )
 
-// export const fetchStoreProducts = createAsyncThunk(
-// 	'products/fetchStoreProducts',
-// 	async (storeId, { rejectWithValue }) => {
-// 		try {
-// 			const response = await spiritHeroApi.getStore(storeId)
-// 			console.log({response});
-
-// 			return response
-// 		} catch (error) {
-// 			return rejectWithValue(error.message)
-// 		}
-// 	},
-// )
-
 const productsSlice = createSlice({
 	name: 'products',
 	initialState,

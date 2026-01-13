@@ -30,8 +30,6 @@ export default function FundraisingNextStepModal({ closeModal }) {
 	}
 
 	const onFormSubmit = () => {
-		console.log({ checkData, achData })
-
 		dispatch(setActiveStep(5))
 		closeModal()
 	}

@@ -1,6 +1,6 @@
 import css from './FundraisingProductCard.module.css'
 import Icon from '../Icon'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
@@ -131,6 +131,44 @@ export default function FundraisingProductCard({
 		})
 	}
 
+	const debounceTimeoutRef = useRef(null)
+
+	const onPriceInputChange = useCallback(
+		(event) => {
+			const { value } = event.target
+
+			setProfit(+value)
+
+			// Clear previous timeout
+			if (debounceTimeoutRef.current) {
+				clearTimeout(debounceTimeoutRef.current)
+			}
+
+			// Set new timeout
+			debounceTimeoutRef.current = setTimeout(async () => {
+				try {
+					const payload = {
+						store_id: storeId,
+						products_info: [
+							{
+								id,
+								percent: +value,
+							},
+						],
+					}
+					console.debug({ payload })
+
+					const response = await updateFundraisingStatus(payload)
+
+					console.debug('updateFundraisingStatus response', response)
+				} catch (error) {
+					console.error('updateFundraisingStatus error', error)
+				}
+			}, 1500)
+		},
+		[storeId, id],
+	)
+
 	return (
 		<li key={id} className={css.product__card}>
 			<label className={`${css.label}`}>
@@ -166,7 +204,8 @@ export default function FundraisingProductCard({
 						<input
 							type="number"
 							value={profit}
-							onChange={(e) => setProfit(+e.target.value)}
+							onChange={onPriceInputChange}
+							min="0.1"
 						/>
 					</div>
 
