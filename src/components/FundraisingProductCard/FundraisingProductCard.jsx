@@ -62,7 +62,7 @@ export default function FundraisingProductCard({
 
 	const updateFundraisingStatus = async (is_fundraising) => {
 		try {
-			const response = await spiritHeroApi.updateFundraisingStatus({
+			const payload = {
 				store_id: storeId,
 				products_info: [
 					{
@@ -70,7 +70,8 @@ export default function FundraisingProductCard({
 						is_fundraising,
 					},
 				],
-			})
+			}
+			const response = await spiritHeroApi.updateFundraisingStatus(payload)
 			console.debug('spiritHeroApi.updateFundraisingStatus response:', response)
 		} catch (error) {
 			console.error('spiritHeroApi.updateFundraisingStatus error:', error)
@@ -158,7 +159,7 @@ export default function FundraisingProductCard({
 					}
 					console.debug({ payload })
 
-					const response = await updateFundraisingStatus(payload)
+					const response = await spiritHeroApi.updateFundraisingStatus(payload)
 
 					console.debug('updateFundraisingStatus response', response)
 				} catch (error) {
