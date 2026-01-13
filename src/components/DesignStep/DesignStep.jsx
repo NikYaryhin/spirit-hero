@@ -138,6 +138,10 @@ const DesignStep = forwardRef((props, ref) => {
 					color: element.style.color || '#000000',
 					bold: element.style.fontWeight === '700',
 					italic: element.style.fontStyle === 'italic',
+					x: element.x,
+					y: element.y,
+					width: element.width,
+					height: element.height,
 				})
 			} else if (element.type === 'image') {
 				// Находим соответствующий файл в uploaderFiles
@@ -145,7 +149,13 @@ const DesignStep = forwardRef((props, ref) => {
 					(f) => f.url === element.content.src,
 				)
 				if (fileData && fileData.base64) {
-					customerLogos.push(fileData.base64)
+					customerLogos.push({
+						image: fileData.base64,
+						x: element.x,
+						y: element.y,
+						width: element.width,
+						height: element.height,
+					})
 				}
 			}
 		}
@@ -157,10 +167,10 @@ const DesignStep = forwardRef((props, ref) => {
 		})
 	}
 
-	// Обновляем customerLogos при изменении customElements
+	// Обновляем customerLogos при изменении uploaderFiles (добавление/удаление изображений)
 	useEffect(() => {
 		updateCustomerLogos()
-	}, [customElements, uploaderFiles])
+	}, [uploaderFiles])
 
 	// Функция для создания скриншота контейнера custom__elements
 	const getLogoParameters = async () => {
@@ -374,6 +384,9 @@ const DesignStep = forwardRef((props, ref) => {
 												}),
 											)
 										}}
+										onDragEnd={() => {
+											updateCustomerLogos()
+										}}
 										onResize={({ target, width, height }) => {
 											const id = target.getAttribute('data-id')
 											const container = containerRef.current
@@ -387,6 +400,9 @@ const DesignStep = forwardRef((props, ref) => {
 													return { ...el, width: newW, height: newH }
 												}),
 											)
+										}}
+										onResizeEnd={() => {
+											updateCustomerLogos()
 										}}
 										onScaleStart={({ target }) => {
 											const id = target.getAttribute('data-id')
@@ -433,6 +449,9 @@ const DesignStep = forwardRef((props, ref) => {
 														: el,
 												),
 											)
+										}}
+										onRotateEnd={() => {
+											updateCustomerLogos()
 										}}
 									/>
 								)
