@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { steps } from '@/helpers/const'
 
 const initialState = {
-	activeStep: 3,
+	activeStep: 1,
 	totalSteps: steps.length,
 }
 
