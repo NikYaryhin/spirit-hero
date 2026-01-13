@@ -1,16 +1,26 @@
+body:has(.loader__wrap) {
+	overflow: hidden;
+}
+
 .loader__wrap {
+	position: fixed;
+	inset: 0 0 0 0;
+	z-index: 10;
+
 	display: inline-flex;
 	align-items: center;
-	gap: 0.8rem;
+	justify-content: center;
+	gap: 4rem;
 
 	margin: 0 auto;
+	background-color: rgba(255, 255, 255, 0.9);
 }
 
 .spinner {
-	width: 32px;
-	height: 32px;
+	width: 10rem;
+	height: 10rem;
 	border-radius: 50%;
-	border: 4px solid rgba(0, 0, 0, 0.08);
+	border: 0.8rem solid rgba(0, 0, 0, 0.08);
 	border-top-color: #4E008E;
 	animation: spin 0.9s linear infinite;
 }
@@ -22,6 +32,6 @@
 }
 
 .loader__label {
-	font-size: 1.4rem;
+	font-size: 5.6rem;
 	color: #373239;
 }

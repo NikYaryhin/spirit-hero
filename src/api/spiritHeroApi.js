@@ -99,8 +99,8 @@ class SpiritHeroApi {
 	}
 
 	async createDesign(store_id, design) {
-		const body = { store_id, design }
-		console.log(body)
+		const body = { design, store_id }
+		console.log('create-design body', body)
 
 		const { data } = await this.http.post('/api/builder/create-design', body)
 		return data

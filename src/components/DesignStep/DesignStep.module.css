@@ -19,8 +19,15 @@
 			height: 25rem;
 			width: 25rem;
 
-			border: 2px dashed #4E008E;
 			overflow: hidden;
+
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 0 0 0 0;
+
+				border: 2px dashed #4E008E;
+			}
 		}
 
 		.deleteButton {

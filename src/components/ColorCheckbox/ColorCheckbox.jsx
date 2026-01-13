@@ -10,10 +10,9 @@ export default function ColorCheckbox({
 	checkedColor,
 	className,
 }) {
-	const [isChecked, setIsChecked] = useState(checkedColor)
+	// const [isChecked, setIsChecked] = useState(checkedColor)
 
 	const onInputChange = (e) => {
-		setIsChecked(!isChecked)
 		const { checked, value } = e.currentTarget
 
 		onInputHandle(checked, value)
@@ -41,7 +40,7 @@ export default function ColorCheckbox({
 			<span className={css.name}>{name}</span>
 
 			<input
-				checked={isChecked}
+				checked={checkedColor}
 				onChange={onInputChange}
 				type="checkbox"
 				className="visually-hidden"

@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { nextStep } from '@/features/navigation/navigationSlice'
 import FlashSale from '@/components/FlashSale/FlashSale'
+import Loader from '@/components/Loader/Loader'
 import ProductStepValidationModal from '@/components/ProductStepValidationModal/ProductStepValidationModal'
 import FundraisingNextStepModal from '@/components/FundraisingNextStepModal/FundraisingNextStepModal'
 import spiritHeroApi from '@/api/spiritHeroApi'
@@ -24,6 +25,7 @@ import {
 
 export default function Builder() {
 	const dispatch = useDispatch()
+	const isLoading = useSelector((state) => state.products.isLoading)
 	const activeStep = useSelector((state) => state.navigation.activeStep)
 	// const storeId = useSelector((state) => state.flashSale.storeId)
 	const [isModalOpen, setIsModalOpen] = useState(false)
@@ -88,6 +90,7 @@ export default function Builder() {
 
 	return (
 		<>
+			{isLoading && <Loader />}
 			<BuilderHeader onNextStep={handleNextStep} />
 
 			{activeStep === 1 && <Details />}

@@ -81,11 +81,7 @@
 				color: #605767;
 			}
 
-			.color--picker__list {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2.4rem;
-			}
+
 		}
 
 		.next__button--box {

@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { nextStep } from '@/features/navigation/navigationSlice'
-import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
+
 import css from './StoreDetailsForm.module.css'
 import spiritHeroApi from '@/api/spiritHeroApi'
-import { COLORS } from '@/helpers/const'
+
 import {
 	setStoreId as setStoreIdAction,
 	setStoreInfo,
 	setFlashSale,
 } from '@/features/flashSale/flashSaleSlice'
+import ColorsList from '../ColorsList/ColorsList'
 
 const slugify = (value) =>
 	value
@@ -36,11 +37,14 @@ export default function StoreDetailsForm({ image }) {
 
 	useEffect(() => {
 		if (storeInfo?.store) {
-			setStoreName(storeInfo.store.name || '')
-			setStoreURL(storeInfo.store.website_url || '')
-			setFirstSocial(storeInfo.store.social_media_1 || '')
-			setSecondSocial(storeInfo.store.social_media_2 || '')
-			setColors(storeInfo.store.color || [])
+			const { name, website_url, social_media_1, social_media_2, color } =
+				storeInfo.store
+
+			setStoreName(name || '')
+			setStoreURL(website_url || '')
+			setFirstSocial(social_media_1 || '')
+			setSecondSocial(social_media_2 || '')
+			setColors(color)
 		}
 	}, [storeInfo])
 
@@ -186,23 +190,7 @@ export default function StoreDetailsForm({ image }) {
 						</span>
 					</p>
 
-					<ul className={css['color--picker__list']}>
-						{colors.length > 0 &&
-							COLORS.map(({ color, name, id }) => {
-								return (
-									<li key={id}>
-										<ColorCheckbox
-											onInputHandle={colorInputHandle}
-											color={color}
-											colors={colors}
-											name={name}
-											checkedColor={colors.includes(color)}
-											inputName="color--input"
-										/>
-									</li>
-								)
-							})}
-					</ul>
+					<ColorsList colorInputHandle={colorInputHandle} colors={colors} />
 				</fieldset>
 
 				<div className={css['next__button--box']}>
