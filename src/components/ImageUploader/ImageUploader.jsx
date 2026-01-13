@@ -70,7 +70,10 @@ export default function ImageUploader({
 		setFiles((prev) => {
 			const next = prev.slice()
 			const [removed] = next.splice(index, 1)
-			if (removed && removed.url) URL.revokeObjectURL(removed.url)
+			// Освобождаем URL только для загруженных файлов, не для серверных
+			if (removed && removed.url && !removed.isServerImage) {
+				URL.revokeObjectURL(removed.url)
+			}
 			if (typeof onChange === 'function') onChange(next.map((p) => p.file))
 			return next
 		})
@@ -119,28 +122,31 @@ export default function ImageUploader({
 				{files.length > 0 && (
 					<>
 						<div className={css.previews}>
-							{files.map((p, i) => (
-								<div
-									className={css.preview}
-									key={p.url + i}
-									title={`${p.file.name}`}
+							{files.map((p, i) => {
+						const fileName = p.file?.name || p.isServerImage ? `Image ${i + 1}` : 'Unknown'
+						return (
+							<div
+								className={css.preview}
+								key={p.url + i}
+								title={fileName}
+							>
+								<button
+									className={css.removeBtn}
+									type="button"
+									onClick={() => removeAt(i)}
+									aria-label={`Remove ${fileName}`}
+									title={`Remove ${fileName}`}
 								>
-									<button
-										className={css.removeBtn}
-										type="button"
-										onClick={() => removeAt(i)}
-										aria-label={`Remove ${p.file.name}`}
-										title={`Remove ${p.file.name}`}
-									>
-										<Icon name={'Cancel'} />
-										<span>{p.file.name}</span>
-									</button>
+									<Icon name={'Cancel'} />
+									<span>{fileName}</span>
+								</button>
 
-									<div className={css.preview__image}>
-										<img src={p.url} alt={p.file.name} loading="lazy" />
-									</div>
+								<div className={css.preview__image}>
+									<img src={p.url} alt={fileName} loading="lazy" />
 								</div>
-							))}
+							</div>
+						)
+					})}
 
 							<label
 								className={`${css.smallUpload} ${!agreed ? css.disabled : ''}`}

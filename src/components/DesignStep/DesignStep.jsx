@@ -54,6 +54,75 @@ const DesignStep = forwardRef((props, ref) => {
 
 				setCustomerLogos({ ...res.design })
 
+				// Создаём customElements из данных с сервера
+				const loadedElements = []
+				const serverImageFiles = []
+				let zIndex = 1
+
+				// Загружаем изображения из customerLogos
+				if (
+					res.design.customerLogos &&
+					Array.isArray(res.design.customerLogos)
+				) {
+					res.design.customerLogos.forEach((logoData, index) => {
+						const id = uuidv4()
+						loadedElements.push({
+							id,
+							type: 'image',
+							x: logoData.x || 30,
+							y: logoData.y || 30,
+							width: logoData.width || 100,
+							height: logoData.height || 100,
+							rotation: 0,
+							zIndex: zIndex++,
+							content: { src: logoData.image }, // URL изображения с сервера
+							isServerImage: true, // Флаг для различения серверных изображений
+						})
+
+						// Создаём объект для uploaderFiles
+						serverImageFiles.push({
+							url: logoData.image,
+							base64: logoData.image, // Для серверных изображений используем URL как base64
+							file: { name: `Server image ${index + 1}` }, // Псевдо-файл для отображения
+							isServerImage: true,
+						})
+					})
+				}
+			console.debug('Server image files:', serverImageFiles)
+			setUploaderFiles(serverImageFiles)
+
+				// Загружаем текстовые элементы из labels
+				if (res.design.labels && Array.isArray(res.design.labels)) {
+					res.design.labels.forEach((labelData) => {
+						const id = uuidv4()
+						loadedElements.push({
+							id,
+							type: 'text',
+							x: labelData.x || 20,
+							y: labelData.y || 20,
+							width: 'fit-content',
+							maxWidth: 300,
+							height: 'fit-content',
+							rotation: 0,
+							zIndex: zIndex++,
+							content: labelData.text || '',
+							style: {
+								fontFamily: labelData.fontFamily || 'Montserrat',
+								fontSize:
+									typeof labelData.fontSize === 'number'
+										? `${labelData.fontSize}px`
+										: labelData.fontSize || '54px',
+								color: labelData.color || '#000000',
+								fontWeight: labelData.bold ? 700 : 400,
+								fontStyle: labelData.italic ? 'italic' : 'normal',
+							},
+						})
+					})
+				}
+
+				console.debug('Loaded elements from server:', loadedElements)
+				setCustomElements(loadedElements)
+
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [
 						...(acc[product.category_id] || []),
@@ -80,7 +149,7 @@ const DesignStep = forwardRef((props, ref) => {
 		setCustomElements((prev) => {
 			const currentUrls = uploaderFiles.map((f) => f.url)
 			const updatedElements = prev.filter((el) => {
-				// Удаляем image элементы, которые больше не присутствуют в uploaderFiles
+				// Удаляем все image элементы (и серверные, и загруженные), которые больше не присутствуют в uploaderFiles
 				if (el.type === 'image' && el.content?.src) {
 					return currentUrls.includes(el.content.src)
 				}
@@ -113,6 +182,7 @@ const DesignStep = forwardRef((props, ref) => {
 						rotation: 0,
 						zIndex: (updatedElements.length || 0) + 1,
 						content: { src: f.url },
+						isServerImage: false, // Загруженное изображение
 					}
 					updatedElements.push(el)
 					// Устанавливаем последний добавленный элемент как выбранный
@@ -138,29 +208,50 @@ const DesignStep = forwardRef((props, ref) => {
 					color: element.style.color || '#000000',
 					bold: element.style.fontWeight === '700',
 					italic: element.style.fontStyle === 'italic',
+					x: element.x,
+					y: element.y,
+					width: element.width,
+					height: element.height,
 				})
 			} else if (element.type === 'image') {
-				// Находим соответствующий файл в uploaderFiles
-				const fileData = uploaderFiles.find(
-					(f) => f.url === element.content.src,
-				)
-				if (fileData && fileData.base64) {
-					customerLogos.push(fileData.base64)
+				if (element.isServerImage) {
+					// Серверное изображение - сохраняем URL как есть
+					customerLogos.push({
+						image: element.content.src,
+						x: element.x,
+						y: element.y,
+						width: element.width,
+						height: element.height,
+					})
+				} else {
+					// Загруженное изображение - находим base64
+					const fileData = uploaderFiles.find(
+						(f) => f.url === element.content.src,
+					)
+					if (fileData && fileData.base64) {
+						customerLogos.push({
+							image: fileData.base64,
+							x: element.x,
+							y: element.y,
+							width: element.width,
+							height: element.height,
+						})
+					}
 				}
 			}
 		}
 
-		setCustomerLogos({
-			elementsPositionImage: '',
+		setCustomerLogos((prev) => ({
+			...prev,
 			customerLogos: customerLogos,
 			labels: labels,
-		})
+		}))
 	}
 
-	// Обновляем customerLogos при изменении customElements
+	// Обновляем customerLogos при изменении uploaderFiles (добавление/удаление изображений)
 	useEffect(() => {
 		updateCustomerLogos()
-	}, [customElements, uploaderFiles])
+	}, [uploaderFiles])
 
 	// Функция для создания скриншота контейнера custom__elements
 	const getLogoParameters = async () => {
@@ -241,7 +332,7 @@ const DesignStep = forwardRef((props, ref) => {
 							}
 						}}
 					>
-						{customerLogos.elementsPositionImage !== '' &&
+						{/* {customerLogos.elementsPositionImage !== '' &&
 							customerLogos.elementsPositionImage && (
 								<img
 									src={customerLogos.elementsPositionImage}
@@ -253,7 +344,7 @@ const DesignStep = forwardRef((props, ref) => {
 										objectPosition: 'center',
 									}}
 								/>
-							)}
+							)} */}
 						{customElements.map((el) => (
 							<div
 								key={el.id}
@@ -374,6 +465,9 @@ const DesignStep = forwardRef((props, ref) => {
 												}),
 											)
 										}}
+										onDragEnd={() => {
+											updateCustomerLogos()
+										}}
 										onResize={({ target, width, height }) => {
 											const id = target.getAttribute('data-id')
 											const container = containerRef.current
@@ -387,6 +481,9 @@ const DesignStep = forwardRef((props, ref) => {
 													return { ...el, width: newW, height: newH }
 												}),
 											)
+										}}
+										onResizeEnd={() => {
+											updateCustomerLogos()
 										}}
 										onScaleStart={({ target }) => {
 											const id = target.getAttribute('data-id')
@@ -433,6 +530,9 @@ const DesignStep = forwardRef((props, ref) => {
 														: el,
 												),
 											)
+										}}
+										onRotateEnd={() => {
+											updateCustomerLogos()
 										}}
 									/>
 								)
