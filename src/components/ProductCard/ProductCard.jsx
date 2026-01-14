@@ -4,8 +4,7 @@ import css from './ProductCard.module.css'
 import previewImage from '@/assets/SpiritHero__Preloader.png'
 
 export default function ProductCard({ product, isFlashSale, inputHandle }) {
-	const { id, product_title, product_image, selected, params, choosed_colors } =
-		product
+	const { id, product_title, product_image, selected, params, colors } = product
 
 	const [image, setImage] = useState(product_image || previewImage)
 
@@ -48,8 +47,8 @@ export default function ProductCard({ product, isFlashSale, inputHandle }) {
 			</label>
 
 			<fieldset className={css.fieldset}>
-				{choosed_colors &&
-					choosed_colors.map((color) => (
+				{colors &&
+					colors.map((color) => (
 						<label key={color.id}>
 							<span className={css.checkbox__emulator}>
 								<span
