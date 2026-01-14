@@ -2,9 +2,18 @@ import Icon from '../Icon'
 import css from './CustomSelect.module.css'
 import { useState } from 'react'
 
-export default function CustomSelect({ name, info, values, setColorCount }) {
-	const initial = values && values.length > 0 ? values[0].value : null
-	const [currentValue, setCurrentValue] = useState(initial)
+export default function CustomSelect({
+	name,
+	info,
+	values,
+	setColorCount,
+	initialValue,
+}) {
+	// const initial = values && values.length > 0 ? values[0].value : null
+
+	const [currentValue, setCurrentValue] = useState(
+		values.find((item) => item.quantity === +initialValue).value,
+	)
 
 	const handleSelect = (value, quantity) => {
 		setCurrentValue(value)

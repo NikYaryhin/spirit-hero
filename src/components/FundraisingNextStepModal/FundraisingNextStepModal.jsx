@@ -1,37 +1,95 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Icon from '../Icon'
 import css from './FundraisingNextStepModal.module.css'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
+import spiritHeroApi from '@/api/spiritHeroApi'
 
 export default function FundraisingNextStepModal({ closeModal }) {
 	const dispatch = useDispatch()
 
+	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
+	const storeId = useSelector((state) => state.flashSale.storeId)
 	const [isCheck, setIsCheck] = useState(false)
 	const [checkData, setCheckData] = useState({
-		payeeName: '',
-		firstName: '',
-		lastName: '',
-		organization: '',
-		address1: '',
-		address2: '',
+		type_id: 1,
+		payment_name: '',
+		first_name: '',
+		last_name: '',
+		organization_name: '',
+		address_1: '',
+		address_2: '',
 		city: '',
 		state: '',
-		zip: '',
+		zip_code: '',
 	})
 	const [achData, setAchData] = useState({
-		bankName: '',
-		routingNumber: '',
-		accountNumber: '',
+		bank_name: '',
+		routing_number: '',
+		account_number: '',
 	})
+
+	useEffect(() => {
+		if (storeInfo.store?.receiveFunds) {
+			const {
+				type_id,
+				payment_name,
+				first_name,
+				last_name,
+				organization_name,
+				address_1,
+				address_2,
+				city,
+				state,
+				zip_code,
+			} = storeInfo.store.receiveFunds
+
+			setCheckData({
+				type_id,
+				payment_name,
+				first_name,
+				last_name,
+				organization_name,
+				address_1,
+				address_2,
+				city,
+				state,
+				zip_code,
+			})
+		}
+		if (storeInfo.store?.receiveFundsAch) {
+			const { account_number, routing_number, bank_name } =
+				storeInfo.store.receiveFundsAch
+			setAchData({ account_number, routing_number, bank_name })
+		}
+	}, [])
 
 	const onRadioChange = () => {
 		setIsCheck(!isCheck)
 	}
 
-	const onFormSubmit = () => {
-		dispatch(setActiveStep(5))
-		closeModal()
+	const onFormSubmit = async (e) => {
+		e.preventDefault()
+
+		try {
+			let response
+			if (isCheck) {
+				const payload = { ...checkData, store_id: storeId }
+				console.log({ payload })
+				response = await spiritHeroApi.receiveFunds(payload)
+			} else {
+				const payload = { ...achData, store_id: storeId }
+				console.log({ payload })
+
+				response = await spiritHeroApi.receiveFundsACH(payload)
+			}
+
+			console.debug('Receive data fetching response', response)
+			dispatch(setActiveStep(5))
+			closeModal()
+		} catch (error) {
+			console.error('Receive data fetching error', error)
+		}
 	}
 
 	return (
@@ -80,9 +138,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									id="payee--name"
 									onChange={(e) => {
 										setCheckData((prev) => {
-											return { ...prev, payeeName: e.target.value }
+											return { ...prev, payment_name: e.target.value }
 										})
 									}}
+									value={checkData.payment_name}
 									type="text"
 									placeholder="Payee name"
 									required
@@ -95,9 +154,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									id="first--name"
 									onChange={(e) => {
 										setCheckData((prev) => {
-											return { ...prev, firstName: e.target.value }
+											return { ...prev, first_name: e.target.value }
 										})
 									}}
+									value={checkData.first_name}
 									type="text"
 									placeholder="Name"
 									required
@@ -110,9 +170,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									id="last--name"
 									onChange={(e) => {
 										setCheckData((prev) => {
-											return { ...prev, lastName: e.target.value }
+											return { ...prev, last_name: e.target.value }
 										})
 									}}
+									value={checkData.last_name}
 									type="text"
 									placeholder="Last Name"
 									required
@@ -127,9 +188,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									id="school-organization-name"
 									onChange={(e) => {
 										setCheckData((prev) => {
-											return { ...prev, organization: e.target.value }
+											return { ...prev, organization_name: e.target.value }
 										})
 									}}
+									value={checkData.organization_name}
 									type="text"
 									placeholder="School or Organization Name"
 									required
@@ -142,9 +204,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									id="address-1"
 									onChange={(e) => {
 										setCheckData((prev) => {
-											return { ...prev, address1: e.target.value }
+											return { ...prev, address_1: e.target.value }
 										})
 									}}
+									value={checkData.address_1}
 									type="text"
 									placeholder="123 Example Street"
 									required
@@ -159,9 +222,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									id="address-2"
 									onChange={(e) => {
 										setCheckData((prev) => {
-											return { ...prev, address2: e.target.value }
+											return { ...prev, address_2: e.target.value }
 										})
 									}}
+									value={checkData.address_2}
 									type="text"
 									placeholder="123 Example Street"
 								/>
@@ -176,6 +240,7 @@ export default function FundraisingNextStepModal({ closeModal }) {
 											return { ...prev, city: e.target.value }
 										})
 									}}
+									value={checkData.city}
 									type="text"
 									placeholder="City"
 									required
@@ -191,6 +256,7 @@ export default function FundraisingNextStepModal({ closeModal }) {
 											return { ...prev, state: e.target.value }
 										})
 									}}
+									value={checkData.state}
 									type="text"
 									placeholder="State"
 									required
@@ -203,9 +269,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									id="zip-code"
 									onChange={(e) => {
 										setCheckData((prev) => {
-											return { ...prev, zip: e.target.value }
+											return { ...prev, zip_code: e.target.value }
 										})
 									}}
+									value={checkData.zip_code}
 									type="text"
 									placeholder="Zip Code"
 									required
@@ -219,9 +286,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 								<input
 									onChange={(e) => {
 										setAchData((prev) => {
-											return { ...prev, bankName: e.target.value }
+											return { ...prev, bank_name: e.target.value }
 										})
 									}}
+									value={achData.bank_name}
 									type="text"
 									placeholder="Enter bank name"
 									required
@@ -233,9 +301,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 								<input
 									onChange={(e) => {
 										setAchData((prev) => {
-											return { ...prev, routingNumber: e.target.value }
+											return { ...prev, routing_number: e.target.value }
 										})
 									}}
+									value={achData.routing_number}
 									type="text"
 									placeholder="Enter routing number"
 									required
@@ -247,9 +316,10 @@ export default function FundraisingNextStepModal({ closeModal }) {
 								<input
 									onChange={(e) => {
 										setAchData((prev) => {
-											return { ...prev, accountNumber: e.target.value }
+											return { ...prev, account_number: e.target.value }
 										})
 									}}
+									value={achData.account_number}
 									type="text"
 									placeholder="Enter account number"
 									required

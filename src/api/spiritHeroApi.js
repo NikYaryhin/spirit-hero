@@ -91,6 +91,14 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async setInkModalData(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/edit-ink-color',
+			payload,
+		)
+		return data
+	}
+
 	async deleteFromMyStoreProducts(store_id, ids) {
 		const body = { store_id, ids }
 		const { data } = await this.http.post(
@@ -100,9 +108,11 @@ class SpiritHeroApi {
 		return data
 	}
 
-	async editInkColor(store_id, front_side, back_side) {
-		const body = { store_id, front_side, back_side }
-		const { data } = await this.http.post('/api/builder/edit-ink-color', body)
+	async editInkColor(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/edit-ink-color',
+			payload,
+		)
 		return data
 	}
 
@@ -142,8 +152,24 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async updateProfitType(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/update-store-percent-profit',
+			payload,
+		)
+		return data
+	}
+
 	async receiveFunds(payload) {
 		const { data } = await this.http.post('/api/builder/receive-funds', payload)
+		return data
+	}
+
+	async receiveFundsACH(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/receive-funds-ach',
+			payload,
+		)
 		return data
 	}
 

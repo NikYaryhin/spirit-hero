@@ -28,7 +28,7 @@ export default function FundraisingStep() {
 
 	const [selectedProducts, setSelectedProducts] = useState([])
 
-	const [amountProfit, setAmountProfit] = useState(true)
+	const [amountProfit, setAmountProfit] = useState(false)
 	const [profitValue, setProfitValue] = useState(1)
 	const [pricesEnd, setPricesEnd] = useState(null)
 
@@ -39,7 +39,6 @@ export default function FundraisingStep() {
 		const fetchStoreData = async () => {
 			try {
 				const res = await spiritHeroApi.getStore(storeId)
-
 				console.debug('spiritHeroApi.getStore res', res)
 
 				const sortedProducts =
@@ -68,17 +67,8 @@ export default function FundraisingStep() {
 
 				setProductsByCategory(isFundraisingProducts)
 				setSellAtCostProducts(isSellAtCostProducts)
-				// setProductsByCategory(sortedProducts)
-				// setSellAtCostProducts(() => {
-				// 	const sellAtCostSorted = { ...sortedProducts }
-
-				// 	for (const key in sellAtCostSorted) {
-				// 		sellAtCostSorted[key] = []
-				// 	}
-
-				// 	return sellAtCostSorted
-				// })
 				setIsLoading(false)
+				setAmountProfit(!res.store.is_percent_profit)
 			} catch (error) {
 				console.error(`spiritHeroApi.getStore error`, error)
 			}
@@ -197,6 +187,23 @@ export default function FundraisingStep() {
 		const { value } = e.target
 
 		console.log(value)
+	}
+
+	const profitInputHandle = async (e) => {
+		const { value } = e.target
+		const is_percent_profit = value === 'fixed' ? false : true
+		setAmountProfit(!is_percent_profit)
+
+		try {
+			const response = await spiritHeroApi.updateProfitType({
+				store_id: storeId,
+				is_percent_profit,
+			})
+
+			console.debug('updateProfitType response', response)
+		} catch (error) {
+			console.error('updateProfitType response', error)
+		}
 	}
 
 	if (isLoading) return <Loader />
@@ -346,9 +353,10 @@ export default function FundraisingStep() {
 									<span className={css.input__emulator}></span>
 									In Fixed Amount, USD
 									<input
-										onChange={() => setAmountProfit(true)}
+										onChange={profitInputHandle}
 										type="radio"
 										name="profit__type"
+										value="fixed"
 										checked={amountProfit}
 										className={'visually-hidden'}
 									/>
@@ -357,9 +365,10 @@ export default function FundraisingStep() {
 									<span className={css.input__emulator}></span>
 									Percentage Based
 									<input
-										onChange={() => setAmountProfit(false)}
+										onChange={profitInputHandle}
 										type="radio"
 										name="profit__type"
+										value="percent"
 										checked={!amountProfit}
 										className={'visually-hidden'}
 									/>

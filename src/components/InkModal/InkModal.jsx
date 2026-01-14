@@ -15,6 +15,7 @@ const COLOR_SELECT_VALUES = [
 ]
 
 export default function InkModal() {
+	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const storeId = useSelector((state) => state.flashSale.storeId)
 
 	const [price, setPrice] = useState(0)
@@ -22,17 +23,33 @@ export default function InkModal() {
 	const [backColorsCount, setBackColorsCount] = useState(0)
 
 	useEffect(() => {
+		console.log('storeInfo.inkColorDetail', storeInfo.store.inkColorDetail)
+
+		if (storeInfo.store.inkColorDetail) {
+			const { front_side_colors, back_side_colors, cost } =
+				storeInfo.store.inkColorDetail
+
+			setFrontColorsCount(+front_side_colors)
+			setBackColorsCount(+back_side_colors)
+			setPrice(+cost)
+		}
+	}, [])
+
+	useEffect(() => {
 		const backColorPrice = backColorsCount === 0 ? 0 : backColorsCount + 4
 		setPrice(frontColorsCount + backColorPrice)
 	}, [frontColorsCount, backColorsCount])
 
 	const onButtonClick = async () => {
-		const store_id = storeId || localStorage.getItem('storeId')
-		const front_side = frontColorsCount
-		const back_side = backColorsCount
-
 		try {
-			const res = spiritHeroApi.editInkColor(store_id, front_side, back_side)
+			const payload = {
+				store_id: storeId,
+				front_side_colors: frontColorsCount,
+				back_side_colors: backColorsCount,
+				cost: price,
+			}
+
+			const res = await spiritHeroApi.editInkColor(payload)
 			console.debug('editInkColor res', res)
 		} catch (error) {
 			console.error('spiritHeroApi.editInkColor()', error)
@@ -61,6 +78,7 @@ export default function InkModal() {
 							info="+1 ink color = +$1.00 added to price"
 							values={COLOR_SELECT_VALUES}
 							setColorCount={setFrontColorsCount}
+							initialValue={frontColorsCount}
 						/>
 					</div>
 
@@ -72,6 +90,7 @@ export default function InkModal() {
 							info="+$5.00 for the first ink color, +$1.00 for each extra"
 							values={COLOR_SELECT_VALUES}
 							setColorCount={setBackColorsCount}
+							initialValue={backColorsCount}
 						/>
 					</div>
 				</div>
