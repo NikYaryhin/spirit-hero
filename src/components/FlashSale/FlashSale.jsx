@@ -11,6 +11,7 @@ import spiritHeroApi from '@/api/spiritHeroApi'
 export default function FlashSale() {
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
+	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const storeId =
 		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 
@@ -34,10 +35,7 @@ export default function FlashSale() {
 	useEffect(() => {
 		async function fetchFlashSaleSettings() {
 			try {
-				console.debug({ storeId: storeId })
-
 				const response = await spiritHeroApi.getFlashSaleSettings(storeId)
-
 				console.debug('spiritHeroApi.getFlashSaleSettings response', response)
 
 				const {
@@ -153,9 +151,13 @@ export default function FlashSale() {
 					</p>
 				</div>
 
-				<button className={css['flash--sale__head--button']}>
+				<a
+					href={storeInfo.store.collection_url || '#'}
+					target="blank"
+					className={css['flash--sale__head--button']}
+				>
 					Preview store
-				</button>
+				</a>
 			</div>
 
 			<details

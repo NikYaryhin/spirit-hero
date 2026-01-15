@@ -25,6 +25,7 @@ export default function StoreDetailsForm({ image }) {
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const storeId = useSelector((state) => state.flashSale.storeId)
 
+	const [isLoading, setIsLoading] = useState(false)
 	const [storeName, setStoreName] = useState(storeInfo?.store?.name || '')
 	const [storeURL, setStoreURL] = useState(storeInfo?.store?.website_url || '')
 	const [firstSocial, setFirstSocial] = useState(
@@ -50,6 +51,7 @@ export default function StoreDetailsForm({ image }) {
 
 	const onFormSubmit = async (event) => {
 		event.preventDefault()
+		setIsLoading(true)
 
 		const payload = {
 			start_type: 1,
@@ -93,6 +95,8 @@ export default function StoreDetailsForm({ image }) {
 			dispatch(nextStep())
 		} catch (error) {
 			console.error('save/update store error', error)
+		} finally {
+			setIsLoading(false)
 		}
 	}
 
@@ -191,8 +195,12 @@ export default function StoreDetailsForm({ image }) {
 				</fieldset>
 
 				<div className={css['next__button--box']}>
-					<button type="submit" className={css.next__button}>
-						Next
+					<button
+						type="submit"
+						className={css.next__button}
+						disabled={isLoading}
+					>
+						{isLoading ? 'Saving' : 'Next'}
 					</button>
 
 					<span className={css['next__button--label']}>

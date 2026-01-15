@@ -2,8 +2,10 @@ import { useState } from 'react'
 import Icon from '../Icon'
 import css from './ProductCard.module.css'
 import previewImage from '@/assets/SpiritHero__Preloader.png'
+import { useSelector } from 'react-redux'
 
 export default function ProductCard({ product, isFlashSale, inputHandle }) {
+	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
 	const { id, product_title, product_image, selected, params, colors } = product
 
 	const [image, setImage] = useState(product_image || previewImage)
@@ -25,11 +27,17 @@ export default function ProductCard({ product, isFlashSale, inputHandle }) {
 			<div className={css.price}>
 				{isFlashSale ? (
 					<>
-						<span className={css.flash__price}>${params.flash_sale_price}</span>
-						<span className={css.old__price}>${params.on_demand_price}</span>
+						<span className={css.flash__price}>
+							${(+params.flash_sale_price + colorPrice).toFixed(2)}
+						</span>
+						<span className={css.old__price}>
+							${(+params.on_demand_price + colorPrice).toFixed(2)}
+						</span>
 					</>
 				) : (
-					<span className={css.price}>${params.on_demand_price}</span>
+					<span className={css.price}>
+						${(+params.on_demand_price + colorPrice).toFixed(2)}
+					</span>
 				)}
 			</div>
 

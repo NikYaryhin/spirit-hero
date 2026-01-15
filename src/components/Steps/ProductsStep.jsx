@@ -19,8 +19,6 @@ export default function ProductsStep() {
 		const { checked } = event.currentTarget
 		dispatch(setFlashSale(checked))
 
-		console.debug({ storeId, is_flash_sale: checked })
-
 		if (storeId)
 			spiritHeroApi.updateStore({ is_flash_sale: checked, store_id: storeId })
 	}
@@ -87,7 +85,7 @@ export default function ProductsStep() {
 			<ProductsSection isFlashSale={isFlashSale} />
 
 			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-				<InkModal storeId={storeId} />
+				<InkModal storeId={storeId} onClose={() => setIsModalOpen(false)} />
 			</Modal>
 		</section>
 	)

@@ -1,6 +1,6 @@
 import Icon from '../Icon'
 import css from './CustomSelect.module.css'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function CustomSelect({
 	name,
@@ -11,9 +11,12 @@ export default function CustomSelect({
 }) {
 	// const initial = values && values.length > 0 ? values[0].value : null
 
-	const [currentValue, setCurrentValue] = useState(
-		values.find((item) => item.quantity === +initialValue).value,
-	)
+	const [currentValue, setCurrentValue] = useState(null)
+	useEffect(() => {
+		const item = values.find((item) => item.quantity === +initialValue)
+
+		setCurrentValue(item.value)
+	}, [initialValue])
 
 	const handleSelect = (value, quantity) => {
 		setCurrentValue(value)

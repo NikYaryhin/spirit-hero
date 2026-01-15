@@ -19,15 +19,25 @@ export default function FundraisingProductCard({
 	const url_params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = url_params.get('store_id')
 
+	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
+	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
 	const storeId =
 		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 	const { id, product_title, product_image, params } = product
 
 	const [isChecked, setIsChecked] = useState(checked)
 	const [profit, setProfit] = useState(profitValue)
-	const [sellingPrice, setSellingPrice] = useState(
-		+params.on_demand_price + profit,
-	)
+	const [price, setPrice] = useState(+params.on_demand_price + colorPrice)
+	const [sellingPrice, setSellingPrice] = useState(price + profit)
+
+	useEffect(() => {
+		const basePrice = isFlashSale
+			? +params.flash_sale_price + colorPrice
+			: +params.on_demand_price + colorPrice
+
+		setPrice(basePrice)
+		setSellingPrice(basePrice + profit)
+	}, [colorPrice])
 
 	useEffect(() => {
 		setProfit(profitValue)
@@ -45,12 +55,9 @@ export default function FundraisingProductCard({
 	}, [checked])
 
 	useEffect(() => {
-		if (amountProfit) setSellingPrice(+params.on_demand_price + profit)
+		if (amountProfit) setSellingPrice(+price + profit)
 		else {
-			const countedPrice = (
-				(+params.on_demand_price * profit) / 100 +
-				+params.on_demand_price
-			).toFixed(2)
+			const countedPrice = ((+price * profit) / 100 + +price).toFixed(2)
 
 			setSellingPrice(
 				pricesEnd
@@ -157,7 +164,6 @@ export default function FundraisingProductCard({
 							},
 						],
 					}
-					console.debug({ payload })
 
 					const response = await spiritHeroApi.updateFundraisingStatus(payload)
 
@@ -198,7 +204,7 @@ export default function FundraisingProductCard({
 
 			{isFundraise ? (
 				<>
-					<span className={css.price}>${params.on_demand_price}</span>
+					<span className={css.price}>${(+price).toFixed(2)}</span>
 
 					<div className={css.input__wrapper}>
 						<span className={css.input__unit}>{amountProfit ? '$' : '%'}</span>
@@ -218,7 +224,7 @@ export default function FundraisingProductCard({
 				</>
 			) : (
 				<>
-					<span className={css.price}>${params.on_demand_price}</span>
+					<span className={css.price}>${(+price).toFixed(2)}</span>
 
 					<button onClick={onFundraiseClick} className={css.sell__at__cost}>
 						{' '}

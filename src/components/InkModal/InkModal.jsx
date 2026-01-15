@@ -2,7 +2,8 @@ import css from './InkModal.module.css'
 import Icon from '../Icon'
 import CustomSelect from '../CustomSelect/CustomSelect'
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { setPricePerColor } from '@/features/flashSale/flashSaleSlice'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
 const COLOR_SELECT_VALUES = [
@@ -14,7 +15,8 @@ const COLOR_SELECT_VALUES = [
 	{ value: '5 Colors', id: 5, quantity: 5 },
 ]
 
-export default function InkModal() {
+export default function InkModal({ onClose }) {
+	const dispatch = useDispatch()
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const storeId = useSelector((state) => state.flashSale.storeId)
 
@@ -23,8 +25,6 @@ export default function InkModal() {
 	const [backColorsCount, setBackColorsCount] = useState(0)
 
 	useEffect(() => {
-		console.log('storeInfo.inkColorDetail', storeInfo.store.inkColorDetail)
-
 		if (storeInfo.store.inkColorDetail) {
 			const { front_side_colors, back_side_colors, cost } =
 				storeInfo.store.inkColorDetail
@@ -34,6 +34,10 @@ export default function InkModal() {
 			setPrice(+cost)
 		}
 	}, [])
+
+	useEffect(() => {
+		dispatch(setPricePerColor(price))
+	}, [price])
 
 	useEffect(() => {
 		const backColorPrice = backColorsCount === 0 ? 0 : backColorsCount + 4
@@ -51,6 +55,7 @@ export default function InkModal() {
 
 			const res = await spiritHeroApi.editInkColor(payload)
 			console.debug('editInkColor res', res)
+			onClose()
 		} catch (error) {
 			console.error('spiritHeroApi.editInkColor()', error)
 		}

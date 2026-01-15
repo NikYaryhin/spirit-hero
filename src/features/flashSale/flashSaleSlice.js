@@ -5,6 +5,7 @@ const initialState = {
 	isFlashSale: false,
 	storeId: null,
 	storeInfo: null,
+	pricePerColor: 0,
 }
 
 const flashSaleSlice = createSlice({
@@ -29,6 +30,12 @@ const flashSaleSlice = createSlice({
 		clearStoreInfo: (state) => {
 			state.storeInfo = null
 		},
+		setPricePerColor: (state, action) => {
+			state.pricePerColor = action.payload
+		},
+		clearPricePerColor: (state) => {
+			state.pricePerColor = 0
+		},
 	},
 })
 
@@ -39,5 +46,7 @@ export const {
 	clearStoreId,
 	setStoreInfo,
 	clearStoreInfo,
+	setPricePerColor,
+	clearPricePerColor,
 } = flashSaleSlice.actions
 export default flashSaleSlice.reducer

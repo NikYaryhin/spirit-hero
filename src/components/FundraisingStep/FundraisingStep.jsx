@@ -67,10 +67,11 @@ export default function FundraisingStep() {
 
 				setProductsByCategory(isFundraisingProducts)
 				setSellAtCostProducts(isSellAtCostProducts)
-				setIsLoading(false)
 				setAmountProfit(!res.store.is_percent_profit)
 			} catch (error) {
 				console.error(`spiritHeroApi.getStore error`, error)
+			} finally {
+				setIsLoading(false)
 			}
 		}
 		fetchStoreData()

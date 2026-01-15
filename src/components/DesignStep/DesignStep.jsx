@@ -131,9 +131,10 @@ const DesignStep = forwardRef((props, ref) => {
 				}, {})
 
 				setProductsByCategory(sortedProducts)
-				setIsLoading(false)
 			} catch (error) {
 				console.error(`spiritHeroApi.getStore error`, error)
+			} finally {
+				setIsLoading(false)
 			}
 		}
 		fetchStoreData()

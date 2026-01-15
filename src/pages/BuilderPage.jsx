@@ -16,6 +16,7 @@ import {
 	setStoreId as setStoreIdAction,
 	setStoreInfo,
 	setFlashSale,
+	setPricePerColor,
 } from '@/features/flashSale/flashSaleSlice'
 import {
 	setMyShopProducts,
@@ -55,6 +56,11 @@ export default function Builder() {
 						dispatch(setInitialMyShopProducts(storeData.products))
 						dispatch(setFlashSale(storeData.store.is_flash_sale ? true : false))
 					}
+
+					if (storeData.store?.inkColorDetail?.cost)
+						dispatch(
+							setPricePerColor(storeData.store?.inkColorDetail?.cost || 0),
+						)
 
 					dispatch(fetchProducts())
 				} catch (error) {

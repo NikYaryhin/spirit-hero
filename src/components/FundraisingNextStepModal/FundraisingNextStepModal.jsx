@@ -10,6 +10,7 @@ export default function FundraisingNextStepModal({ closeModal }) {
 
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const storeId = useSelector((state) => state.flashSale.storeId)
+	const [isLoading, setisLoading] = useState(false)
 	const [isCheck, setIsCheck] = useState(false)
 	const [checkData, setCheckData] = useState({
 		type_id: 1,
@@ -70,6 +71,7 @@ export default function FundraisingNextStepModal({ closeModal }) {
 
 	const onFormSubmit = async (e) => {
 		e.preventDefault()
+		setisLoading(true)
 
 		try {
 			let response
@@ -89,6 +91,8 @@ export default function FundraisingNextStepModal({ closeModal }) {
 			closeModal()
 		} catch (error) {
 			console.error('Receive data fetching error', error)
+		} finally {
+			setisLoading(false)
 		}
 	}
 
@@ -329,8 +333,12 @@ export default function FundraisingNextStepModal({ closeModal }) {
 					)}
 				</fieldset>
 
-				<button type="submit" className="contrast_button_1">
-					Confirm
+				<button
+					type="submit"
+					className="contrast_button_1"
+					disabled={isLoading}
+				>
+					{isLoading ? 'Saving...' : 'Confirm'}
 				</button>
 			</form>
 		</div>
