@@ -38,7 +38,7 @@ export default function ProductCustomiserCard({
 
 	const closeButtonHandle = async () => {
 		const payload = {
-			store_id: +storeId || +localStorage.getItem('storeId'),
+			store_id: +storeId,
 			ids: [id],
 		}
 
@@ -87,6 +87,11 @@ export default function ProductCustomiserCard({
 	}
 
 	const onModalClose = async () => {
+		if (colorsArray.length === 0) {
+			setIsModalOpen(false)
+			return
+		}
+
 		try {
 			const payload = {
 				product_id: id,

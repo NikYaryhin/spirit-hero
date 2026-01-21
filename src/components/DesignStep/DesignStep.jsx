@@ -15,6 +15,7 @@ import TextHandle from '../TextHandle/TextHandle'
 import Moveable from 'react-moveable'
 import { v4 as uuidv4 } from 'uuid'
 import { useSelector } from 'react-redux'
+import domtoimage from 'dom-to-image-more'
 
 const DesignStep = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
@@ -42,7 +43,39 @@ const DesignStep = forwardRef((props, ref) => {
 	const [customElements, setCustomElements] = useState([])
 	const [selectedId, setSelectedId] = useState(null)
 	const containerRef = useRef(null)
+	const imageBoxRef = useRef(null)
 	const scaleRef = useRef({})
+
+	// Функция для конвертации URL в base64
+	const urlToBase64 = async (url) => {
+		try {
+			// Преобразуем protocol-relative URL (//cdn.com/...) в полный URL
+			let fullUrl = url
+			if (url.startsWith('//')) {
+				fullUrl = 'https:' + url
+			}
+
+			const response = await fetch(fullUrl, {
+				mode: 'cors',
+				credentials: 'omit',
+			})
+			const blob = await response.blob()
+			return new Promise((resolve) => {
+				const reader = new FileReader()
+				reader.onloadend = () => resolve(reader.result)
+				reader.readAsDataURL(blob)
+			})
+		} catch (error) {
+			console.error('Error converting image to base64:', error)
+			return url
+		}
+	}
+
+	// Функция для проверки, является ли строка base64
+	const isBase64 = (str) => {
+		if (!str || typeof str !== 'string') return false
+		return str.startsWith('data:image/')
+	}
 
 	useEffect(() => {
 		const fetchStoreData = async () => {
@@ -139,6 +172,15 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 		fetchStoreData()
 	}, [])
+
+	// Автоматически конвертируем image в base64 при изменении
+	useEffect(() => {
+		if (image && !isBase64(image)) {
+			urlToBase64(image).then((base64) => {
+				setImage(base64)
+			})
+		}
+	}, [image])
 
 	useEffect(() => {
 		setCustomElements((prev) => {
@@ -244,52 +286,27 @@ const DesignStep = forwardRef((props, ref) => {
 
 	// Функция для создания скриншота контейнера custom__elements
 	const getLogoParameters = async () => {
-		if (!containerRef.current) {
-			console.error('Container not found')
-			return null
-		}
-
 		try {
-			// Импортируем html2canvas динамически
-			const html2canvas = (await import('html2canvas')).default
+			const base64 = await domtoimage.toPng(imageBoxRef.current)
 
-			// Создаем скриншот контейнера
-			const canvas = await html2canvas(containerRef.current, {
-				width: containerRef.current.offsetWidth,
-				height: containerRef.current.offsetHeight,
-				useCORS: true,
-				allowTaint: true,
-				backgroundColor: 'transparent',
-				scale: 1,
-				// Исключаем Moveable элементы из скриншота
-				ignoreElements: (element) => {
-					return (
-						element.classList.contains('moveable-control') ||
-						element.classList.contains('moveable-direction') ||
-						element.tagName.toLowerCase() === 'button'
-					)
-				},
-			})
+			// const link = document.createElement('a')
+			// link.download = 'my-component-image.png'
+			// link.href = base64
+			// link.click()
 
-			// Конвертируем в base64
-			const base64 = canvas.toDataURL('image/png')
-
-			// Обновляем elementsPositionImage в customerLogos
 			setCustomerLogos((prev) => ({
 				...prev,
 				elementsPositionImage: base64,
 			}))
 
-			localStorage.setItem(
-				'customerLogos',
-				JSON.stringify({ ...customerLogos, elementsPositionImage: base64 }),
-			)
-
 			const payload = {
 				...customerLogos,
 				elementsPositionImage: base64,
 				store_id: storeId,
+				product_id: +activeCardId,
 			}
+
+			console.log({ payload })
 
 			const response = await spiritHeroApi.createDesign(storeId, payload)
 			console.debug('spiritHeroApi.createDesign response', response)
@@ -308,7 +325,9 @@ const DesignStep = forwardRef((props, ref) => {
 	else
 		return (
 			<div className={css.design_section}>
-				<div className={css.image__box}>
+				<div className={css.image__box} ref={imageBoxRef}>
+					<img src={image} alt="Customizer image" />
+
 					{/* Canvas area for custom elements */}
 					<div
 						ref={containerRef}
@@ -319,19 +338,6 @@ const DesignStep = forwardRef((props, ref) => {
 							}
 						}}
 					>
-						{/* {customerLogos.elementsPositionImage !== '' &&
-							customerLogos.elementsPositionImage && (
-								<img
-									src={customerLogos.elementsPositionImage}
-									alt="elements position"
-									style={{
-										width: '100%',
-										height: '100%',
-										objectFit: 'contain',
-										objectPosition: 'center',
-									}}
-								/>
-							)} */}
 						{customElements.map((el) => (
 							<div
 								key={el.id}
@@ -359,7 +365,6 @@ const DesignStep = forwardRef((props, ref) => {
 											height: '100%',
 											objectFit: 'contain',
 										}}
-										loading="lazy"
 									/>
 								) : (
 									<div
@@ -525,13 +530,6 @@ const DesignStep = forwardRef((props, ref) => {
 								)
 							})()}
 					</div>
-
-					<img
-						src={image}
-						alt={'Customize product'}
-						loading="lazy"
-						onClick={() => setSelectedId(null)}
-					/>
 				</div>
 
 				<div className={css.settings__box}>

@@ -83,7 +83,7 @@ export default function StoreDetailsForm({ image }) {
 				console.debug('spiritHeroApi.saveStore()', res)
 
 				dispatch(setStoreIdAction(res.store.id))
-				localStorage.setItem('storeId', res.store.id)
+				// localStorage.setItem('storeId', res.store.id)
 			}
 
 			dispatch(

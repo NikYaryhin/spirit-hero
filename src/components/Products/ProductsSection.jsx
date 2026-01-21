@@ -231,7 +231,7 @@ export default function ProductsSection({ isFlashSale }) {
 		if (selectedIds.size === 0) return
 
 		const payload = {
-			store_id: +storeId || +localStorage.getItem('storeId'),
+			store_id: +storeId,
 			ids: Array.from(selectedIds).map((p) => +p),
 		}
 

@@ -46,6 +46,7 @@ export default function Builder() {
 				if (!storeIdFromQuery) return
 
 				dispatch(setStoreIdAction(storeIdFromQuery))
+
 				try {
 					const storeData = await spiritHeroApi.getStore(storeIdFromQuery)
 					console.debug('getStore', storeData)
@@ -99,12 +100,14 @@ export default function Builder() {
 			{isLoading && <Loader />}
 			<BuilderHeader onNextStep={handleNextStep} />
 
-			{activeStep === 1 && <Details />}
-			{activeStep === 2 && <ProductsStep />}
-			{activeStep === 3 && <DesignStep ref={designStepRef} />}
+			<div className="content--wrapper">
+				{activeStep === 1 && <Details />}
+				{activeStep === 2 && <ProductsStep />}
+				{activeStep === 3 && <DesignStep ref={designStepRef} />}
 
-			{activeStep === 4 && <FundraisingStep />}
-			{activeStep === 5 && <FlashSale />}
+				{activeStep === 4 && <FundraisingStep />}
+				{activeStep === 5 && <FlashSale />}
+			</div>
 
 			<Modal
 				isOpen={isModalOpen}

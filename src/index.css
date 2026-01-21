@@ -83,6 +83,11 @@ main {
   min-height: 100dvh;
 }
 
+.content--wrapper {
+  max-width: 150rem;
+  margin: 0 auto;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
