@@ -287,7 +287,9 @@ const DesignStep = forwardRef((props, ref) => {
 	// Функция для создания скриншота контейнера custom__elements
 	const getLogoParameters = async () => {
 		try {
-			const base64 = await domtoimage.toPng(imageBoxRef.current)
+			const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
+				quality: 0.95,
+			})
 
 			// const link = document.createElement('a')
 			// link.download = 'my-component-image.png'
