@@ -42,6 +42,7 @@ const DesignStep = forwardRef((props, ref) => {
 
 	const [customElements, setCustomElements] = useState([])
 	const [selectedId, setSelectedId] = useState(null)
+	const [hideBorders, setHideBorders] = useState(false)
 	const containerRef = useRef(null)
 	const imageBoxRef = useRef(null)
 	const scaleRef = useRef({})
@@ -287,6 +288,7 @@ const DesignStep = forwardRef((props, ref) => {
 	// Функция для создания скриншота контейнера custom__elements
 	const getLogoParameters = async () => {
 		try {
+			setHideBorders(true)
 			const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
 				quality: 0.95,
 			})
@@ -333,7 +335,7 @@ const DesignStep = forwardRef((props, ref) => {
 					{/* Canvas area for custom elements */}
 					<div
 						ref={containerRef}
-						className={css.custom__elements}
+						className={`${css.custom__elements} ${hideBorders ? 'hide--borders' : ''}`}
 						onClick={(e) => {
 							if (e.target === containerRef.current) {
 								setSelectedId(null)
@@ -536,8 +538,9 @@ const DesignStep = forwardRef((props, ref) => {
 
 				<div className={css.settings__box}>
 					<button
-						onClick={getLogoParameters}
+						onClick={() => setHideBorders(false)}
 						className={`${css.button} contrast_button_1`}
+						disabled
 					>
 						<Icon name={'Palette'} />
 						Request a custom design
