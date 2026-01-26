@@ -23,6 +23,7 @@ import {
 	setInitialMyShopProducts,
 	fetchProducts,
 } from '@/features/products/productsSlice'
+import { setActiveStep } from '@/features/navigation/navigationSlice'
 
 export default function Builder() {
 	const dispatch = useDispatch()
@@ -64,6 +65,7 @@ export default function Builder() {
 						)
 
 					dispatch(fetchProducts())
+					dispatch(setActiveStep(2))
 				} catch (error) {
 					console.error('Error fetching store info:', error)
 					alert(
