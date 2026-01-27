@@ -25,6 +25,7 @@ export const fetchProducts = createAsyncThunk(
 	async (_, { rejectWithValue }) => {
 		try {
 			const response = await spiritHeroApi.getProducts()
+			console.log('getProducts response', response)
 
 			return response
 		} catch (error) {
