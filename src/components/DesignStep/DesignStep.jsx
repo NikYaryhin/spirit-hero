@@ -37,7 +37,7 @@ const DesignStep = forwardRef((props, ref) => {
 	const [image, setImage] = useState(null)
 
 	const [uploaderFiles, setUploaderFiles] = useState([])
-	const [uploaderAgreed, setUploaderAgreed] = useState(false)
+	const [serverLabels, setServerLabels] = useState([])
 	const [uploaderDragOver, setUploaderDragOver] = useState(false)
 
 	const [customElements, setCustomElements] = useState([])
@@ -240,17 +240,20 @@ const DesignStep = forwardRef((props, ref) => {
 				)
 			}
 			
-			// Обрабатываем изменение текста
-			if (obj.customData?.type === 'text') {
-				console.log('📝 Текст изменён:', {
-					left: obj.left,
-					top: obj.top,
-					fontSize: obj.fontSize,
-					width: obj.width,
-					angle: obj.angle,
-				})
-			}
+		// Обрабатываем изменение текста
+		if (obj.customData?.type === 'text') {
+			console.log('📝 Текст изменён:', {
+				left: obj.left,
+				top: obj.top,
+				fontSize: obj.fontSize,
+				width: obj.width,
+				angle: obj.angle,
+			})
 		}
+		
+		// Синхронизируем данные с customerLogos
+		syncCanvasToCustomerLogos()
+	}
 
 		// Обработчик выбора объекта
 		const handleSelection = (e) => {
@@ -462,6 +465,93 @@ const DesignStep = forwardRef((props, ref) => {
 		})
 	}, [uploaderFiles])
 
+	// useEffect для загрузки текста с сервера на canvas
+	useEffect(() => {
+		if (isLoading) return
+		const canvas = fabricCanvasRef.current
+		if (!canvas || serverLabels.length === 0) return
+
+		console.log('📝 Загрузка текста с сервера на canvas:', serverLabels)
+
+		const currentObjects = canvas.getObjects()
+		
+		// Получаем текущие тексты на canvas (по уникальному признаку)
+		const currentTexts = currentObjects
+			.filter((obj) => obj.customData?.type === 'text')
+			.map((obj) => obj.customData.serverId)
+
+		// Добавляем новые тексты
+		serverLabels.forEach((labelData, index) => {
+			const serverId = `server-label-${index}`
+			
+			// Проверяем, не загружен ли уже этот текст
+			if (currentTexts.includes(serverId)) return
+
+			try {
+				// Используем координаты с сервера, если они есть, иначе значения по умолчанию
+				const left = labelData.x !== undefined ? labelData.x : 50
+				const top = labelData.y !== undefined ? labelData.y : 50
+				const fontSize = labelData.fontSize || 54
+				const width = labelData.width !== undefined ? labelData.width : canvas.width
+				
+			const textbox = new Textbox(labelData.text, {
+				left,
+				top,
+				fontSize,
+				fontFamily: labelData.fontFamily || 'Montserrat',
+				fill: labelData.color || '#000000',
+				fontWeight: labelData.bold ? 700 : 400,
+				fontStyle: labelData.italic ? 'italic' : 'normal',
+				width,
+				angle: labelData.rotation || 0,
+				textAlign: 'center',
+				cornerStyle: 'circle',
+				cornerColor: '#4E008E',
+				cornerStrokeColor: '#ffffff',
+				borderColor: '#4E008E',
+				borderScaleFactor: 2,
+				transparentCorners: false,
+				lockScalingFlip: true,
+				lockUniScaling: false,
+			})
+
+				// Скрываем ненужные контролы
+				textbox.setControlsVisibility({
+					ml: false,
+					mr: false,
+					mt: false,
+					mb: false,
+				})
+
+				// Добавляем кнопку удаления
+				textbox.controls.deleteControl = new Control({
+					x: 0.5,
+					y: -0.5,
+					offsetY: -16,
+					offsetX: 16,
+					cursorStyle: 'pointer',
+					mouseUpHandler: deleteObject,
+					render: renderDeleteIcon,
+					cornerSize: 16,
+				})
+
+				// Добавляем кастомные данные для идентификации
+				textbox.customData = {
+					type: 'text',
+					serverId: serverId,
+				}
+
+				canvas.add(textbox)
+				console.log('✅ Текст добавлен на canvas:', labelData.text)
+
+			} catch (error) {
+				console.error('❌ Ошибка при добавлении текста на canvas:', error)
+			}
+		})
+
+		canvas.renderAll()
+	}, [serverLabels, isLoading])
+
 	useEffect(() => {
 		const fetchStoreData = async () => {
 			try {
@@ -513,36 +603,28 @@ const DesignStep = forwardRef((props, ref) => {
 				console.debug('Server image files:', serverImageFiles)
 				setUploaderFiles(serverImageFiles)
 
-				if (res.design.labels && Array.isArray(res.design.labels)) {
-					res.design.labels.forEach((labelData) => {
-						const id = uuidv4()
-						loadedElements.push({
-							id,
-							type: 'text',
-							x: labelData.x || 20,
-							y: labelData.y || 20,
-							width: 'fit-content',
-							maxWidth: 300,
-							height: 'fit-content',
-							rotation: 0,
-							zIndex: zIndex++,
-							content: labelData.text || '',
-							style: {
-								fontFamily: labelData.fontFamily || 'Montserrat',
-								fontSize:
-									typeof labelData.fontSize === 'number'
-										? `${labelData.fontSize}px`
-										: labelData.fontSize || '54px',
-								color: labelData.color || '#000000',
-								fontWeight: labelData.bold ? 700 : 400,
-								fontStyle: labelData.italic ? 'italic' : 'normal',
-							},
-						})
-					})
-				}
+			if (res.design.labels && Array.isArray(res.design.labels)) {
+				const labelsData = res.design.labels.map((labelData) => ({
+					text: labelData.text || '',
+					x: labelData.x,
+					y: labelData.y,
+					width: labelData.width,
+					height: labelData.height,
+					fontSize: typeof labelData.fontSize === 'number' 
+						? labelData.fontSize 
+						: parseInt(labelData.fontSize) || 54,
+					fontFamily: labelData.fontFamily || 'Montserrat',
+					color: labelData.color || '#000000',
+					bold: labelData.bold || false,
+					italic: labelData.italic || false,
+					rotation: labelData.rotation || 0,
+				}))
+				console.debug('Server labels:', labelsData)
+				setServerLabels(labelsData)
+			}
 
-				console.debug('Loaded elements from server:', loadedElements)
-				setCustomElements(loadedElements)
+			console.debug('Loaded elements from server:', loadedElements)
+			setCustomElements(loadedElements)
 
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [
@@ -612,65 +694,81 @@ const DesignStep = forwardRef((props, ref) => {
 		})
 	}, [uploaderFiles])
 
-	const updateCustomerLogos = async () => {
-		const labels = []
-		const customerLogos = []
+	
 
-		for (const element of customElements) {
-			if (element.type === 'text') {
-				labels.push({
-					text: element.content,
-					fontFamily: element.style.fontFamily || 'Montserrat',
-					fontSize: element.style.fontSize || '54px',
-					color: element.style.color || '#000000',
-					bold: element.style.fontWeight === '700',
-					italic: element.style.fontStyle === 'italic',
-					x: element.x,
-					y: element.y,
-					width: element.width,
-					height: element.height,
-				})
-			} else if (element.type === 'image') {
-				if (element.isServerImage) {
-					customerLogos.push({
-						image: element.content.src,
-						x: element.x,
-						y: element.y,
-						width: element.width,
-						height: element.height,
-					})
-				} else {
-					const fileData = uploaderFiles.find(
-						(f) => f.url === element.content.src,
-					)
-					if (fileData && fileData.base64) {
-						customerLogos.push({
-							image: fileData.base64,
-							x: element.x,
-							y: element.y,
-							width: element.width,
-							height: element.height,
-						})
-					}
-				}
-			}
+
+	// Функция для синхронизации данных с canvas в customerLogos
+	const syncCanvasToCustomerLogos = () => {
+		const canvas = fabricCanvasRef.current
+		if (!canvas) {
+			console.log('⚠️ Canvas не готов для синхронизации')
+			return
 		}
 
+		const objects = canvas.getObjects()
+		console.log('📊 Всего объектов на canvas:', objects.length)
+		
+		const customerLogosData = []
+		const labelsData = []
+
+		objects.forEach((obj) => {
+			// Собираем данные о логотипах (изображениях)
+			if (obj.customData?.type === 'uploaded-image') {
+				const fileData = uploaderFiles.find(f => f.url === obj.customData.url)
+				console.log('🖼️ Изображение:', obj.customData.url, 'найден fileData:', !!fileData)
+				if (fileData) {
+					customerLogosData.push({
+						image: fileData.base64 || fileData.url,
+						x: Math.round(obj.left),
+						y: Math.round(obj.top),
+						width: Math.round(obj.getScaledWidth()),
+						height: Math.round(obj.getScaledHeight()),
+						rotation: Math.round(obj.angle),
+					})
+				}
+			}
+
+			// Собираем данные о текстах
+			if (obj.customData?.type === 'text') {
+				labelsData.push({
+					text: obj.text,
+					x: Math.round(obj.left),
+					y: Math.round(obj.top),
+					width: Math.round(obj.width),
+					height: Math.round(obj.height),
+					fontSize: Math.round(obj.fontSize),
+					fontFamily: obj.fontFamily,
+					color: obj.fill,
+					bold: obj.fontWeight === 'bold' || obj.fontWeight === 700,
+					italic: obj.fontStyle === 'italic',
+					rotation: Math.round(obj.angle),
+				})
+			}
+		})
+
+		// Обновляем customerLogos
 		setCustomerLogos((prev) => ({
 			...prev,
-			customerLogos: customerLogos,
-			labels: labels,
+			customerLogos: customerLogosData,
+			labels: labelsData,
 		}))
-	}
 
-	// Обновляем customerLogos при изменении uploaderFiles (добавление/удаление изображений)
-	useEffect(() => {
-		updateCustomerLogos()
-	}, [uploaderFiles])
+		console.log('🔄 Синхронизация данных:', {
+			customerLogos: customerLogosData.length,
+			labels: labelsData.length,
+			customerLogosData,
+			labelsData,
+		})
+		console.log('✅ Обновление customerLogos состояния')
+	}
 
 	// Функция для создания скриншота контейнера custom__elements
 	const getLogoParameters = async () => {
 		try {
+			// Синхронизируем актуальные данные с canvas перед отправкой
+			console.log('📤 Подготовка данных для отправки на сервер')
+			syncCanvasToCustomerLogos()
+			
 			setHideBorders(true)
 			const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
 				quality: 0.95,
@@ -790,8 +888,6 @@ const DesignStep = forwardRef((props, ref) => {
 								<ImageUploader
 									files={uploaderFiles}
 									setFiles={setUploaderFiles}
-									agreed={uploaderAgreed}
-									setAgreed={setUploaderAgreed}
 									dragOver={uploaderDragOver}
 									setDragOver={setUploaderDragOver}
 								/>
@@ -815,14 +911,15 @@ const DesignStep = forwardRef((props, ref) => {
 										
 										console.log('✏️ Обновление текста:', { text, options })
 										
-										// Обновляем текст
-										selectedTextObject.set({
-											text: text,
-											fontFamily: options.font,
-											fontWeight: options.bold ? 'bold' : 'normal',
-											fontStyle: options.italic ? 'italic' : 'normal',
-											fill: options.color,
-										})
+									// Обновляем текст
+									selectedTextObject.set({
+										text: text,
+										fontFamily: options.font,
+										fontWeight: options.bold ? 'bold' : 'normal',
+										fontStyle: options.italic ? 'italic' : 'normal',
+										fill: options.color,
+										textAlign: 'center',
+									})
 										
 										// Пересчитываем размер шрифта для новой ширины
 										const ctx = canvas.getContext()
