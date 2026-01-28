@@ -259,9 +259,11 @@ const DesignStep = forwardRef((props, ref) => {
 		const handleSelection = (e) => {
 			const selected = e.selected?.[0] || e.target
 			if (selected && selected.customData?.type === 'text') {
+				setCustomizerType('text')
 				console.log('📝 Текст выбран для редактирования:', selected.text)
 				setSelectedTextObject(selected)
 			} else {
+				setCustomizerType('image')
 				setSelectedTextObject(null)
 			}
 		}
