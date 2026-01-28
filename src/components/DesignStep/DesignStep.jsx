@@ -12,7 +12,6 @@ import Icon from '../Icon'
 import Loader from '../Loader/Loader'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import TextHandle from '../TextHandle/TextHandle'
-import Moveable from 'react-moveable'
 import { v4 as uuidv4 } from 'uuid'
 import { useSelector } from 'react-redux'
 import domtoimage from 'dom-to-image-more'
@@ -41,11 +40,9 @@ const DesignStep = forwardRef((props, ref) => {
 	const [uploaderDragOver, setUploaderDragOver] = useState(false)
 
 	const [customElements, setCustomElements] = useState([])
-	const [selectedId, setSelectedId] = useState(null)
 	const [hideBorders, setHideBorders] = useState(false)
 	const containerRef = useRef(null)
 	const imageBoxRef = useRef(null)
-	const scaleRef = useRef({})
 
 	// Функция для конвертации URL в base64
 	const urlToBase64 = async (url) => {
@@ -194,13 +191,6 @@ const DesignStep = forwardRef((props, ref) => {
 				return true
 			})
 
-			const selectedElementExists = updatedElements.some(
-				(el) => el.id === selectedId,
-			)
-			if (selectedId && !selectedElementExists) {
-				setSelectedId(null)
-			}
-
 			uploaderFiles.forEach((f) => {
 				const exists = updatedElements.some(
 					(el) => el.type === 'image' && el.content?.src === f.url,
@@ -220,14 +210,12 @@ const DesignStep = forwardRef((props, ref) => {
 						isServerImage: false,
 					}
 					updatedElements.push(el)
-
-					setTimeout(() => setSelectedId(id), 0)
 				}
 			})
 
 			return updatedElements
 		})
-	}, [uploaderFiles, selectedId])
+	}, [uploaderFiles])
 
 	const updateCustomerLogos = async () => {
 		const labels = []
@@ -335,204 +323,9 @@ const DesignStep = forwardRef((props, ref) => {
 					{/* Canvas area for custom elements */}
 					<div
 						ref={containerRef}
-						className={`${css.custom__elements} ${hideBorders ? 'hide--borders' : ''}`}
-						onClick={(e) => {
-							if (e.target === containerRef.current) {
-								setSelectedId(null)
-							}
-						}}
+						className={`${css.custom__elements}`}
 					>
-						{customElements.map((el) => (
-							<div
-								key={el.id}
-								data-id={el.id}
-								style={{
-									position: 'absolute',
-									left: el.x,
-									top: el.y,
-									width: el.width,
-									height: el.height,
-									transform: `rotate(${el.rotation}deg)`,
-									transformOrigin: 'center center',
-									zIndex: el.zIndex,
-									border: el.id === selectedId ? '1px dashed #4E008E' : 'none',
-									boxSizing: 'border-box',
-								}}
-								onMouseDown={() => setSelectedId(el.id)}
-							>
-								{el.type === 'image' ? (
-									<img
-										src={el.content.src}
-										alt="uploaded"
-										style={{
-											width: '100%',
-											height: '100%',
-											objectFit: 'contain',
-										}}
-									/>
-								) : (
-									<div
-										style={{
-											width: el.type === 'text' ? 'fit-content' : '100%',
-											height: el.type === 'text' ? 'fit-content' : '100%',
-											maxWidth: el.maxWidth || 'none',
-											...el.style,
-										}}
-									>
-										{el.content}
-									</div>
-								)}
-
-								{/* Кнопка удаления для текстовых элементов */}
-								{el.type === 'text' && (
-									<button
-										className={css.deleteButton}
-										onClick={(e) => {
-											e.stopPropagation()
-											setCustomElements((prev) =>
-												prev.filter((element) => element.id !== el.id),
-											)
-											if (selectedId === el.id) {
-												setSelectedId(null)
-											}
-										}}
-										title="Удалить текст"
-									>
-										<Icon name={'Cancel'} />
-									</button>
-								)}
-							</div>
-						))}
-
-						{selectedId &&
-							document.querySelector(`[data-id="${selectedId}"]`) &&
-							(() => {
-								const selectedElement = customElements.find(
-									(el) => el.id === selectedId,
-								)
-								const isTextElement = selectedElement?.type === 'text'
-
-								return (
-									<Moveable
-										target={document.querySelector(`[data-id="${selectedId}"]`)}
-										container={containerRef.current}
-										draggable={true}
-										resizable={!isTextElement}
-										scalable={!isTextElement}
-										rotatable={true}
-										throttleDrag={0}
-										throttleResize={0}
-										throttleRotate={0}
-										handleRotate={true}
-										renderDirections={
-											isTextElement
-												? []
-												: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
-										}
-										edge={false}
-										rotationPosition={'top'}
-										onDrag={({ target, left, top }) => {
-											const id = target.getAttribute('data-id')
-											const container = containerRef.current
-											if (!container) return
-											setCustomElements((prev) =>
-												prev.map((el) => {
-													if (el.id !== id) return el
-
-													// Для текстовых элементов используем фиксированные размеры для расчета границ
-													const elementWidth =
-														el.type === 'text'
-															? el.maxWidth || 300
-															: el.width || 0
-													const elementHeight =
-														el.type === 'text' ? 60 : el.height || 0
-
-													// allow partial exit: at least 1px of element must remain visible
-													const minLeft = -(elementWidth - 50)
-													const maxLeft = container.clientWidth - 50
-													const minTop = -(elementHeight - 50)
-													const maxTop = container.clientHeight - 50
-													const newLeft = Math.max(
-														minLeft,
-														Math.min(left, maxLeft),
-													)
-													const newTop = Math.max(minTop, Math.min(top, maxTop))
-													return { ...el, x: newLeft, y: newTop }
-												}),
-											)
-										}}
-										onDragEnd={() => {
-											updateCustomerLogos()
-										}}
-										onResize={({ target, width, height }) => {
-											const id = target.getAttribute('data-id')
-											const container = containerRef.current
-											if (!container) return
-											setCustomElements((prev) =>
-												prev.map((el) => {
-													if (el.id !== id) return el
-													// allow resize but keep minimum size of 1px; partial exit allowed
-													const newW = Math.max(1, Math.round(width))
-													const newH = Math.max(1, Math.round(height))
-													return { ...el, width: newW, height: newH }
-												}),
-											)
-										}}
-										onResizeEnd={() => {
-											updateCustomerLogos()
-										}}
-										onScaleStart={({ target }) => {
-											const id = target.getAttribute('data-id')
-											const el = customElements.find((x) => x.id === id)
-											if (el)
-												scaleRef.current[id] = {
-													w: el.width || 0,
-													h: el.height || 0,
-												}
-										}}
-										onScale={({ target, scale }) => {
-											const id = target.getAttribute('data-id')
-											const initial = scaleRef.current[id]
-											if (!initial) return
-											let sx = 1
-											let sy = 1
-											if (Array.isArray(scale)) {
-												sx = scale[0]
-												sy = scale[1]
-											} else if (typeof scale === 'number') {
-												sx = sy = scale
-											}
-											const newW = Math.max(1, Math.round(initial.w * sx))
-											const newH = Math.max(1, Math.round(initial.h * sy))
-											setCustomElements((prev) =>
-												prev.map((el) =>
-													el.id === id
-														? { ...el, width: newW, height: newH }
-														: el,
-												),
-											)
-										}}
-										onScaleEnd={({ target }) => {
-											const id = target.getAttribute('data-id')
-											delete scaleRef.current[id]
-										}}
-										onRotate={({ target, rotate, dist, angle }) => {
-											const id = target.getAttribute('data-id')
-											const rotationValue = rotate || dist || angle || 0
-											setCustomElements((prev) =>
-												prev.map((el) =>
-													el.id === id
-														? { ...el, rotation: rotationValue }
-														: el,
-												),
-											)
-										}}
-										onRotateEnd={() => {
-											updateCustomerLogos()
-										}}
-									/>
-								)
-							})()}
+						
 					</div>
 				</div>
 
@@ -634,7 +427,6 @@ const DesignStep = forwardRef((props, ref) => {
 											},
 										}
 										setCustomElements((p) => [...p, el])
-										setSelectedId(id)
 									}}
 								/>
 							)}

@@ -10,6 +10,14 @@
 	.image__box {
 		position: relative;
 
+		&:hover .custom__elements::before {
+			content: '';
+			position: absolute;
+			inset: 0 0 0 0;
+
+			border: 2px dashed #4E008E;
+		}
+
 		.custom__elements {
 			position: absolute;
 			top: 45%;
@@ -22,13 +30,7 @@
 
 			overflow: hidden;
 
-			&::before {
-				content: '';
-				position: absolute;
-				inset: 0 0 0 0;
 
-				border: 2px dashed #4E008E;
-			}
 		}
 
 		.deleteButton {
