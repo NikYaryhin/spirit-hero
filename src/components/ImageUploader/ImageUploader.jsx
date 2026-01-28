@@ -92,7 +92,6 @@ export default function ImageUploader({
 			</ul>
 
 			<div className={css.uploader}>
-				{files.length === 0 && (
 					<label
 						className={`${css.dropzone} ${dragOver ? css.dragover : ''} ${!agreed ? css.disabled : ''}`}
 						onDrop={onDrop}
@@ -117,9 +116,10 @@ export default function ImageUploader({
 							</span>
 						</div>
 					</label>
-				)}
+				{/* {files.length === 0 && (
+				)} */}
 
-				{files.length > 0 && (
+				{/* {files.length > 0 && (
 					<>
 						<div className={css.previews}>
 							{files.map((p, i) => {
@@ -162,7 +162,7 @@ export default function ImageUploader({
 							</label>
 						</div>
 					</>
-				)}
+				)} */}
 			</div>
 
 			<label className={css.agree}>

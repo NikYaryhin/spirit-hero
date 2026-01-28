@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import styles from './TextHandle.module.css'
 import { googleFontApiKey } from '@/helpers/const'
 
-export default function TextHandle({ onAdd }) {
+export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 	const [text, setText] = useState('')
 	const [font, setFont] = useState('Montserrat')
 	const [bold, setBold] = useState(false)
@@ -13,6 +13,25 @@ export default function TextHandle({ onAdd }) {
 	const [openFonts, setOpenFonts] = useState(false)
 	const [search, setSearch] = useState('')
 	const loadedFontsRef = useRef(new Set())
+
+	// Синхронизация с выбранным текстом
+	useEffect(() => {
+		if (selectedText) {
+			setText(selectedText.text || '')
+			setFont(selectedText.font || 'Montserrat')
+			setBold(selectedText.bold || false)
+			setItalic(selectedText.italic || false)
+			setColor(selectedText.color || '#000')
+			setSize(selectedText.size || 54)
+		}
+	}, [selectedText])
+
+	// Автоматическое применение изменений к выбранному тексту
+	useEffect(() => {
+		if (selectedText && onUpdate) {
+			onUpdate(text, { font, bold, italic, color, size })
+		}
+	}, [text, font, bold, italic, color, size])
 
 	function handleAdd() {
 		if (!text.trim()) return
@@ -100,8 +119,14 @@ export default function TextHandle({ onAdd }) {
 				onChange={(e) => setText(e.target.value)}
 			/>
 
-			<button className={styles.addBtn} type="button" onClick={handleAdd}>
-				Add text
+			<button 
+				className={styles.addBtn} 
+				type="button" 
+				onClick={handleAdd}
+				disabled={!!selectedText}
+				style={{ opacity: selectedText ? 0.5 : 1, cursor: selectedText ? 'not-allowed' : 'pointer' }}
+			>
+				{selectedText ? 'Editing selected text' : 'Add text'}
 			</button>
 
 			<div className={styles.row}>
