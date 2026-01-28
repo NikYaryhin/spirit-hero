@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import css from './ImageUploader.module.css'
 import Icon from '../Icon'
 
@@ -7,12 +7,12 @@ export default function ImageUploader({
 	onChange,
 	files = [],
 	setFiles,
-	agreed = false,
-	setAgreed,
 	dragOver = false,
 	setDragOver,
 }) {
 	const inputRef = useRef(null)
+
+	const [agreed, setAgreed] = useState(false)
 
 	const handleFiles = useCallback(
 		async (newFiles) => {
@@ -168,9 +168,8 @@ export default function ImageUploader({
 			<label className={css.agree}>
 				<input
 					type="checkbox"
-					checked={agreed || files.length > 0}
+					checked={agreed}
 					onChange={(e) => {
-						if (files.length > 0) return
 						setAgreed(e.target.checked)
 					}}
 				/>
