@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './TextHandle.module.css'
+import FontPicker from '@/components/FontPicker/FontPicker'
 import { googleFontApiKey } from '@/helpers/const'
 
 export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 	const [text, setText] = useState('')
-	const [font, setFont] = useState('Montserrat')
+	const [font, setFont] = useState('Cookie')
 	const [bold, setBold] = useState(false)
 	const [italic, setItalic] = useState(false)
 	const [color, setColor] = useState('#000')
@@ -41,72 +42,72 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 	}
 
 	// Load fonts list from Google Webfonts API
-	useEffect(() => {
-		let cancelled = false
-		async function fetchFonts() {
-			if (!googleFontApiKey) {
-				// fallback small list
-				setFonts([
-					{ family: 'Montserrat' },
-					{ family: 'Roboto' },
-					{ family: 'Audiowide' },
-					{ family: 'Lora' },
-				])
-				return
-			}
-			try {
-				const res = await fetch(
-					`https://www.googleapis.com/webfonts/v1/webfonts?key=${googleFontApiKey}&sort=popularity`,
-				)
-				if (!res.ok) throw new Error('Failed to fetch fonts')
-				const data = await res.json()
-				if (!cancelled) setFonts(data.items || [])
-			} catch (err) {
-				console.warn('Could not load Google Fonts list, using fallback', err)
-				if (!cancelled)
-					setFonts([
-						{ family: 'Montserrat' },
-						{ family: 'Roboto' },
-						{ family: 'Audiowide' },
-						{ family: 'Lora' },
-					])
-			}
-		}
-		fetchFonts()
-		return () => {
-			cancelled = true
-		}
-	}, [])
+	// useEffect(() => {
+	// 	let cancelled = false
+	// 	async function fetchFonts() {
+	// 		if (!googleFontApiKey) {
+	// 			// fallback small list
+	// 			setFonts([
+	// 				{ family: 'Montserrat' },
+	// 				{ family: 'Roboto' },
+	// 				{ family: 'Audiowide' },
+	// 				{ family: 'Lora' },
+	// 			])
+	// 			return
+	// 		}
+	// 		try {
+	// 			const res = await fetch(
+	// 				`https://www.googleapis.com/webfonts/v1/webfonts?key=${googleFontApiKey}&sort=popularity`,
+	// 			)
+	// 			if (!res.ok) throw new Error('Failed to fetch fonts')
+	// 			const data = await res.json()
+	// 			if (!cancelled) setFonts(data.items || [])
+	// 		} catch (err) {
+	// 			console.warn('Could not load Google Fonts list, using fallback', err)
+	// 			if (!cancelled)
+	// 				setFonts([
+	// 					{ family: 'Montserrat' },
+	// 					{ family: 'Roboto' },
+	// 					{ family: 'Audiowide' },
+	// 					{ family: 'Lora' },
+	// 				])
+	// 		}
+	// 	}
+	// 	fetchFonts()
+	// 	return () => {
+	// 		cancelled = true
+	// 	}
+	// }, [])
 
-	function loadGoogleFontVariant(
-		family,
-		{ bold: wantBold = false, italic: wantItalic = false } = {},
-	) {
-		if (!family) return
-		const key = `${family}::b${wantBold ? 1 : 0}i${wantItalic ? 1 : 0}`
-		if (loadedFontsRef.current.has(key)) return
-		const familyForUrl = family.split(' ').join('+')
-		let href = ''
-		// Build Google Fonts CSS2 query depending on requested variants
-		if (wantItalic && wantBold) {
-			href = `https://fonts.googleapis.com/css2?family=${familyForUrl}:ital,wght@0,400;0,700;1,400;1,700&display=swap`
-		} else if (wantItalic) {
-			href = `https://fonts.googleapis.com/css2?family=${familyForUrl}:ital,wght@0,400;1,400&display=swap`
-		} else if (wantBold) {
-			href = `https://fonts.googleapis.com/css2?family=${familyForUrl}:wght@400;700&display=swap`
-		} else {
-			href = `https://fonts.googleapis.com/css2?family=${familyForUrl}:wght@400&display=swap`
-		}
-		const link = document.createElement('link')
-		link.rel = 'stylesheet'
-		link.href = href
-		document.head.appendChild(link)
-		loadedFontsRef.current.add(key)
-	}
+	// function loadGoogleFontVariant(
+	// 	family,
+	// 	{ bold: wantBold = false, italic: wantItalic = false } = {},
+	// ) {
+	// 	if (!family) return
+	// 	const key = `${family}::b${wantBold ? 1 : 0}i${wantItalic ? 1 : 0}`
+	// 	if (loadedFontsRef.current.has(key)) return
+	// 	const familyForUrl = family.split(' ').join('+')
+	// 	let href = ''
+	// 	// Build Google Fonts CSS2 query depending on requested variants
+	// 	if (wantItalic && wantBold) {
+	// 		href = `https://fonts.googleapis.com/css2?family=${familyForUrl}:ital,wght@0,400;0,700;1,400;1,700&display=swap`
+	// 	} else if (wantItalic) {
+	// 		href = `https://fonts.googleapis.com/css2?family=${familyForUrl}:ital,wght@0,400;1,400&display=swap`
+	// 	} else if (wantBold) {
+	// 		href = `https://fonts.googleapis.com/css2?family=${familyForUrl}:wght@400;700&display=swap`
+	// 	} else {
+	// 		href = `https://fonts.googleapis.com/css2?family=${familyForUrl}:wght@400&display=swap`
+	// 	}
+	// 	const link = document.createElement('link')
+	// 	link.rel = 'stylesheet'
+	// 	link.href = href
+	// 	document.head.appendChild(link)
+	// 	loadedFontsRef.current.add(key)
+	// }
 
-	useEffect(() => {
-		if (font) loadGoogleFontVariant(font, { bold, italic })
-	}, [font, bold, italic])
+	// useEffect(() => {
+	// 	if (font) loadGoogleFontVariant(font, { bold, italic })
+	// }, [font, bold, italic])
 
 	return (
 		<div className={styles.texthandle}>
@@ -119,12 +120,15 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 				onChange={(e) => setText(e.target.value)}
 			/>
 
-			<button 
-				className={styles.addBtn} 
-				type="button" 
+			<button
+				className={styles.addBtn}
+				type="button"
 				onClick={handleAdd}
 				disabled={!!selectedText}
-				style={{ opacity: selectedText ? 0.5 : 1, cursor: selectedText ? 'not-allowed' : 'pointer' }}
+				style={{
+					opacity: selectedText ? 0.5 : 1,
+					cursor: selectedText ? 'not-allowed' : 'pointer',
+				}}
 			>
 				{selectedText ? 'Editing selected text' : 'Add text'}
 			</button>
@@ -151,7 +155,14 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 							<span className={styles.caret}></span>
 						</button>
 
-						{openFonts && (
+						<FontPicker
+							showFontPicker={openFonts}
+							setShowFontPicker={setOpenFonts}
+							initialFont={font}
+							setFont={setFont}
+						/>
+
+						{/* {openFonts && (
 							<div className={styles.fontpicker__dropdown} role="listbox">
 								<input
 									className={styles.fontpicker__search}
@@ -181,7 +192,7 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 										))}
 								</ul>
 							</div>
-						)}
+						)} */}
 					</div>
 				</div>
 

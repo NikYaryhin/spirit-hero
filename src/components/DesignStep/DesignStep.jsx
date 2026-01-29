@@ -169,28 +169,27 @@ const DesignStep = forwardRef((props, ref) => {
 			const obj = e.target
 			if (!obj || obj.customData?.type !== 'text') return
 
-			const originalFontSize = obj.customData.originalFontSize || obj.fontSize
-			const originalWidth = obj.customData.originalWidth || obj.width
+			console.log('obj', obj.height, obj.fontSize)
 
 			// Вычисляем новую ширину с учётом масштаба
-			const scaleX = obj.scaleX || 1
-			const newWidth = originalWidth * scaleX
+			const scaleX = obj.scaleX
+			const newWidth = obj.width * scaleX
+			const newHeight = obj.height * scaleX
+			const newFontSize = Math.round(obj.fontSize * scaleX)
 
-			// Вычисляем новый размер шрифта пропорционально изменению ширины
-			const widthRatio = newWidth / originalWidth
-			const newFontSize = originalFontSize * widthRatio
+			console.log({ newWidth, newHeight, newFontSize })
 
 			// Применяем новый размер шрифта и ширину
-			obj.set({
-				fontSize: newFontSize,
-				width: newWidth,
-				scaleX: 1,
-				scaleY: 1,
-			})
+			// obj.set({
+			// 	fontSize: Math.round(newFontSize),
+			// 	width: newWidth,
+			// 	height: newHeight,
+			// })
 
 			// Обновляем оригинальные значения для следующего масштабирования
 			obj.customData.originalFontSize = newFontSize
 			obj.customData.originalWidth = newWidth
+			obj.customData.originalHeight = newHeight
 		}
 
 		// Обработчик изменения объектов (перемещение, масштабирование, вращение)
@@ -251,7 +250,7 @@ const DesignStep = forwardRef((props, ref) => {
 		fabricCanvas.on('object:scaling', handleTextScaling)
 		fabricCanvas.on('object:modified', handleObjectModified)
 		fabricCanvas.on('selection:created', handleSelection)
-		fabricCanvas.on('selection:updated', handleSelection)
+		// fabricCanvas.on('selection:updated', handleSelection)
 		fabricCanvas.on('selection:cleared', handleSelectionCleared)
 
 		// Cleanup при размонтировании
@@ -259,7 +258,7 @@ const DesignStep = forwardRef((props, ref) => {
 			fabricCanvas.off('object:scaling', handleTextScaling)
 			fabricCanvas.off('object:modified', handleObjectModified)
 			fabricCanvas.off('selection:created', handleSelection)
-			fabricCanvas.off('selection:updated', handleSelection)
+			// fabricCanvas.off('selection:updated', handleSelection)
 			fabricCanvas.off('selection:cleared', handleSelectionCleared)
 			fabricCanvas.dispose()
 			fabricCanvasRef.current = null
@@ -588,9 +587,7 @@ const DesignStep = forwardRef((props, ref) => {
 					console.debug('Server labels:', labelsData)
 					setServerLabels(labelsData)
 				}
-
-				console.debug('Loaded elements from server:', loadedElements)
-				setCustomElements(loadedElements)
+				// setCustomElements(loadedElements)
 
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [
@@ -623,42 +620,42 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 	}, [image])
 
-	useEffect(() => {
-		setCustomElements((prev) => {
-			const currentUrls = uploaderFiles.map((f) => f.url)
-			const updatedElements = prev.filter((el) => {
-				if (el.type === 'image' && el.content?.src) {
-					return currentUrls.includes(el.content.src)
-				}
+	// useEffect(() => {
+	// 	setCustomElements((prev) => {
+	// 		const currentUrls = uploaderFiles.map((f) => f.url)
+	// 		const updatedElements = prev.filter((el) => {
+	// 			if (el.type === 'image' && el.content?.src) {
+	// 				return currentUrls.includes(el.content.src)
+	// 			}
 
-				return true
-			})
+	// 			return true
+	// 		})
 
-			uploaderFiles.forEach((f) => {
-				const exists = updatedElements.some(
-					(el) => el.type === 'image' && el.content?.src === f.url,
-				)
-				if (!exists) {
-					const id = uuidv4()
-					const el = {
-						id,
-						type: 'image',
-						x: 30,
-						y: 30,
-						width: 100,
-						height: 100,
-						rotation: 0,
-						zIndex: (updatedElements.length || 0) + 1,
-						content: { src: f.url },
-						isServerImage: false,
-					}
-					updatedElements.push(el)
-				}
-			})
+	// 		uploaderFiles.forEach((f) => {
+	// 			const exists = updatedElements.some(
+	// 				(el) => el.type === 'image' && el.content?.src === f.url,
+	// 			)
+	// 			if (!exists) {
+	// 				const id = uuidv4()
+	// 				const el = {
+	// 					id,
+	// 					type: 'image',
+	// 					x: 30,
+	// 					y: 30,
+	// 					width: 100,
+	// 					height: 100,
+	// 					rotation: 0,
+	// 					zIndex: (updatedElements.length || 0) + 1,
+	// 					content: { src: f.url },
+	// 					isServerImage: false,
+	// 				}
+	// 				updatedElements.push(el)
+	// 			}
+	// 		})
 
-			return updatedElements
-		})
-	}, [uploaderFiles])
+	// 		return updatedElements
+	// 	})
+	// }, [uploaderFiles])
 
 	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
@@ -685,13 +682,15 @@ const DesignStep = forwardRef((props, ref) => {
 
 			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
+				console.log('obj.customData', obj.customData)
+
 				labelsData.push({
 					text: obj.text,
 					x: Math.round(obj.left),
 					y: Math.round(obj.top),
-					width: Math.round(obj.width),
-					height: Math.round(obj.height),
-					fontSize: Math.round(obj.fontSize),
+					width: Math.round(obj.customData.originalWidth),
+					height: Math.round(obj.customData.originalHeight),
+					fontSize: Math.round(obj.customData.originalFontSize),
 					fontFamily: obj.fontFamily,
 					color: obj.fill,
 					bold: obj.fontWeight === 'bold' || obj.fontWeight === 700,
@@ -870,20 +869,14 @@ const DesignStep = forwardRef((props, ref) => {
 											textAlign: 'center',
 										})
 
-										// Пересчитываем размер шрифта для новой ширины
-										const ctx = canvas.getContext()
-										const fontStyleStr = `${options.italic ? 'italic' : 'normal'} ${options.bold ? 'bold' : 'normal'} ${options.size}px ${options.font}`
-										ctx.font = fontStyleStr
-										const metrics = ctx.measureText(text)
-										const actualWidth = metrics.width
-										const safeTargetWidth = canvas.width * 0.95
-										const widthRatio = safeTargetWidth / actualWidth
-										let fontSize = options.size * widthRatio
-										fontSize = Math.max(fontSize, 16)
-										fontSize = Math.min(fontSize, 200)
-
-										selectedTextObject.set({ fontSize: fontSize })
-										selectedTextObject.customData.originalFontSize = fontSize
+										console.log('ALLO', {
+											text: text,
+											fontFamily: options.font,
+											fontWeight: options.bold ? 'bold' : 'normal',
+											fontStyle: options.italic ? 'italic' : 'normal',
+											fill: options.color,
+											textAlign: 'center',
+										})
 
 										canvas.renderAll()
 									}}

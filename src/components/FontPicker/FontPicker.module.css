@@ -1,0 +1,148 @@
+ /* Импорт Google Fonts */
+ @import url('https://fonts.googleapis.com/css2?family=Cookie&family=Courgette&family=Dancing+Script&family=Devonshire&family=Engagement&family=Farsan&family=Grand+Hotel&family=Great+Vibes&family=Kaushan+Script&family=Leckerli+One&family=Lily+Script+One&family=Lobster&family=Meddon&family=Mr+Bedfort&family=Norican&family=Oleo+Script+Swash+Caps&family=Pacifico&family=Parisienne&family=Pinyon+Script&family=Princess+Sofia&family=Rouge+Script&family=Sacramento&family=Sail&family=Sarina&family=Tangerine&family=Yesteryear&display=swap');
+
+
+ .desg-PopPick {
+   position: fixed;
+   background: white;
+   border-radius: 8px;
+   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+   padding: 20px;
+   z-index: 1000;
+   max-width: 400px;
+   width: 90%;
+
+ }
+
+ .desg-PopPick-sidefix {
+   right: 0;
+   top: 0;
+   max-height: 100dvh;
+   height: 100dvh;
+   overflow: hidden;
+   display: flex;
+   flex-direction: column;
+   padding-top: 4rem;
+
+   &>div {
+     height: 100%;
+   }
+ }
+
+ .sw-BtnClose {
+   position: absolute;
+   right: 10px;
+   top: 10px;
+   width: 30px;
+   height: 30px;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 24px;
+   color: #666;
+   text-decoration: none;
+   transition: color 0.2s;
+ }
+
+ .sw-BtnClose:hover {
+   color: #000;
+ }
+
+ .sw-Form_Select {
+   width: 100%;
+   padding: 10px;
+   margin-bottom: 15px;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   font-size: 14px;
+   background: white;
+   cursor: pointer;
+   outline: none;
+   color: black;
+ }
+
+ .sw-Form_Select:focus {
+   border-color: #4CAF50;
+   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+ }
+
+ .desg-FontPicker {
+   height: 100%;
+   max-height: 100%;
+   padding-bottom: 4rem;
+   overflow-y: auto;
+   overflow-x: hidden;
+   padding-right: 5px;
+ }
+
+ /* Стилизация скроллбара */
+ .desg-FontPicker::-webkit-scrollbar {
+   width: 8px;
+ }
+
+ .desg-FontPicker::-webkit-scrollbar-track {
+   background: #f1f1f1;
+   border-radius: 4px;
+ }
+
+ .desg-FontPicker::-webkit-scrollbar-thumb {
+   background: #888;
+   border-radius: 4px;
+ }
+
+ .desg-FontPicker::-webkit-scrollbar-thumb:hover {
+   background: #555;
+ }
+
+ .dt-FontFace {
+   display: block;
+   padding: 15px;
+   margin-bottom: 8px;
+   border: 2px solid #e0e0e0;
+   border-radius: 6px;
+   cursor: pointer;
+   text-decoration: none;
+   color: #333;
+   transition: all 0.2s ease;
+   font-size: 18px;
+   background: white;
+ }
+
+ .dt-FontFace:hover {
+   border-color: #4CAF50;
+   background: #f9fff9;
+   transform: translateX(3px);
+ }
+
+ .dt-FontFace-active {
+   border-color: #4CAF50;
+   background: #e8f5e9;
+   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+ }
+
+ .dt-FontFace_Inner {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+ }
+
+
+ /* Адаптивность */
+ @media (max-width: 768px) {
+   .desg-PopPick-sidefix {
+     right: 10px;
+     left: 10px;
+     width: auto;
+     max-width: none;
+   }
+
+   .desg-FontPicker {
+     max-height: 400px;
+   }
+
+   .dt-FontFace {
+     padding: 12px;
+     font-size: 16px;
+   }
+ }
