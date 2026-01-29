@@ -345,6 +345,7 @@ export default function FundraisingStep() {
 				<aside className={css.handles}>
 					<ul className={css.handles__container}>
 						<li className={css.handle__item}>
+							
 							<fieldset>
 								<span className={css.handle__title}>
 									Set your profit for each item:
@@ -376,7 +377,7 @@ export default function FundraisingStep() {
 								</label>
 							</fieldset>
 						</li>
-
+{amountProfit ? 
 						<li className={css.handle__item}>
 							<ProfitValueFieldset
 								title={'Add profit for all items in USD'}
@@ -385,7 +386,7 @@ export default function FundraisingStep() {
 								disabled={!amountProfit}
 							/>
 						</li>
-
+: 
 						<li className={css.handle__item}>
 							<ProfitValueFieldset
 								title={'Add profit for all items in Percentage'}
@@ -395,6 +396,8 @@ export default function FundraisingStep() {
 								disabled={amountProfit}
 							/>
 						</li>
+}
+
 
 						<li className={css.handle__item}>
 							<span className={css.handle__title}>

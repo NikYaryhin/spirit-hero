@@ -12,10 +12,18 @@ import Icon from '../Icon'
 import Loader from '../Loader/Loader'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import TextHandle from '../TextHandle/TextHandle'
-import Moveable from 'react-moveable'
 import { v4 as uuidv4 } from 'uuid'
 import { useSelector } from 'react-redux'
 import domtoimage from 'dom-to-image-more'
+import {
+	Canvas,
+	FabricImage,
+	Control,
+	util,
+	Textbox,
+	Circle,
+	Line,
+} from 'fabric'
 
 const DesignStep = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
@@ -37,15 +45,16 @@ const DesignStep = forwardRef((props, ref) => {
 	const [image, setImage] = useState(null)
 
 	const [uploaderFiles, setUploaderFiles] = useState([])
-	const [uploaderAgreed, setUploaderAgreed] = useState(false)
+	const [serverLabels, setServerLabels] = useState([])
 	const [uploaderDragOver, setUploaderDragOver] = useState(false)
 
-	const [customElements, setCustomElements] = useState([])
-	const [selectedId, setSelectedId] = useState(null)
 	const [hideBorders, setHideBorders] = useState(false)
+	const [selectedTextObject, setSelectedTextObject] = useState(null)
+
 	const containerRef = useRef(null)
 	const imageBoxRef = useRef(null)
-	const scaleRef = useRef({})
+	const canvasRef = useRef(null)
+	const fabricCanvasRef = useRef(null)
 
 	// Функция для конвертации URL в base64
 	const urlToBase64 = async (url) => {
@@ -77,6 +86,553 @@ const DesignStep = forwardRef((props, ref) => {
 		if (!str || typeof str !== 'string') return false
 		return str.startsWith('data:image/')
 	}
+
+	// Функция для отрисовки иконки удаления
+	const renderDeleteIcon = (ctx, left, top, styleOverride, fabricObject) => {
+		const size = 16
+		ctx.save()
+		ctx.translate(left, top)
+		ctx.rotate(util.degreesToRadians(fabricObject.angle))
+
+		// Рисуем круг
+		ctx.beginPath()
+		ctx.arc(0, 0, size / 2, 0, 2 * Math.PI)
+		ctx.fillStyle = '#ff4444'
+		ctx.fill()
+		ctx.strokeStyle = '#ffffff'
+		ctx.lineWidth = 2
+		ctx.stroke()
+
+		// Рисуем крестик
+		ctx.strokeStyle = '#ffffff'
+		ctx.lineWidth = 2
+		ctx.beginPath()
+		const offset = size / 4
+		ctx.moveTo(-offset, -offset)
+		ctx.lineTo(offset, offset)
+		ctx.moveTo(offset, -offset)
+		ctx.lineTo(-offset, offset)
+		ctx.stroke()
+
+		ctx.restore()
+	}
+
+	// Функция обработчик удаления объекта
+	const deleteObject = (eventData, transform) => {
+		const canvas = transform.target.canvas
+		const target = transform.target
+
+		// Удаляем изображения
+		if (target.customData?.type === 'uploaded-image') {
+			const urlToRemove = target.customData.url
+
+			// Удаляем с canvas
+			canvas.remove(target)
+			canvas.renderAll()
+
+			// Удаляем из uploaderFiles
+			setUploaderFiles((prev) => {
+				const index = prev.findIndex((f) => f.url === urlToRemove)
+				if (index !== -1) {
+					const next = prev.slice()
+					const [removed] = next.splice(index, 1)
+					// Освобождаем URL только для загруженных файлов
+					if (removed && removed.url && !removed.isServerImage) {
+						URL.revokeObjectURL(removed.url)
+					}
+					return next
+				}
+				return prev
+			})
+		}
+
+		// Удаляем текст
+		if (target.customData?.type === 'text') {
+			canvas.remove(target)
+			canvas.renderAll()
+		}
+
+		return true
+	}
+
+	// Инициализация fabric canvas
+	useEffect(() => {
+		// Ждём, пока данные загрузятся и компонент отрендерится
+		if (isLoading) return
+		if (!canvasRef.current || !containerRef.current) return
+
+		// Создаём fabric canvas
+		const fabricCanvas = new Canvas(canvasRef.current, {
+			width: containerRef.current.clientWidth,
+			height: containerRef.current.clientHeight,
+			backgroundColor: 'transparent',
+			selection: true,
+			preserveObjectStacking: true,
+		})
+
+		fabricCanvasRef.current = fabricCanvas
+
+		// Создаём направляющие линии для выравнивания по центру
+		const verticalGuideLine = new Line(
+			[fabricCanvas.width / 2, 0, fabricCanvas.width / 2, fabricCanvas.height],
+			{
+				stroke: '#4E008E',
+				strokeWidth: 1,
+				strokeDashArray: [5, 5],
+				selectable: false,
+				evented: false,
+				visible: false, // Скрыта по умолчанию
+				opacity: 0.7,
+			},
+		)
+
+		const horizontalGuideLine = new Line(
+			[0, fabricCanvas.height / 2, fabricCanvas.width, fabricCanvas.height / 2],
+			{
+				stroke: '#4E008E',
+				strokeWidth: 1,
+				strokeDashArray: [5, 5],
+				selectable: false,
+				evented: false,
+				visible: false, // Скрыта по умолчанию
+				opacity: 0.7,
+			},
+		)
+
+		// Добавляем кастомные данные для идентификации
+		verticalGuideLine.customData = { type: 'guide-line' }
+		horizontalGuideLine.customData = { type: 'guide-line' }
+
+		fabricCanvas.add(verticalGuideLine, horizontalGuideLine)
+
+		// Обработчик масштабирования текста для пропорционального изменения размера шрифта
+		const handleTextScaling = (e) => {
+			const obj = e.target
+			if (!obj || obj.customData?.type !== 'text') return
+
+			console.log('obj', obj.height, obj.fontSize)
+
+			// Вычисляем новую ширину с учётом масштаба
+			const scaleX = obj.scaleX
+			const newWidth = obj.width * scaleX
+			const newHeight = obj.height * scaleX
+			const newFontSize = Math.round(obj.fontSize * scaleX)
+
+			// Обновляем оригинальные значения для следующего масштабирования
+			obj.customData.originalFontSize = newFontSize
+			obj.customData.originalWidth = newWidth
+			obj.customData.originalHeight = newHeight
+		}
+
+		// Обработчик изменения объектов (перемещение, масштабирование, вращение)
+		const handleObjectModified = (e) => {
+			const obj = e.target
+
+			// Обрабатываем изменение изображений
+			if (obj.customData?.type === 'uploaded-image') {
+				const url = obj.customData.url
+
+				// Получаем текущие параметры объекта
+				const width = obj.getScaledWidth()
+				const height = obj.getScaledHeight()
+				const x = obj.left
+				const y = obj.top
+				const rotation = obj.angle
+
+				// Обновляем данные в uploaderFiles
+				setUploaderFiles((prev) =>
+					prev.map((file) => {
+						if (file.url === url) {
+							return {
+								...file,
+								x,
+								y,
+								width,
+								height,
+								rotation,
+							}
+						}
+						return file
+					}),
+				)
+			}
+
+			// Синхронизируем данные с customerLogos
+			syncCanvasToCustomerLogos()
+		}
+
+		// Обработчик выбора объекта
+		const handleSelection = (e) => {
+			const selected = e.selected?.[0] || e.target
+			if (selected && selected.customData?.type === 'text') {
+				setCustomizerType('text')
+				setSelectedTextObject(selected)
+			} else {
+				setCustomizerType('image')
+				setSelectedTextObject(null)
+			}
+		}
+
+		// Обработчик снятия выделения
+		const handleSelectionCleared = () => {
+			setSelectedTextObject(null)
+		}
+
+		// Обработчик вращения с магнитным snap'ом к углам кратным 15°
+		const handleRotating = (e) => {
+			const obj = e.target
+			if (!obj) return
+
+			const snapAngle = 15 // Кратность углов (15°, 30°, 45° и т.д.)
+			const snapThreshold = 3 // Магнитная зона ±2°
+
+			// Получаем текущий угол и нормализуем его в диапазон 0-360
+			let currentAngle = obj.angle % 360
+			if (currentAngle < 0) currentAngle += 360
+
+			// Находим ближайший угол кратный 15°
+			const nearestSnap = Math.round(currentAngle / snapAngle) * snapAngle
+
+			// Вычисляем расстояние до ближайшего snap-угла
+			const distance = Math.abs(currentAngle - nearestSnap)
+
+			// Если в пределах магнитной зоны - применяем snap
+			if (distance <= snapThreshold) {
+				obj.set('angle', nearestSnap)
+			}
+		}
+
+		// Обработчик перемещения с магнитным выравниванием по центру канваса
+		const handleMoving = (e) => {
+			const obj = e.target
+			if (
+				!obj ||
+				obj.customData?.type === 'center-marker' ||
+				obj.customData?.type === 'guide-line'
+			)
+				return
+
+			const snapThreshold = 10 // Магнитная зона ±10px
+
+			// Вычисляем центр канваса
+			const canvasCenterX = fabricCanvas.width / 2
+			const canvasCenterY = fabricCanvas.height / 2
+
+			// Получаем центр объекта
+			const objCenter = obj.getCenterPoint()
+
+			// Проверяем расстояние по горизонтали
+			const distanceX = Math.abs(objCenter.x - canvasCenterX)
+			const distanceY = Math.abs(objCenter.y - canvasCenterY)
+
+			// Snap по горизонтали (вертикальная линия)
+			if (distanceX <= snapThreshold) {
+				// Вычисляем новую позицию left с учётом originX
+				// obj.center()
+				// const newLeft = canvasCenterX - obj.width* obj.scaleX / 2
+				// obj.set({ left: newLeft })
+				verticalGuideLine.set({ visible: true })
+			} else {
+				verticalGuideLine.set({ visible: false })
+			}
+
+			// Snap по вертикали (горизонтальная линия)
+			if (distanceY <= snapThreshold) {
+				// Вычисляем новую позицию top с учётом originY
+				// obj.center()
+				// const newTop = canvasCenterY - obj.height* obj.scaleY / 2
+				// obj.set({ top: newTop })
+				horizontalGuideLine.set({ visible: true })
+			} else {
+				horizontalGuideLine.set({ visible: false })
+			}
+
+			obj.setCoords() // Обновляем координаты объекта
+		}
+
+		// Обработчик окончания перемещения - скрываем направляющие
+		const handleMovingEnd = () => {
+			verticalGuideLine.set({ visible: false })
+			horizontalGuideLine.set({ visible: false })
+			fabricCanvas.renderAll()
+		}
+
+		// Подписываемся на события
+		fabricCanvas.on('object:scaling', handleTextScaling)
+		fabricCanvas.on('object:rotating', handleRotating)
+		fabricCanvas.on('object:moving', handleMoving)
+		fabricCanvas.on('object:modified', handleObjectModified)
+		fabricCanvas.on('mouse:up', handleMovingEnd)
+		fabricCanvas.on('selection:created', handleSelection)
+		// fabricCanvas.on('selection:updated', handleSelection)
+		fabricCanvas.on('selection:cleared', handleSelectionCleared)
+
+		// Cleanup при размонтировании
+		return () => {
+			fabricCanvas.off('object:scaling', handleTextScaling)
+			fabricCanvas.off('object:rotating', handleRotating)
+			fabricCanvas.off('object:moving', handleMoving)
+			fabricCanvas.off('object:modified', handleObjectModified)
+			fabricCanvas.off('mouse:up', handleMovingEnd)
+			fabricCanvas.off('selection:created', handleSelection)
+			// fabricCanvas.off('selection:updated', handleSelection)
+			fabricCanvas.off('selection:cleared', handleSelectionCleared)
+			fabricCanvas.dispose()
+			fabricCanvasRef.current = null
+		}
+	}, [isLoading])
+
+	// Удаление выделенного элемента при нажатии Delete или Backspace
+	useEffect(() => {
+		const canvas = fabricCanvasRef.current
+		if (!canvas) {
+			return
+		}
+
+		const handleKeyDown = (e) => {
+			// Проверяем, что фокус не на input/textarea
+			const activeElement = document.activeElement
+			if (
+				activeElement &&
+				(activeElement.tagName === 'INPUT' ||
+					activeElement.tagName === 'TEXTAREA' ||
+					activeElement.isContentEditable)
+			) {
+				return
+			}
+
+			// Проверяем нажатие Delete или Backspace
+			if (e.key === 'Delete' || e.key === 'Backspace') {
+				const activeObject = canvas.getActiveObject()
+
+				if (activeObject) {
+					// Удаление изображения
+					if (activeObject.customData?.type === 'uploaded-image') {
+						e.preventDefault()
+
+						const urlToRemove = activeObject.customData.url
+
+						// Удаляем с canvas
+						canvas.remove(activeObject)
+						canvas.renderAll()
+
+						// Удаляем из uploaderFiles
+						setUploaderFiles((prev) => {
+							const index = prev.findIndex((f) => f.url === urlToRemove)
+							if (index !== -1) {
+								const next = prev.slice()
+								const [removed] = next.splice(index, 1)
+								// Освобождаем URL только для загруженных файлов
+								if (removed && removed.url && !removed.isServerImage) {
+									URL.revokeObjectURL(removed.url)
+								}
+								return next
+							}
+							return prev
+						})
+					}
+
+					// Удаление текста
+					if (activeObject.customData?.type === 'text') {
+						e.preventDefault()
+						canvas.remove(activeObject)
+						canvas.renderAll()
+					}
+				}
+			}
+		}
+
+		window.addEventListener('keydown', handleKeyDown)
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown)
+		}
+	}, [isLoading])
+
+	// Добавление загруженных изображений на canvas
+	useEffect(() => {
+		const canvas = fabricCanvasRef.current
+		if (!canvas) return
+
+		// Получаем текущие URL изображений на canvas
+		const currentObjects = canvas.getObjects()
+		const currentUrls = currentObjects
+			.filter((obj) => obj.customData?.type === 'uploaded-image')
+			.map((obj) => obj.customData.url)
+
+		// Удаляем изображения, которых больше нет в uploaderFiles
+		const uploaderUrls = uploaderFiles.map((f) => f.url)
+		currentObjects.forEach((obj) => {
+			if (
+				obj.customData?.type === 'uploaded-image' &&
+				!uploaderUrls.includes(obj.customData.url)
+			) {
+				canvas.remove(obj)
+			}
+		})
+
+		// Добавляем новые изображения
+		uploaderFiles.forEach(async (fileData) => {
+			if (currentUrls.includes(fileData.url)) return
+
+			try {
+				const imgElement = document.createElement('img')
+				imgElement.src = fileData.url
+
+				imgElement.onload = () => {
+					// Используем размеры с сервера для расчёта scale, если они есть
+					let scaleX, scaleY
+					if (fileData.width !== undefined && fileData.height !== undefined) {
+						scaleX = fileData.width / imgElement.width
+						scaleY = fileData.height / imgElement.height
+					} else {
+						scaleX = 100 / imgElement.width
+						scaleY = 100 / imgElement.height
+					}
+
+					// Используем координаты с сервера, если они есть, иначе центрируем
+					// Важно: используем !== undefined, чтобы 0 не считалось falsy
+					const left = fileData.x !== undefined ? fileData.x : canvas.width / 2
+					const top = fileData.y !== undefined ? fileData.y : canvas.height / 2
+
+					const fabricImg = new FabricImage(imgElement, {
+						left,
+						top,
+						scaleX,
+						scaleY,
+						angle: fileData.rotation || 0,
+						cornerStyle: 'circle',
+						cornerColor: '#4E008E',
+						cornerStrokeColor: '#ffffff',
+						borderColor: '#4E008E',
+						borderScaleFactor: 2,
+						transparentCorners: false,
+						lockRotation: false,
+						lockUniScaling: true,
+					})
+
+					fabricImg.setControlsVisibility({
+						ml: false,
+						mr: false,
+						mt: false,
+						mb: false,
+					})
+
+					// Добавляем кнопку удаления
+					fabricImg.controls.deleteControl = new Control({
+						x: 0.5,
+						y: -0.5,
+						offsetY: -16,
+						offsetX: 16,
+						cursorStyle: 'pointer',
+						mouseUpHandler: deleteObject,
+						render: renderDeleteIcon,
+						cornerSize: 16,
+					})
+
+					// Добавляем кастомные данные для идентификации
+					fabricImg.customData = {
+						type: 'uploaded-image',
+						url: fileData.url,
+						fileData: fileData,
+					}
+
+					canvas.add(fabricImg)
+					canvas.renderAll()
+				}
+
+				imgElement.onerror = (error) => {
+					console.error('Ошибка загрузки изображения:', error)
+				}
+			} catch (error) {
+				console.error('Ошибка при добавлении изображения на canvas:', error)
+			}
+		})
+	}, [uploaderFiles])
+
+	// useEffect для загрузки текста с сервера на canvas
+	useEffect(() => {
+		if (isLoading) return
+		const canvas = fabricCanvasRef.current
+		if (!canvas || serverLabels.length === 0) return
+
+		const currentObjects = canvas.getObjects()
+
+		// Получаем текущие тексты на canvas (по уникальному признаку)
+		const currentTexts = currentObjects
+			.filter((obj) => obj.customData?.type === 'text')
+			.map((obj) => obj.customData.serverId)
+
+		// Добавляем новые тексты
+		serverLabels.forEach((labelData, index) => {
+			const serverId = `server-label-${index}`
+
+			// Проверяем, не загружен ли уже этот текст
+			if (currentTexts.includes(serverId)) return
+
+			try {
+				// Используем координаты с сервера, если они есть, иначе значения по умолчанию
+				const left = labelData.x !== undefined ? labelData.x : 50
+				const top = labelData.y !== undefined ? labelData.y : 50
+				const fontSize = labelData.fontSize || 54
+				const width =
+					labelData.width !== undefined ? labelData.width : canvas.width
+
+				const textbox = new Textbox(labelData.text, {
+					left,
+					top,
+					fontSize,
+					fontFamily: labelData.fontFamily || 'Montserrat',
+					fill: labelData.color || '#000000',
+					fontWeight: labelData.bold ? 700 : 400,
+					fontStyle: labelData.italic ? 'italic' : 'normal',
+					width,
+					angle: labelData.rotation || 0,
+					textAlign: 'center',
+					cornerStyle: 'circle',
+					cornerColor: '#4E008E',
+					cornerStrokeColor: '#ffffff',
+					borderColor: '#4E008E',
+					borderScaleFactor: 2,
+					transparentCorners: false,
+					lockScalingFlip: true,
+					lockUniScaling: false,
+				})
+
+				// Скрываем ненужные контролы
+				textbox.setControlsVisibility({
+					ml: false,
+					mr: false,
+					mt: false,
+					mb: false,
+				})
+
+				// Добавляем кнопку удаления
+				textbox.controls.deleteControl = new Control({
+					x: 0.5,
+					y: -0.5,
+					offsetY: -16,
+					offsetX: 16,
+					cursorStyle: 'pointer',
+					mouseUpHandler: deleteObject,
+					render: renderDeleteIcon,
+					cornerSize: 16,
+				})
+
+				// Добавляем кастомные данные для идентификации
+				textbox.customData = {
+					type: 'text',
+					serverId: serverId,
+				}
+
+				canvas.add(textbox)
+			} catch (error) {
+				console.error('❌ Ошибка при добавлении текста на canvas:', error)
+			}
+		})
+
+		canvas.renderAll()
+	}, [serverLabels, isLoading])
 
 	useEffect(() => {
 		const fetchStoreData = async () => {
@@ -110,47 +666,44 @@ const DesignStep = forwardRef((props, ref) => {
 							isServerImage: true,
 						})
 
-						serverImageFiles.push({
+						const serverFile = {
 							url: logoData.image,
 							base64: logoData.image,
 							file: { name: `Server image ${index + 1}` },
 							isServerImage: true,
-						})
+							x: logoData.x,
+							y: logoData.y,
+							width: logoData.width,
+							height: logoData.height,
+							rotation: logoData.rotation || 0,
+						}
+
+						serverImageFiles.push(serverFile)
 					})
 				}
 				console.debug('Server image files:', serverImageFiles)
 				setUploaderFiles(serverImageFiles)
 
 				if (res.design.labels && Array.isArray(res.design.labels)) {
-					res.design.labels.forEach((labelData) => {
-						const id = uuidv4()
-						loadedElements.push({
-							id,
-							type: 'text',
-							x: labelData.x || 20,
-							y: labelData.y || 20,
-							width: 'fit-content',
-							maxWidth: 300,
-							height: 'fit-content',
-							rotation: 0,
-							zIndex: zIndex++,
-							content: labelData.text || '',
-							style: {
-								fontFamily: labelData.fontFamily || 'Montserrat',
-								fontSize:
-									typeof labelData.fontSize === 'number'
-										? `${labelData.fontSize}px`
-										: labelData.fontSize || '54px',
-								color: labelData.color || '#000000',
-								fontWeight: labelData.bold ? 700 : 400,
-								fontStyle: labelData.italic ? 'italic' : 'normal',
-							},
-						})
-					})
+					const labelsData = res.design.labels.map((labelData) => ({
+						text: labelData.text || '',
+						x: labelData.x,
+						y: labelData.y,
+						width: labelData.width,
+						height: labelData.height,
+						fontSize:
+							typeof labelData.fontSize === 'number'
+								? labelData.fontSize
+								: parseInt(labelData.fontSize) || 54,
+						fontFamily: labelData.fontFamily || 'Montserrat',
+						color: labelData.color || '#000000',
+						bold: labelData.bold || false,
+						italic: labelData.italic || false,
+						rotation: labelData.rotation || 0,
+					}))
+					console.debug('Server labels:', labelsData)
+					setServerLabels(labelsData)
 				}
-
-				console.debug('Loaded elements from server:', loadedElements)
-				setCustomElements(loadedElements)
 
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [
@@ -183,111 +736,62 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 	}, [image])
 
-	useEffect(() => {
-		setCustomElements((prev) => {
-			const currentUrls = uploaderFiles.map((f) => f.url)
-			const updatedElements = prev.filter((el) => {
-				if (el.type === 'image' && el.content?.src) {
-					return currentUrls.includes(el.content.src)
-				}
+	// Функция для синхронизации данных с canvas в customerLogos
+	const syncCanvasToCustomerLogos = () => {
+		const canvas = fabricCanvasRef.current
+		if (!canvas) return
 
-				return true
-			})
+		const objects = canvas.getObjects()
 
-			const selectedElementExists = updatedElements.some(
-				(el) => el.id === selectedId,
-			)
-			if (selectedId && !selectedElementExists) {
-				setSelectedId(null)
-			}
+		const customerLogosData = []
+		const labelsData = []
 
-			uploaderFiles.forEach((f) => {
-				const exists = updatedElements.some(
-					(el) => el.type === 'image' && el.content?.src === f.url,
-				)
-				if (!exists) {
-					const id = uuidv4()
-					const el = {
-						id,
-						type: 'image',
-						x: 30,
-						y: 30,
-						width: 100,
-						height: 100,
-						rotation: 0,
-						zIndex: (updatedElements.length || 0) + 1,
-						content: { src: f.url },
-						isServerImage: false,
-					}
-					updatedElements.push(el)
-
-					setTimeout(() => setSelectedId(id), 0)
-				}
-			})
-
-			return updatedElements
-		})
-	}, [uploaderFiles, selectedId])
-
-	const updateCustomerLogos = async () => {
-		const labels = []
-		const customerLogos = []
-
-		for (const element of customElements) {
-			if (element.type === 'text') {
-				labels.push({
-					text: element.content,
-					fontFamily: element.style.fontFamily || 'Montserrat',
-					fontSize: element.style.fontSize || '54px',
-					color: element.style.color || '#000000',
-					bold: element.style.fontWeight === '700',
-					italic: element.style.fontStyle === 'italic',
-					x: element.x,
-					y: element.y,
-					width: element.width,
-					height: element.height,
+		objects.forEach((obj) => {
+			// Собираем данные о логотипах (изображениях)
+			if (obj.customData?.type === 'uploaded-image') {
+				customerLogosData.push({
+					image: obj.customData.fileData.base64,
+					x: Math.round(obj.left),
+					y: Math.round(obj.top),
+					width: Math.round(obj.getScaledWidth()),
+					height: Math.round(obj.getScaledHeight()),
+					rotation: Math.round(obj.angle),
 				})
-			} else if (element.type === 'image') {
-				if (element.isServerImage) {
-					customerLogos.push({
-						image: element.content.src,
-						x: element.x,
-						y: element.y,
-						width: element.width,
-						height: element.height,
-					})
-				} else {
-					const fileData = uploaderFiles.find(
-						(f) => f.url === element.content.src,
-					)
-					if (fileData && fileData.base64) {
-						customerLogos.push({
-							image: fileData.base64,
-							x: element.x,
-							y: element.y,
-							width: element.width,
-							height: element.height,
-						})
-					}
-				}
 			}
-		}
 
+			// Собираем данные о текстах
+			if (obj.customData?.type === 'text') {
+				console.log('obj.customData', obj.customData)
+
+				labelsData.push({
+					text: obj.text,
+					x: Math.round(obj.left),
+					y: Math.round(obj.top),
+					width: Math.round(obj.customData.originalWidth),
+					height: Math.round(obj.customData.originalHeight),
+					fontSize: Math.round(obj.customData.originalFontSize),
+					fontFamily: obj.fontFamily,
+					color: obj.fill,
+					bold: obj.fontWeight === 'bold' || obj.fontWeight === 700,
+					italic: obj.fontStyle === 'italic',
+					rotation: Math.round(obj.angle),
+				})
+			}
+		})
+
+		// Обновляем customerLogos
 		setCustomerLogos((prev) => ({
 			...prev,
-			customerLogos: customerLogos,
-			labels: labels,
+			customerLogos: customerLogosData,
+			labels: labelsData,
 		}))
 	}
-
-	// Обновляем customerLogos при изменении uploaderFiles (добавление/удаление изображений)
-	useEffect(() => {
-		updateCustomerLogos()
-	}, [uploaderFiles])
 
 	// Функция для создания скриншота контейнера custom__elements
 	const getLogoParameters = async () => {
 		try {
+			syncCanvasToCustomerLogos()
+
 			setHideBorders(true)
 			const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
 				quality: 0.95,
@@ -332,207 +836,11 @@ const DesignStep = forwardRef((props, ref) => {
 				<div className={css.image__box} ref={imageBoxRef}>
 					<img src={image} alt="Customizer image" />
 
-					{/* Canvas area for custom elements */}
 					<div
 						ref={containerRef}
 						className={`${css.custom__elements} ${hideBorders ? 'hide--borders' : ''}`}
-						onClick={(e) => {
-							if (e.target === containerRef.current) {
-								setSelectedId(null)
-							}
-						}}
 					>
-						{customElements.map((el) => (
-							<div
-								key={el.id}
-								data-id={el.id}
-								style={{
-									position: 'absolute',
-									left: el.x,
-									top: el.y,
-									width: el.width,
-									height: el.height,
-									transform: `rotate(${el.rotation}deg)`,
-									transformOrigin: 'center center',
-									zIndex: el.zIndex,
-									border: el.id === selectedId ? '1px dashed #4E008E' : 'none',
-									boxSizing: 'border-box',
-								}}
-								onMouseDown={() => setSelectedId(el.id)}
-							>
-								{el.type === 'image' ? (
-									<img
-										src={el.content.src}
-										alt="uploaded"
-										style={{
-											width: '100%',
-											height: '100%',
-											objectFit: 'contain',
-										}}
-									/>
-								) : (
-									<div
-										style={{
-											width: el.type === 'text' ? 'fit-content' : '100%',
-											height: el.type === 'text' ? 'fit-content' : '100%',
-											maxWidth: el.maxWidth || 'none',
-											...el.style,
-										}}
-									>
-										{el.content}
-									</div>
-								)}
-
-								{/* Кнопка удаления для текстовых элементов */}
-								{el.type === 'text' && (
-									<button
-										className={css.deleteButton}
-										onClick={(e) => {
-											e.stopPropagation()
-											setCustomElements((prev) =>
-												prev.filter((element) => element.id !== el.id),
-											)
-											if (selectedId === el.id) {
-												setSelectedId(null)
-											}
-										}}
-										title="Удалить текст"
-									>
-										<Icon name={'Cancel'} />
-									</button>
-								)}
-							</div>
-						))}
-
-						{selectedId &&
-							document.querySelector(`[data-id="${selectedId}"]`) &&
-							(() => {
-								const selectedElement = customElements.find(
-									(el) => el.id === selectedId,
-								)
-								const isTextElement = selectedElement?.type === 'text'
-
-								return (
-									<Moveable
-										target={document.querySelector(`[data-id="${selectedId}"]`)}
-										container={containerRef.current}
-										draggable={true}
-										resizable={!isTextElement}
-										scalable={!isTextElement}
-										rotatable={true}
-										throttleDrag={0}
-										throttleResize={0}
-										throttleRotate={0}
-										handleRotate={true}
-										renderDirections={
-											isTextElement
-												? []
-												: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
-										}
-										edge={false}
-										rotationPosition={'top'}
-										onDrag={({ target, left, top }) => {
-											const id = target.getAttribute('data-id')
-											const container = containerRef.current
-											if (!container) return
-											setCustomElements((prev) =>
-												prev.map((el) => {
-													if (el.id !== id) return el
-
-													// Для текстовых элементов используем фиксированные размеры для расчета границ
-													const elementWidth =
-														el.type === 'text'
-															? el.maxWidth || 300
-															: el.width || 0
-													const elementHeight =
-														el.type === 'text' ? 60 : el.height || 0
-
-													// allow partial exit: at least 1px of element must remain visible
-													const minLeft = -(elementWidth - 50)
-													const maxLeft = container.clientWidth - 50
-													const minTop = -(elementHeight - 50)
-													const maxTop = container.clientHeight - 50
-													const newLeft = Math.max(
-														minLeft,
-														Math.min(left, maxLeft),
-													)
-													const newTop = Math.max(minTop, Math.min(top, maxTop))
-													return { ...el, x: newLeft, y: newTop }
-												}),
-											)
-										}}
-										onDragEnd={() => {
-											updateCustomerLogos()
-										}}
-										onResize={({ target, width, height }) => {
-											const id = target.getAttribute('data-id')
-											const container = containerRef.current
-											if (!container) return
-											setCustomElements((prev) =>
-												prev.map((el) => {
-													if (el.id !== id) return el
-													// allow resize but keep minimum size of 1px; partial exit allowed
-													const newW = Math.max(1, Math.round(width))
-													const newH = Math.max(1, Math.round(height))
-													return { ...el, width: newW, height: newH }
-												}),
-											)
-										}}
-										onResizeEnd={() => {
-											updateCustomerLogos()
-										}}
-										onScaleStart={({ target }) => {
-											const id = target.getAttribute('data-id')
-											const el = customElements.find((x) => x.id === id)
-											if (el)
-												scaleRef.current[id] = {
-													w: el.width || 0,
-													h: el.height || 0,
-												}
-										}}
-										onScale={({ target, scale }) => {
-											const id = target.getAttribute('data-id')
-											const initial = scaleRef.current[id]
-											if (!initial) return
-											let sx = 1
-											let sy = 1
-											if (Array.isArray(scale)) {
-												sx = scale[0]
-												sy = scale[1]
-											} else if (typeof scale === 'number') {
-												sx = sy = scale
-											}
-											const newW = Math.max(1, Math.round(initial.w * sx))
-											const newH = Math.max(1, Math.round(initial.h * sy))
-											setCustomElements((prev) =>
-												prev.map((el) =>
-													el.id === id
-														? { ...el, width: newW, height: newH }
-														: el,
-												),
-											)
-										}}
-										onScaleEnd={({ target }) => {
-											const id = target.getAttribute('data-id')
-											delete scaleRef.current[id]
-										}}
-										onRotate={({ target, rotate, dist, angle }) => {
-											const id = target.getAttribute('data-id')
-											const rotationValue = rotate || dist || angle || 0
-											setCustomElements((prev) =>
-												prev.map((el) =>
-													el.id === id
-														? { ...el, rotation: rotationValue }
-														: el,
-												),
-											)
-										}}
-										onRotateEnd={() => {
-											updateCustomerLogos()
-										}}
-									/>
-								)
-							})()}
+						<canvas ref={canvasRef} />
 					</div>
 				</div>
 
@@ -603,8 +911,6 @@ const DesignStep = forwardRef((props, ref) => {
 								<ImageUploader
 									files={uploaderFiles}
 									setFiles={setUploaderFiles}
-									agreed={uploaderAgreed}
-									setAgreed={setUploaderAgreed}
 									dragOver={uploaderDragOver}
 									setDragOver={setUploaderDragOver}
 								/>
@@ -612,29 +918,174 @@ const DesignStep = forwardRef((props, ref) => {
 
 							{customizerType === 'text' && (
 								<TextHandle
+									selectedText={
+										selectedTextObject
+											? {
+													text: selectedTextObject.text,
+													font: selectedTextObject.fontFamily,
+													size: Math.round(selectedTextObject.fontSize),
+													bold:
+														selectedTextObject.fontWeight === 'bold' ||
+														selectedTextObject.fontWeight === 700,
+													italic: selectedTextObject.fontStyle === 'italic',
+													color: selectedTextObject.fill,
+												}
+											: null
+									}
+									onUpdate={(text, options) => {
+										if (!selectedTextObject) return
+
+										const canvas = fabricCanvasRef.current
+										if (!canvas) return
+
+										// Обновляем текст
+										selectedTextObject.set({
+											text: text,
+											fontFamily: options.font,
+											fontWeight: options.bold ? 'bold' : 'normal',
+											fontStyle: options.italic ? 'italic' : 'normal',
+											fill: options.color,
+											textAlign: 'center',
+										})
+
+										console.log('ALLO', {
+											text: text,
+											fontFamily: options.font,
+											fontWeight: options.bold ? 'bold' : 'normal',
+											fontStyle: options.italic ? 'italic' : 'normal',
+											fill: options.color,
+											textAlign: 'center',
+										})
+
+										canvas.renderAll()
+									}}
 									onAdd={(text, options) => {
-										const id = uuidv4()
-										const el = {
-											id,
-											type: 'text',
-											x: 20,
-											y: 20,
-											width: 'fit-content',
-											maxWidth: 300,
-											height: 'fit-content',
-											rotation: 0,
-											zIndex: (customElements.length || 0) + 1,
-											content: text,
-											style: {
-												fontFamily: options.font,
-												fontSize: options.size,
-												fontWeight: options.bold ? 700 : 400,
-												fontStyle: options.italic ? 'italic' : 'normal',
-												color: options.color,
-											},
+										const canvas = fabricCanvasRef.current
+										if (!canvas) {
+											console.error('Canvas не готов для добавления текста')
+											return
 										}
-										setCustomElements((p) => [...p, el])
-										setSelectedId(id)
+
+										// Функция для подбора оптимального размера шрифта
+										const calculateOptimalFontSize = (
+											text,
+											targetWidth,
+											initialFontSize,
+											fontFamily,
+											fontWeight,
+											fontStyle,
+										) => {
+											// Создаём canvas context для измерения текста
+											const ctx = canvas.getContext()
+
+											// Устанавливаем стиль шрифта
+											const fontStyle2 = `${fontStyle} ${fontWeight} ${initialFontSize}px ${fontFamily}`
+											ctx.font = fontStyle2
+
+											// Измеряем реальную ширину текста
+											const metrics = ctx.measureText(text)
+											const actualWidth = metrics.width
+
+											// Добавляем небольшой отступ (5%) для безопасности
+											const safeTargetWidth = targetWidth * 0.95
+
+											// Вычисляем коэффициент масштабирования
+											const widthRatio = safeTargetWidth / actualWidth
+											let fontSize = initialFontSize * widthRatio
+
+											// Ограничиваем размер шрифта разумными пределами
+											fontSize = Math.max(fontSize, 16) // Минимум 16px
+											fontSize = Math.min(fontSize, 200) // Максимум 200px
+
+											console.log('📏 Подбор размера шрифта:', {
+												text:
+													text.length > 30
+														? text.substring(0, 30) + '...'
+														: text,
+												textLength: text.length,
+												actualWidth: Math.round(actualWidth),
+												targetWidth: Math.round(targetWidth),
+												safeTargetWidth: Math.round(safeTargetWidth),
+												widthRatio: widthRatio.toFixed(3),
+												initialFontSize,
+												calculatedFontSize: Math.round(fontSize),
+											})
+
+											return fontSize
+										}
+
+										// Вычисляем оптимальный размер шрифта
+										const optimalFontSize = calculateOptimalFontSize(
+											text,
+											canvas.width,
+											options.size,
+											options.font,
+											options.bold ? 'bold' : 'normal',
+											options.italic ? 'italic' : 'normal',
+										)
+
+										// Создаём текстовый объект с оптимальным размером шрифта
+										const textbox = new Textbox(text, {
+											left: 0, // Будет центрирован после создания
+											top: 0,
+											width: canvas.width, // Ширина равна ширине canvas
+											fontFamily: options.font,
+											fontSize: optimalFontSize,
+											fontWeight: options.bold ? 'bold' : 'normal',
+											fontStyle: options.italic ? 'italic' : 'normal',
+											fill: options.color,
+											textAlign: 'center',
+											// Настройки для пропорционального изменения
+											lockScalingFlip: true,
+											// Разрешаем изменение только по ширине для пропорционального масштабирования
+											lockUniScaling: false,
+											// Стили контролов
+											cornerStyle: 'circle',
+											cornerColor: '#4E008E',
+											cornerStrokeColor: '#ffffff',
+											borderColor: '#4E008E',
+											borderScaleFactor: 2,
+											transparentCorners: false,
+										})
+
+										// Центрируем текст на канвасе
+										textbox.set({
+											left: canvas.width / 2,
+											top: canvas.height / 2,
+										})
+
+										// Скрываем контролы масштабирования по вертикали и горизонтали
+										// Оставляем только угловые для пропорционального изменения
+										textbox.setControlsVisibility({
+											mt: false,
+											mb: false,
+											ml: false,
+											mr: false,
+										})
+
+										// Добавляем кнопку удаления
+										textbox.controls.deleteControl = new Control({
+											x: 0.5,
+											y: -0.5,
+											offsetY: -16,
+											offsetX: 16,
+											cursorStyle: 'pointer',
+											mouseUpHandler: deleteObject,
+											render: renderDeleteIcon,
+											cornerSize: 24,
+										})
+
+										// Добавляем кастомные данные
+										textbox.customData = {
+											type: 'text',
+											originalFontSize: optimalFontSize,
+											originalWidth: canvas.width,
+										}
+
+										// Добавляем на canvas
+										canvas.add(textbox)
+										canvas.setActiveObject(textbox)
+										canvas.renderAll()
 									}}
 								/>
 							)}
