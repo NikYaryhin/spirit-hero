@@ -40,9 +40,9 @@ const DesignStep = forwardRef((props, ref) => {
 	const [serverLabels, setServerLabels] = useState([])
 	const [uploaderDragOver, setUploaderDragOver] = useState(false)
 
-	const [customElements, setCustomElements] = useState([])
 	const [hideBorders, setHideBorders] = useState(false)
 	const [selectedTextObject, setSelectedTextObject] = useState(null)
+
 	const containerRef = useRef(null)
 	const imageBoxRef = useRef(null)
 	const canvasRef = useRef(null)
@@ -176,15 +176,6 @@ const DesignStep = forwardRef((props, ref) => {
 			const newWidth = obj.width * scaleX
 			const newHeight = obj.height * scaleX
 			const newFontSize = Math.round(obj.fontSize * scaleX)
-
-			console.log({ newWidth, newHeight, newFontSize })
-
-			// Применяем новый размер шрифта и ширину
-			// obj.set({
-			// 	fontSize: Math.round(newFontSize),
-			// 	width: newWidth,
-			// 	height: newHeight,
-			// })
 
 			// Обновляем оригинальные значения для следующего масштабирования
 			obj.customData.originalFontSize = newFontSize
@@ -363,11 +354,6 @@ const DesignStep = forwardRef((props, ref) => {
 				imgElement.src = fileData.url
 
 				imgElement.onload = () => {
-					// Используем координаты с сервера, если они есть, иначе значения по умолчанию
-					// Важно: используем !== undefined, чтобы 0 не считалось falsy
-					const left = fileData.x !== undefined ? fileData.x : 50
-					const top = fileData.y !== undefined ? fileData.y : 50
-
 					// Используем размеры с сервера для расчёта scale, если они есть
 					let scaleX, scaleY
 					if (fileData.width !== undefined && fileData.height !== undefined) {
@@ -377,6 +363,12 @@ const DesignStep = forwardRef((props, ref) => {
 						scaleX = 100 / imgElement.width
 						scaleY = 100 / imgElement.height
 					}
+
+
+					// Используем координаты с сервера, если они есть, иначе центрируем
+					// Важно: используем !== undefined, чтобы 0 не считалось falsy
+					const left = fileData.x !== undefined ? fileData.x : (canvas.width) / 2
+					const top = fileData.y !== undefined ? fileData.y : (canvas.height) / 2
 
 					const fabricImg = new FabricImage(imgElement, {
 						left,
@@ -587,7 +579,6 @@ const DesignStep = forwardRef((props, ref) => {
 					console.debug('Server labels:', labelsData)
 					setServerLabels(labelsData)
 				}
-				// setCustomElements(loadedElements)
 
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
 					acc[product.category_id] = [
@@ -619,43 +610,6 @@ const DesignStep = forwardRef((props, ref) => {
 			})
 		}
 	}, [image])
-
-	// useEffect(() => {
-	// 	setCustomElements((prev) => {
-	// 		const currentUrls = uploaderFiles.map((f) => f.url)
-	// 		const updatedElements = prev.filter((el) => {
-	// 			if (el.type === 'image' && el.content?.src) {
-	// 				return currentUrls.includes(el.content.src)
-	// 			}
-
-	// 			return true
-	// 		})
-
-	// 		uploaderFiles.forEach((f) => {
-	// 			const exists = updatedElements.some(
-	// 				(el) => el.type === 'image' && el.content?.src === f.url,
-	// 			)
-	// 			if (!exists) {
-	// 				const id = uuidv4()
-	// 				const el = {
-	// 					id,
-	// 					type: 'image',
-	// 					x: 30,
-	// 					y: 30,
-	// 					width: 100,
-	// 					height: 100,
-	// 					rotation: 0,
-	// 					zIndex: (updatedElements.length || 0) + 1,
-	// 					content: { src: f.url },
-	// 					isServerImage: false,
-	// 				}
-	// 				updatedElements.push(el)
-	// 			}
-	// 		})
-
-	// 		return updatedElements
-	// 	})
-	// }, [uploaderFiles])
 
 	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
@@ -945,29 +899,35 @@ const DesignStep = forwardRef((props, ref) => {
 											options.italic ? 'italic' : 'normal',
 										)
 
-										// Создаём текстовый объект с оптимальным размером шрифта
-										const textbox = new Textbox(text, {
-											left: 0,
-											top: 50,
-											width: canvas.width, // Ширина равна ширине canvas
-											fontFamily: options.font,
-											fontSize: optimalFontSize,
-											fontWeight: options.bold ? 'bold' : 'normal',
-											fontStyle: options.italic ? 'italic' : 'normal',
-											fill: options.color,
-											textAlign: 'center',
-											// Настройки для пропорционального изменения
-											lockScalingFlip: true,
-											// Разрешаем изменение только по ширине для пропорционального масштабирования
-											lockUniScaling: false,
-											// Стили контролов
-											cornerStyle: 'circle',
-											cornerColor: '#4E008E',
-											cornerStrokeColor: '#ffffff',
-											borderColor: '#4E008E',
-											borderScaleFactor: 2,
-											transparentCorners: false,
-										})
+									// Создаём текстовый объект с оптимальным размером шрифта
+									const textbox = new Textbox(text, {
+										left: 0, // Будет центрирован после создания
+										top: 0,
+										width: canvas.width, // Ширина равна ширине canvas
+										fontFamily: options.font,
+										fontSize: optimalFontSize,
+										fontWeight: options.bold ? 'bold' : 'normal',
+										fontStyle: options.italic ? 'italic' : 'normal',
+										fill: options.color,
+										textAlign: 'center',
+										// Настройки для пропорционального изменения
+										lockScalingFlip: true,
+										// Разрешаем изменение только по ширине для пропорционального масштабирования
+										lockUniScaling: false,
+										// Стили контролов
+										cornerStyle: 'circle',
+										cornerColor: '#4E008E',
+										cornerStrokeColor: '#ffffff',
+										borderColor: '#4E008E',
+										borderScaleFactor: 2,
+										transparentCorners: false,
+									})
+
+									// Центрируем текст на канвасе
+									textbox.set({
+										left: (canvas.width) / 2,
+										top: (canvas.height) / 2,
+									})
 
 										// Скрываем контролы масштабирования по вертикали и горизонтали
 										// Оставляем только угловые для пропорционального изменения
