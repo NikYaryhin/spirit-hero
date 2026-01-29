@@ -15,7 +15,15 @@ import TextHandle from '../TextHandle/TextHandle'
 import { v4 as uuidv4 } from 'uuid'
 import { useSelector } from 'react-redux'
 import domtoimage from 'dom-to-image-more'
-import { Canvas, FabricImage, Control, util, Textbox } from 'fabric'
+import {
+	Canvas,
+	FabricImage,
+	Control,
+	util,
+	Textbox,
+	Circle,
+	Line,
+} from 'fabric'
 
 const DesignStep = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
@@ -164,6 +172,39 @@ const DesignStep = forwardRef((props, ref) => {
 
 		fabricCanvasRef.current = fabricCanvas
 
+		// Создаём направляющие линии для выравнивания по центру
+		const verticalGuideLine = new Line(
+			[fabricCanvas.width / 2, 0, fabricCanvas.width / 2, fabricCanvas.height],
+			{
+				stroke: '#4E008E',
+				strokeWidth: 1,
+				strokeDashArray: [5, 5],
+				selectable: false,
+				evented: false,
+				visible: false, // Скрыта по умолчанию
+				opacity: 0.7,
+			},
+		)
+
+		const horizontalGuideLine = new Line(
+			[0, fabricCanvas.height / 2, fabricCanvas.width, fabricCanvas.height / 2],
+			{
+				stroke: '#4E008E',
+				strokeWidth: 1,
+				strokeDashArray: [5, 5],
+				selectable: false,
+				evented: false,
+				visible: false, // Скрыта по умолчанию
+				opacity: 0.7,
+			},
+		)
+
+		// Добавляем кастомные данные для идентификации
+		verticalGuideLine.customData = { type: 'guide-line' }
+		horizontalGuideLine.customData = { type: 'guide-line' }
+
+		fabricCanvas.add(verticalGuideLine, horizontalGuideLine)
+
 		// Обработчик масштабирования текста для пропорционального изменения размера шрифта
 		const handleTextScaling = (e) => {
 			const obj = e.target
@@ -232,54 +273,113 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		}
 
-	// Обработчик снятия выделения
-	const handleSelectionCleared = () => {
-		setSelectedTextObject(null)
-	}
-
-	// Обработчик вращения с магнитным snap'ом к углам кратным 15°
-	const handleRotating = (e) => {
-		const obj = e.target
-		if (!obj) return
-
-		const snapAngle = 15 // Кратность углов (15°, 30°, 45° и т.д.)
-		const snapThreshold = 3 // Магнитная зона ±2°
-
-		// Получаем текущий угол и нормализуем его в диапазон 0-360
-		let currentAngle = obj.angle % 360
-		if (currentAngle < 0) currentAngle += 360
-
-		// Находим ближайший угол кратный 15°
-		const nearestSnap = Math.round(currentAngle / snapAngle) * snapAngle
-
-		// Вычисляем расстояние до ближайшего snap-угла
-		const distance = Math.abs(currentAngle - nearestSnap)
-
-		// Если в пределах магнитной зоны - применяем snap
-		if (distance <= snapThreshold) {
-			obj.set('angle', nearestSnap)
+		// Обработчик снятия выделения
+		const handleSelectionCleared = () => {
+			setSelectedTextObject(null)
 		}
-	}
 
-	// Подписываемся на события
-	fabricCanvas.on('object:scaling', handleTextScaling)
-	fabricCanvas.on('object:rotating', handleRotating)
-	fabricCanvas.on('object:modified', handleObjectModified)
-	fabricCanvas.on('selection:created', handleSelection)
-	// fabricCanvas.on('selection:updated', handleSelection)
-	fabricCanvas.on('selection:cleared', handleSelectionCleared)
+		// Обработчик вращения с магнитным snap'ом к углам кратным 15°
+		const handleRotating = (e) => {
+			const obj = e.target
+			if (!obj) return
 
-	// Cleanup при размонтировании
-	return () => {
-		fabricCanvas.off('object:scaling', handleTextScaling)
-		fabricCanvas.off('object:rotating', handleRotating)
-		fabricCanvas.off('object:modified', handleObjectModified)
-		fabricCanvas.off('selection:created', handleSelection)
-		// fabricCanvas.off('selection:updated', handleSelection)
-		fabricCanvas.off('selection:cleared', handleSelectionCleared)
-		fabricCanvas.dispose()
-		fabricCanvasRef.current = null
-	}
+			const snapAngle = 15 // Кратность углов (15°, 30°, 45° и т.д.)
+			const snapThreshold = 3 // Магнитная зона ±2°
+
+			// Получаем текущий угол и нормализуем его в диапазон 0-360
+			let currentAngle = obj.angle % 360
+			if (currentAngle < 0) currentAngle += 360
+
+			// Находим ближайший угол кратный 15°
+			const nearestSnap = Math.round(currentAngle / snapAngle) * snapAngle
+
+			// Вычисляем расстояние до ближайшего snap-угла
+			const distance = Math.abs(currentAngle - nearestSnap)
+
+			// Если в пределах магнитной зоны - применяем snap
+			if (distance <= snapThreshold) {
+				obj.set('angle', nearestSnap)
+			}
+		}
+
+		// Обработчик перемещения с магнитным выравниванием по центру канваса
+		const handleMoving = (e) => {
+			const obj = e.target
+			if (
+				!obj ||
+				obj.customData?.type === 'center-marker' ||
+				obj.customData?.type === 'guide-line'
+			)
+				return
+
+			const snapThreshold = 10 // Магнитная зона ±10px
+
+			// Вычисляем центр канваса
+			const canvasCenterX = fabricCanvas.width / 2
+			const canvasCenterY = fabricCanvas.height / 2
+
+			// Получаем центр объекта
+			const objCenter = obj.getCenterPoint()
+
+			// Проверяем расстояние по горизонтали
+			const distanceX = Math.abs(objCenter.x - canvasCenterX)
+			const distanceY = Math.abs(objCenter.y - canvasCenterY)
+
+			// Snap по горизонтали (вертикальная линия)
+			if (distanceX <= snapThreshold) {
+				// Вычисляем новую позицию left с учётом originX
+				// obj.center()
+				// const newLeft = canvasCenterX - obj.width* obj.scaleX / 2
+				// obj.set({ left: newLeft })
+				verticalGuideLine.set({ visible: true })
+			} else {
+				verticalGuideLine.set({ visible: false })
+			}
+
+			// Snap по вертикали (горизонтальная линия)
+			if (distanceY <= snapThreshold) {
+				// Вычисляем новую позицию top с учётом originY
+				// obj.center()
+				// const newTop = canvasCenterY - obj.height* obj.scaleY / 2
+				// obj.set({ top: newTop })
+				horizontalGuideLine.set({ visible: true })
+			} else {
+				horizontalGuideLine.set({ visible: false })
+			}
+
+			obj.setCoords() // Обновляем координаты объекта
+		}
+
+		// Обработчик окончания перемещения - скрываем направляющие
+		const handleMovingEnd = () => {
+			verticalGuideLine.set({ visible: false })
+			horizontalGuideLine.set({ visible: false })
+			fabricCanvas.renderAll()
+		}
+
+		// Подписываемся на события
+		fabricCanvas.on('object:scaling', handleTextScaling)
+		fabricCanvas.on('object:rotating', handleRotating)
+		fabricCanvas.on('object:moving', handleMoving)
+		fabricCanvas.on('object:modified', handleObjectModified)
+		fabricCanvas.on('mouse:up', handleMovingEnd)
+		fabricCanvas.on('selection:created', handleSelection)
+		// fabricCanvas.on('selection:updated', handleSelection)
+		fabricCanvas.on('selection:cleared', handleSelectionCleared)
+
+		// Cleanup при размонтировании
+		return () => {
+			fabricCanvas.off('object:scaling', handleTextScaling)
+			fabricCanvas.off('object:rotating', handleRotating)
+			fabricCanvas.off('object:moving', handleMoving)
+			fabricCanvas.off('object:modified', handleObjectModified)
+			fabricCanvas.off('mouse:up', handleMovingEnd)
+			fabricCanvas.off('selection:created', handleSelection)
+			// fabricCanvas.off('selection:updated', handleSelection)
+			fabricCanvas.off('selection:cleared', handleSelectionCleared)
+			fabricCanvas.dispose()
+			fabricCanvasRef.current = null
+		}
 	}, [isLoading])
 
 	// Удаление выделенного элемента при нажатии Delete или Backspace
@@ -390,11 +490,10 @@ const DesignStep = forwardRef((props, ref) => {
 						scaleY = 100 / imgElement.height
 					}
 
-
 					// Используем координаты с сервера, если они есть, иначе центрируем
 					// Важно: используем !== undefined, чтобы 0 не считалось falsy
-					const left = fileData.x !== undefined ? fileData.x : (canvas.width) / 2
-					const top = fileData.y !== undefined ? fileData.y : (canvas.height) / 2
+					const left = fileData.x !== undefined ? fileData.x : canvas.width / 2
+					const top = fileData.y !== undefined ? fileData.y : canvas.height / 2
 
 					const fabricImg = new FabricImage(imgElement, {
 						left,
@@ -925,35 +1024,35 @@ const DesignStep = forwardRef((props, ref) => {
 											options.italic ? 'italic' : 'normal',
 										)
 
-									// Создаём текстовый объект с оптимальным размером шрифта
-									const textbox = new Textbox(text, {
-										left: 0, // Будет центрирован после создания
-										top: 0,
-										width: canvas.width, // Ширина равна ширине canvas
-										fontFamily: options.font,
-										fontSize: optimalFontSize,
-										fontWeight: options.bold ? 'bold' : 'normal',
-										fontStyle: options.italic ? 'italic' : 'normal',
-										fill: options.color,
-										textAlign: 'center',
-										// Настройки для пропорционального изменения
-										lockScalingFlip: true,
-										// Разрешаем изменение только по ширине для пропорционального масштабирования
-										lockUniScaling: false,
-										// Стили контролов
-										cornerStyle: 'circle',
-										cornerColor: '#4E008E',
-										cornerStrokeColor: '#ffffff',
-										borderColor: '#4E008E',
-										borderScaleFactor: 2,
-										transparentCorners: false,
-									})
+										// Создаём текстовый объект с оптимальным размером шрифта
+										const textbox = new Textbox(text, {
+											left: 0, // Будет центрирован после создания
+											top: 0,
+											width: canvas.width, // Ширина равна ширине canvas
+											fontFamily: options.font,
+											fontSize: optimalFontSize,
+											fontWeight: options.bold ? 'bold' : 'normal',
+											fontStyle: options.italic ? 'italic' : 'normal',
+											fill: options.color,
+											textAlign: 'center',
+											// Настройки для пропорционального изменения
+											lockScalingFlip: true,
+											// Разрешаем изменение только по ширине для пропорционального масштабирования
+											lockUniScaling: false,
+											// Стили контролов
+											cornerStyle: 'circle',
+											cornerColor: '#4E008E',
+											cornerStrokeColor: '#ffffff',
+											borderColor: '#4E008E',
+											borderScaleFactor: 2,
+											transparentCorners: false,
+										})
 
-									// Центрируем текст на канвасе
-									textbox.set({
-										left: (canvas.width) / 2,
-										top: (canvas.height) / 2,
-									})
+										// Центрируем текст на канвасе
+										textbox.set({
+											left: canvas.width / 2,
+											top: canvas.height / 2,
+										})
 
 										// Скрываем контролы масштабирования по вертикали и горизонтали
 										// Оставляем только угловые для пропорционального изменения
