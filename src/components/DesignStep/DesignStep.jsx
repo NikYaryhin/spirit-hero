@@ -232,28 +232,54 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		}
 
-		// Обработчик снятия выделения
-		const handleSelectionCleared = () => {
-			setSelectedTextObject(null)
-		}
+	// Обработчик снятия выделения
+	const handleSelectionCleared = () => {
+		setSelectedTextObject(null)
+	}
 
-		// Подписываемся на события
-		fabricCanvas.on('object:scaling', handleTextScaling)
-		fabricCanvas.on('object:modified', handleObjectModified)
-		fabricCanvas.on('selection:created', handleSelection)
-		// fabricCanvas.on('selection:updated', handleSelection)
-		fabricCanvas.on('selection:cleared', handleSelectionCleared)
+	// Обработчик вращения с магнитным snap'ом к углам кратным 15°
+	const handleRotating = (e) => {
+		const obj = e.target
+		if (!obj) return
 
-		// Cleanup при размонтировании
-		return () => {
-			fabricCanvas.off('object:scaling', handleTextScaling)
-			fabricCanvas.off('object:modified', handleObjectModified)
-			fabricCanvas.off('selection:created', handleSelection)
-			// fabricCanvas.off('selection:updated', handleSelection)
-			fabricCanvas.off('selection:cleared', handleSelectionCleared)
-			fabricCanvas.dispose()
-			fabricCanvasRef.current = null
+		const snapAngle = 15 // Кратность углов (15°, 30°, 45° и т.д.)
+		const snapThreshold = 3 // Магнитная зона ±2°
+
+		// Получаем текущий угол и нормализуем его в диапазон 0-360
+		let currentAngle = obj.angle % 360
+		if (currentAngle < 0) currentAngle += 360
+
+		// Находим ближайший угол кратный 15°
+		const nearestSnap = Math.round(currentAngle / snapAngle) * snapAngle
+
+		// Вычисляем расстояние до ближайшего snap-угла
+		const distance = Math.abs(currentAngle - nearestSnap)
+
+		// Если в пределах магнитной зоны - применяем snap
+		if (distance <= snapThreshold) {
+			obj.set('angle', nearestSnap)
 		}
+	}
+
+	// Подписываемся на события
+	fabricCanvas.on('object:scaling', handleTextScaling)
+	fabricCanvas.on('object:rotating', handleRotating)
+	fabricCanvas.on('object:modified', handleObjectModified)
+	fabricCanvas.on('selection:created', handleSelection)
+	// fabricCanvas.on('selection:updated', handleSelection)
+	fabricCanvas.on('selection:cleared', handleSelectionCleared)
+
+	// Cleanup при размонтировании
+	return () => {
+		fabricCanvas.off('object:scaling', handleTextScaling)
+		fabricCanvas.off('object:rotating', handleRotating)
+		fabricCanvas.off('object:modified', handleObjectModified)
+		fabricCanvas.off('selection:created', handleSelection)
+		// fabricCanvas.off('selection:updated', handleSelection)
+		fabricCanvas.off('selection:cleared', handleSelectionCleared)
+		fabricCanvas.dispose()
+		fabricCanvasRef.current = null
+	}
 	}, [isLoading])
 
 	// Удаление выделенного элемента при нажатии Delete или Backspace
