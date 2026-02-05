@@ -13,7 +13,9 @@ export default function FundraisingCategoryDetails({
 	setProductsByCategory,
 	setSelectedProducts,
 	isFundraise,
+	setIsFundraise,
 	pricesEnd,
+	isActive,
 }) {
 	const [isChecked, setIsChecked] = useState(false)
 	const [isChildChecked, setIsChildChecked] = useState(false)
@@ -43,7 +45,7 @@ export default function FundraisingCategoryDetails({
 	if (productsByCategory[categoryKey].length > 0)
 		return (
 			<details
-				className={css.category__details}
+				className={`${css.category__details} ${isActive ? css.active : 'visually-hidden'}`}
 				key={categoryKey}
 				open={keyIdx === 0 ? true : false}
 			>
@@ -79,6 +81,7 @@ export default function FundraisingCategoryDetails({
 								setProductsByCategory={setProductsByCategory}
 								setSelectedProducts={setSelectedProducts}
 								isFundraise={isFundraise}
+								setIsFundraise={setIsFundraise}
 								pricesEnd={pricesEnd}
 							/>
 						)

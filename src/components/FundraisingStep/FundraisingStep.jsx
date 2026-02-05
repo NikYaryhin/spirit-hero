@@ -11,29 +11,41 @@ import {
 	fundraisingPercentageValues,
 	fundraisingPriceEndsValues,
 } from '@/helpers/const'
-import { useSelector } from 'react-redux'
+import {
+	setInitialMyShopProducts,
+	selectInitialMyShopProducts,
+	setIsLoading,
+} from '@/features/products/productsSlice'
+import { useSelector, useDispatch } from 'react-redux'
+import { showToast } from '@/helpers/toastCall'
 
 export default function FundraisingStep() {
+	const dispatch = useDispatch()
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
 
 	const storeId =
 		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
+	const isLoading = useSelector((state) => state.products.isLoading)
+	const initialMyShopProducts = useSelector(selectInitialMyShopProducts)
 
-	const [isLoading, setIsLoading] = useState(true)
-	const [isFundraise, setIsFundraise] = useState(true)
+	// const [isLoading, setIsLoading] = useState(true)
+	const [isFundraise, setIsFundraise] = useState(false)
 
+	const [initialProductsArray, setInitialProductsArray] = useState(null)
 	const [productsByCategory, setProductsByCategory] = useState(null)
 	const [sellAtCostProducts, setSellAtCostProducts] = useState(null)
 
 	const [selectedProducts, setSelectedProducts] = useState([])
 
 	const [amountProfit, setAmountProfit] = useState(false)
-	const [profitValue, setProfitValue] = useState(1)
+	const [profitValue, setProfitValue] = useState(0)
 	const [pricesEnd, setPricesEnd] = useState(null)
 
 	const [fundraisingCount, setFundraisingCount] = useState(0)
 	const [sellOutCount, setSellOutCount] = useState(0)
+
+	const [selectedCategory, setSelectedCategory] = useState('all')
 
 	useEffect(() => {
 		const fetchStoreData = async () => {
@@ -49,6 +61,8 @@ export default function FundraisingStep() {
 						]
 						return acc
 					}, {}) || {}
+
+				setInitialProductsArray(sortedProducts)
 
 				const isFundraisingProducts = {}
 				const isSellAtCostProducts = {}
@@ -71,7 +85,7 @@ export default function FundraisingStep() {
 			} catch (error) {
 				console.error(`spiritHeroApi.getStore error`, error)
 			} finally {
-				setIsLoading(false)
+				dispatch(setIsLoading(false))
 			}
 		}
 		fetchStoreData()
@@ -85,6 +99,8 @@ export default function FundraisingStep() {
 			}, 0)
 
 		setFundraisingCount(fundraisingProductsCount)
+
+		sessionStorage.setItem('fundraisingCount', fundraisingProductsCount)
 	}, [productsByCategory])
 
 	useEffect(() => {
@@ -111,6 +127,66 @@ export default function FundraisingStep() {
 			console.debug('spiritHeroApi.updateFundraisingStatus response', response)
 		} catch (error) {
 			console.error('spiritHeroApi.updateProducts error:', error)
+		}
+	}
+
+	const deleteFromTheStoreButtonHandle = async () => {
+		if (selectedProducts.length < 1) return
+
+		const selectedProductsIdList = selectedProducts.map((prod) => prod.id)
+
+		const payload = {
+			store_id: +storeId,
+			ids: selectedProductsIdList,
+		}
+
+		// Группируем удаляемые продукты по категориям
+		const idsByCategory = selectedProducts.reduce((acc, prod) => {
+			const cat = prod.category_id
+			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
+			return acc
+		}, {})
+
+		try {
+			const response = await spiritHeroApi.deleteFromMyStoreProducts(payload)
+			console.log('deleteFromMyStoreProducts response', response)
+
+			dispatch(
+				setInitialMyShopProducts(
+					initialMyShopProducts.filter(
+						(p) => !selectedProductsIdList.has(p.id),
+					),
+				),
+			)
+
+			if (isFundraise) {
+				setProductsByCategory((prev) => {
+					const next = { ...prev }
+					Object.keys(idsByCategory).forEach((cat) => {
+						if (!next[cat]) return
+						const removeIds = idsByCategory[cat]
+						next[cat] = next[cat].filter((p) => !removeIds.has(p.id))
+					})
+					return next
+				})
+			} else {
+				setSellAtCostProducts((prev) => {
+					if (!prev) return prev
+					const next = { ...prev }
+					Object.keys(idsByCategory).forEach((cat) => {
+						if (!next[cat]) return
+						const removeIds = idsByCategory[cat]
+						next[cat] = next[cat].filter((p) => !removeIds.has(p.id))
+					})
+					return next
+				})
+
+				showToast('Products removed from the store')
+			}
+
+			setSelectedProducts([])
+		} catch (error) {
+			console.error('deleteFromMyStoreProducts error', error)
 		}
 	}
 
@@ -142,11 +218,13 @@ export default function FundraisingStep() {
 				const itemsToAdd = selectedProducts.filter(
 					(p) => p.category_id === +cat,
 				)
-				next[cat] = [...(next[cat] || []), ...itemsToAdd]
+				next[cat] = [...itemsToAdd, ...(next[cat] || [])]
 			})
 
 			return next
 		})
+
+		setIsFundraise(!isFundraise)
 
 		setSelectedProducts([])
 	}
@@ -176,18 +254,35 @@ export default function FundraisingStep() {
 				const itemsToAdd = selectedProducts.filter(
 					(p) => p.category_id === +cat,
 				)
-				next[cat] = [...(next[cat] || []), ...itemsToAdd]
+				next[cat] = [...itemsToAdd, ...(next[cat] || [])]
 			})
 			return next
 		})
 
+		setIsFundraise(!isFundraise)
 		setSelectedProducts([])
 	}
 
 	const onSortChange = (e) => {
 		const { value } = e.target
+		setSelectedCategory(value)
+	}
 
-		console.log(value)
+	// Функция для получения отсортированных ключей категорий
+	const getSortedCategoryKeys = (categories) => {
+		if (!categories) return []
+
+		const keys = Object.keys(categories)
+
+		// Если выбрана конкретная категория, ставим её первой
+		if (selectedCategory !== 'all' && keys.includes(selectedCategory)) {
+			return [
+				selectedCategory,
+				...keys.filter((key) => key !== selectedCategory),
+			]
+		}
+
+		return keys
 	}
 
 	const profitInputHandle = async (e) => {
@@ -212,39 +307,6 @@ export default function FundraisingStep() {
 		return (
 			<section className={css.fundraising__section}>
 				<div className={css.products__handle}>
-					<div className={css.fundraising__head}>
-						{/* <form action="submit" className={css['fundraising__search--form']}>
-							<input type="text" placeholder="Search stores" />
-							<button type="submit">
-								<Icon name={'Search'} />
-							</button>
-						</form> */}
-
-						<div className={css['fundraising__head--buttons__box']}>
-							<button className={`${css.delete__button} light_button_2`}>
-								Delete
-							</button>
-
-							{isFundraise ? (
-								<button
-									onClick={onMoveToSellAtCoast}
-									className={`${css.change__category__button} contrast_button_1`}
-								>
-									<Icon name={'Coins'} />
-									Move to Sell at cost
-								</button>
-							) : (
-								<button
-									onClick={onMoveToFundraise}
-									className={`${css.change__category__button} contrast_button_1`}
-								>
-									<Icon name={'Coins'} />
-									Move to Fundraise
-								</button>
-							)}
-						</div>
-					</div>
-
 					<div className={css.products__container}>
 						<div className={css.warning}>
 							<Icon name={'Danger'} />
@@ -255,22 +317,22 @@ export default function FundraisingStep() {
 								everything looks great!
 							</p>
 						</div>
+						<div className={css.fundraising__head}>
+							{/* <form action="submit" className={css['fundraising__search--form']}>
+							<input type="text" placeholder="Search stores" />
+							<button type="submit">
+								<Icon name={'Search'} />
+							</button>
+						</form> */}
+						</div>
 
 						<div className={css.categories__container}>
 							<div className={css['products__categories--switchers']}>
 								<button
-									onClick={() => setIsFundraise(true)}
-									className={`${isFundraise ? css['category--picker__active'] : css['category--picker']}`}
-								>
-									<span className={css.icon}>
-										<Check />
-									</span>
-									Fundraise
-									<span className={css.count}>{fundraisingCount}</span>
-								</button>
-
-								<button
-									onClick={() => setIsFundraise(false)}
+									onClick={() => {
+										setSelectedProducts([])
+										setIsFundraise(false)
+									}}
 									className={`${!isFundraise ? css['category--picker__active'] : css['category--picker']}`}
 								>
 									<span className={css.icon}>
@@ -279,6 +341,51 @@ export default function FundraisingStep() {
 									Sell at cost
 									<span className={css.count}>{sellOutCount}</span>
 								</button>
+
+								<button
+									onClick={() => {
+										setSelectedProducts([])
+										setIsFundraise(true)
+									}}
+									className={`${isFundraise ? css['category--picker__active'] : css['category--picker']}`}
+								>
+									<span className={css.icon}>
+										<Check />
+									</span>
+									Fundraise
+									<span className={css.count}>{fundraisingCount}</span>
+								</button>
+							</div>
+
+							<div className={css['fundraising__head--buttons__box']}>
+								<button
+									className={`${css.delete__button} light_button_2`}
+									onClick={deleteFromTheStoreButtonHandle}
+									title="Remove selected products from the store"
+									disabled={selectedProducts.length > 0 ? false : true}
+								>
+									Delete
+								</button>
+
+								{isFundraise ? (
+									<button
+										onClick={onMoveToSellAtCoast}
+										className={`${css.change__category__button} contrast_button_1`}
+										disabled={selectedProducts.length > 0 ? false : true}
+									>
+										<Icon name={'Coins'} />
+										Move to Sell at cost
+									</button>
+								) : (
+									<button
+										onClick={onMoveToFundraise}
+										className={`${css.change__category__button} contrast_button_1`}
+										disabled={selectedProducts.length > 0 ? false : true}
+									>
+										<Icon name={'Coins'} />
+										Move to Fundraise
+									</button>
+								)}
 							</div>
 
 							<div className={css.category__group}>
@@ -288,24 +395,26 @@ export default function FundraisingStep() {
 
 								<select
 									name="select"
-									value={'all'}
+									value={selectedCategory}
 									onChange={(e) => onSortChange(e)}
 								>
 									<option value="all">All</option>
 
-									{Object.keys(productsByCategory).map((key) => (
-										<option key={key} value={key}>
-											{key}
-										</option>
-									))}
+									{initialProductsArray &&
+										Object.keys(initialProductsArray).map((key) => (
+											<option key={key} value={key}>
+												{key}
+											</option>
+										))}
 								</select>
 							</div>
 						</div>
 
-						<div className={css.products__categories}>
-							{isFundraise &&
-								productsByCategory &&
-								Object.keys(productsByCategory).map((key, keyIdx) => (
+						<div
+							className={`${css.products__categories} ${isFundraise ? css.fundraise__categories : css.sell__at__cost__categories}`}
+						>
+							{productsByCategory &&
+								getSortedCategoryKeys(productsByCategory).map((key, keyIdx) => (
 									<FundraisingCategoryDetails
 										key={key}
 										keyIdx={keyIdx}
@@ -317,13 +426,14 @@ export default function FundraisingStep() {
 										setProductsByCategory={setProductsByCategory}
 										setSelectedProducts={setSelectedProducts}
 										isFundraise={isFundraise}
+										setIsFundraise={setIsFundraise}
 										pricesEnd={pricesEnd}
+										isActive={isFundraise && true}
 									/>
 								))}
 
-							{!isFundraise &&
-								sellOutCount > 0 &&
-								Object.keys(productsByCategory).map((key, keyIdx) => (
+							{sellOutCount > 0 &&
+								getSortedCategoryKeys(productsByCategory).map((key, keyIdx) => (
 									<FundraisingCategoryDetails
 										key={key}
 										keyIdx={keyIdx}
@@ -335,7 +445,9 @@ export default function FundraisingStep() {
 										setProductsByCategory={setProductsByCategory}
 										setSelectedProducts={setSelectedProducts}
 										isFundraise={isFundraise}
+										setIsFundraise={setIsFundraise}
 										pricesEnd={pricesEnd}
+										isActive={!isFundraise && true}
 									/>
 								))}
 						</div>
@@ -345,7 +457,6 @@ export default function FundraisingStep() {
 				<aside className={css.handles}>
 					<ul className={css.handles__container}>
 						<li className={css.handle__item}>
-							
 							<fieldset>
 								<span className={css.handle__title}>
 									Set your profit for each item:
@@ -377,27 +488,26 @@ export default function FundraisingStep() {
 								</label>
 							</fieldset>
 						</li>
-{amountProfit ? 
-						<li className={css.handle__item}>
-							<ProfitValueFieldset
-								title={'Add profit for all items in USD'}
-								valuesArray={fundraisingFixedAmounValues}
-								setProfitValue={setProfitValue}
-								disabled={!amountProfit}
-							/>
-						</li>
-: 
-						<li className={css.handle__item}>
-							<ProfitValueFieldset
-								title={'Add profit for all items in Percentage'}
-								valuesArray={fundraisingPercentageValues}
-								setProfitValue={setProfitValue}
-								isPercent={true}
-								disabled={amountProfit}
-							/>
-						</li>
-}
-
+						{amountProfit ? (
+							<li className={css.handle__item}>
+								<ProfitValueFieldset
+									title={'Add profit for all items in USD'}
+									valuesArray={fundraisingFixedAmounValues}
+									setProfitValue={setProfitValue}
+									disabled={!amountProfit}
+								/>
+							</li>
+						) : (
+							<li className={css.handle__item}>
+								<ProfitValueFieldset
+									title={'Add profit for all items in Percentage'}
+									valuesArray={fundraisingPercentageValues}
+									setProfitValue={setProfitValue}
+									isPercent={true}
+									disabled={amountProfit}
+								/>
+							</li>
+						)}
 
 						<li className={css.handle__item}>
 							<span className={css.handle__title}>

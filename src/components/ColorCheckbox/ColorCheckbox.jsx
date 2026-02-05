@@ -8,12 +8,13 @@ export default function ColorCheckbox({
 	inputName,
 	checkedColor,
 	className,
+	id,
 }) {
-	const onInputChange = (e) => {
-		const { checked, value } = e.currentTarget
+	// const onInputChange = (e) => {
+	// 	const { checked, value } = e.currentTarget
 
-		onInputHandle(checked, value)
-	}
+	// 	onInputHandle(checked, value)
+	// }
 	return (
 		<label className={`${css.label} ${css[className]}`}>
 			<span className={css.checkbox__emulator}>
@@ -38,11 +39,12 @@ export default function ColorCheckbox({
 
 			<input
 				checked={checkedColor}
-				onChange={onInputChange}
+				onChange={onInputHandle}
 				type="checkbox"
 				className="visually-hidden"
 				name={inputName}
 				value={color}
+				data-id={id}
 				required={required}
 			/>
 		</label>

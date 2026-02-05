@@ -104,7 +104,6 @@ const FontPicker = ({
 		if (setFont) {
 			setFont(fontName)
 		}
-		console.log('Selected font:', fontName)
 	}
 
 	const getFontStyle = (fontName) => {

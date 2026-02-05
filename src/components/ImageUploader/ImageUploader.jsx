@@ -12,7 +12,7 @@ export default function ImageUploader({
 }) {
 	const inputRef = useRef(null)
 
-	const [agreed, setAgreed] = useState(false)
+	// const [agreed, setAgreed] = useState(true)
 
 	const handleFiles = useCallback(
 		async (newFiles) => {
@@ -52,13 +52,13 @@ export default function ImageUploader({
 	const onDrop = async (e) => {
 		e.preventDefault()
 		setDragOver(false)
-		if (!agreed) return
+		// if (!agreed) return
 		await handleFiles(e.dataTransfer.files)
 	}
 
 	const onDragOver = (e) => {
 		e.preventDefault()
-		if (!agreed) return
+		// if (!agreed) return
 		if (typeof setDragOver === 'function') setDragOver(true)
 	}
 
@@ -92,30 +92,30 @@ export default function ImageUploader({
 			</ul>
 
 			<div className={css.uploader}>
-					<label
-						className={`${css.dropzone} ${dragOver ? css.dragover : ''} ${!agreed ? css.disabled : ''}`}
-						onDrop={onDrop}
-						onDragOver={onDragOver}
-						onDragEnter={onDragOver}
-						onDragLeave={onDragLeave}
-					>
-						<input
-							rel="noreferrer"
-							ref={inputRef}
-							className={css.inputHidden}
-							type="file"
-							accept="image/*"
-							multiple={multiple}
-							onChange={onInputChange}
-						/>
-						<div className={css.label__container}>
-							<Icon name={'UploadCloud'} />
-							<span>
-								Drag & drop file here or
-								<strong>choose file</strong>
-							</span>
-						</div>
-					</label>
+				<label
+					className={`${css.dropzone} ${dragOver ? css.dragover : ''}`}
+					onDrop={onDrop}
+					onDragOver={onDragOver}
+					onDragEnter={onDragOver}
+					onDragLeave={onDragLeave}
+				>
+					<input
+						rel="noreferrer"
+						ref={inputRef}
+						className={css.inputHidden}
+						type="file"
+						accept="image/*"
+						multiple={multiple}
+						onChange={onInputChange}
+					/>
+					<div className={css.label__container}>
+						<Icon name={'UploadCloud'} />
+						<span>
+							Drag & drop file here or
+							<strong>choose file</strong>
+						</span>
+					</div>
+				</label>
 				{/* {files.length === 0 && (
 				)} */}
 
@@ -166,13 +166,13 @@ export default function ImageUploader({
 			</div>
 
 			<label className={css.agree}>
-				<input
+				{/* <input
 					type="checkbox"
 					checked={agreed}
 					onChange={(e) => {
 						setAgreed(e.target.checked)
 					}}
-				/>
+				/> */}
 				<span>
 					By uploading the image, I agree that I have the legal right to
 					reproduce and sell the design, and that I am in full compliance with

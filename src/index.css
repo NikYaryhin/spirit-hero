@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Cookie&family=Courgette&family=Dancing+Script&family=Devonshire&family=Engagement&family=Farsan&family=Grand+Hotel&family=Great+Vibes&family=Kaushan+Script&family=Leckerli+One&family=Lily+Script+One&family=Lobster&family=Meddon&family=Mr+Bedfort&family=Norican&family=Oleo+Script+Swash+Caps&family=Pacifico&family=Parisienne&family=Pinyon+Script&family=Princess+Sofia&family=Rouge+Script&family=Sacramento&family=Sail&family=Sarina&family=Tangerine&family=Yesteryear&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;500;600;700&display=swap');
 
 
@@ -85,7 +86,12 @@ main {
 
 .content--wrapper {
   max-width: 150rem;
+  min-height: calc(100dvh - 10.7rem);
   margin: 0 auto;
+
+  section {
+    min-height: calc(100dvh - 10.7rem);
+  }
 }
 
 h1 {

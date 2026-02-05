@@ -13,6 +13,7 @@ export default function ColorsList({ colorInputHandle, colors }) {
 							color={color}
 							colors={colors}
 							name={name}
+							id={id}
 							checkedColor={colors.includes(color)}
 							inputName="color--input"
 						/>

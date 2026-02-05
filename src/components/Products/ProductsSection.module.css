@@ -1,4 +1,13 @@
+section:has(.products__section) {
+	display: flex;
+	flex-direction: column;
+}
+
 .products__section {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+
 	.products__catalog--pickers {
 		display: flex;
 		gap: 0.8rem;
@@ -135,7 +144,9 @@
 
 
 	.products__handle {
+		flex-grow: 1;
 		display: flex;
+		height: 100%;
 
 		.products_filters {
 			flex: 0.25;

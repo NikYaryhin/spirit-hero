@@ -14,12 +14,14 @@ export default function FundraisingProductCard({
 	setProductsByCategory,
 	setSelectedProducts,
 	isFundraise,
+	setIsFundraise,
 	pricesEnd,
 }) {
 	const url_params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = url_params.get('store_id')
 
-	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
+	// const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
+	const colorPrice = 0
 	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
 	const storeId =
 		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
@@ -36,8 +38,10 @@ export default function FundraisingProductCard({
 			: +params.on_demand_price + colorPrice
 
 		setPrice(basePrice)
+
 		setSellingPrice(basePrice + profit)
-	}, [colorPrice])
+	}, [])
+	// }, [colorPrice])
 
 	useEffect(() => {
 		setProfit(profitValue)
@@ -65,7 +69,7 @@ export default function FundraisingProductCard({
 					: countedPrice,
 			)
 		}
-	}, [profit, amountProfit])
+	}, [profit, amountProfit, price])
 
 	const updateFundraisingStatus = async (is_fundraising) => {
 		try {
@@ -98,11 +102,11 @@ export default function FundraisingProductCard({
 
 		setSellAtCostProducts((prev) => {
 			const newSellAtCost = { ...prev }
-
-			newSellAtCost[categoryKey] = [...newSellAtCost[categoryKey], product]
+			newSellAtCost[categoryKey] = [product, ...newSellAtCost[categoryKey]]
 
 			return newSellAtCost
 		})
+		setIsFundraise(!isFundraise)
 
 		await updateFundraisingStatus(false)
 	}
@@ -119,10 +123,12 @@ export default function FundraisingProductCard({
 
 		setProductsByCategory((prev) => {
 			const dataToReturn = { ...prev }
-			dataToReturn[categoryKey] = [...dataToReturn[categoryKey], product]
+			dataToReturn[categoryKey] = [product, ...dataToReturn[categoryKey]]
 
 			return dataToReturn
 		})
+
+		setIsFundraise(!isFundraise)
 
 		await updateFundraisingStatus(true)
 	}
@@ -143,7 +149,11 @@ export default function FundraisingProductCard({
 
 	const onPriceInputChange = useCallback(
 		(event) => {
-			const { value } = event.target
+			let { value } = event.target
+
+			if (value.length > 1 && value.startsWith('0') && value[1] !== '.') {
+				event.target.value = value.replace(/^0+/, '')
+			}
 
 			setProfit(+value)
 
@@ -207,13 +217,14 @@ export default function FundraisingProductCard({
 					<span className={css.price}>${(+price).toFixed(2)}</span>
 
 					<div className={css.input__wrapper}>
-						<span className={css.input__unit}>{amountProfit ? '$' : '%'}</span>
 						<input
 							type="number"
 							value={profit}
 							onChange={onPriceInputChange}
-							min="0.1"
+							min="0"
+							name="profit--input"
 						/>
+						<span className={css.input__unit}>{amountProfit ? '$' : '%'}</span>
 					</div>
 
 					<span className={css.selliing__price}>${sellingPrice}</span>
@@ -233,9 +244,9 @@ export default function FundraisingProductCard({
 				</>
 			)}
 
-			<button className={css.options__button}>
+			{/* <button className={css.options__button}>
 				<Icon name={'Dots'} />
-			</button>
+			</button> */}
 		</li>
 	)
 }

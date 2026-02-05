@@ -210,36 +210,28 @@ const DesignStep = forwardRef((props, ref) => {
 			const obj = e.target
 			if (!obj || obj.customData?.type !== 'text') return
 
-			console.log('obj', obj.height, obj.fontSize)
-
-			// Вычисляем новую ширину с учётом масштаба
 			const scaleX = obj.scaleX
 			const newWidth = obj.width * scaleX
 			const newHeight = obj.height * scaleX
 			const newFontSize = Math.round(obj.fontSize * scaleX)
 
-			// Обновляем оригинальные значения для следующего масштабирования
 			obj.customData.originalFontSize = newFontSize
 			obj.customData.originalWidth = newWidth
 			obj.customData.originalHeight = newHeight
 		}
 
-		// Обработчик изменения объектов (перемещение, масштабирование, вращение)
 		const handleObjectModified = (e) => {
 			const obj = e.target
 
-			// Обрабатываем изменение изображений
 			if (obj.customData?.type === 'uploaded-image') {
 				const url = obj.customData.url
 
-				// Получаем текущие параметры объекта
 				const width = obj.getScaledWidth()
 				const height = obj.getScaledHeight()
 				const x = obj.left
 				const y = obj.top
 				const rotation = obj.angle
 
-				// Обновляем данные в uploaderFiles
 				setUploaderFiles((prev) =>
 					prev.map((file) => {
 						if (file.url === url) {
@@ -761,8 +753,6 @@ const DesignStep = forwardRef((props, ref) => {
 
 			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
-				console.log('obj.customData', obj.customData)
-
 				labelsData.push({
 					text: obj.text,
 					x: Math.round(obj.left),
@@ -813,8 +803,6 @@ const DesignStep = forwardRef((props, ref) => {
 				store_id: storeId,
 				product_id: +activeCardId,
 			}
-
-			console.log({ payload })
 
 			const response = await spiritHeroApi.createDesign(storeId, payload)
 			console.debug('spiritHeroApi.createDesign response', response)
@@ -948,15 +936,6 @@ const DesignStep = forwardRef((props, ref) => {
 											textAlign: 'center',
 										})
 
-										console.log('ALLO', {
-											text: text,
-											fontFamily: options.font,
-											fontWeight: options.bold ? 'bold' : 'normal',
-											fontStyle: options.italic ? 'italic' : 'normal',
-											fill: options.color,
-											textAlign: 'center',
-										})
-
 										canvas.renderAll()
 									}}
 									onAdd={(text, options) => {
@@ -996,20 +975,6 @@ const DesignStep = forwardRef((props, ref) => {
 											// Ограничиваем размер шрифта разумными пределами
 											fontSize = Math.max(fontSize, 16) // Минимум 16px
 											fontSize = Math.min(fontSize, 200) // Максимум 200px
-
-											console.log('📏 Подбор размера шрифта:', {
-												text:
-													text.length > 30
-														? text.substring(0, 30) + '...'
-														: text,
-												textLength: text.length,
-												actualWidth: Math.round(actualWidth),
-												targetWidth: Math.round(targetWidth),
-												safeTargetWidth: Math.round(safeTargetWidth),
-												widthRatio: widthRatio.toFixed(3),
-												initialFontSize,
-												calculatedFontSize: Math.round(fontSize),
-											})
 
 											return fontSize
 										}

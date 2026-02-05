@@ -66,6 +66,9 @@ const productsSlice = createSlice({
 				colorFamilies: [],
 			}
 		},
+		setIsLoading: (state, action) => {
+			state.isLoading = action.payload
+		},
 		toggleProductSelection: (state, action) => {
 			const { productId, isSelected, isCatalog } = action.payload
 			const targetArray = isCatalog ? 'catalogProducts' : 'myShopProducts'
@@ -132,6 +135,7 @@ export const {
 	setSortingBy,
 	setActiveFilters,
 	resetFilters,
+	setIsLoading,
 	toggleProductSelection,
 	selectAllProducts: selectAllProductsAction,
 } = productsSlice.actions

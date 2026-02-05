@@ -22,6 +22,7 @@ import {
 	setMyShopProducts,
 	setInitialMyShopProducts,
 	fetchProducts,
+	setIsLoading,
 } from '@/features/products/productsSlice'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 
@@ -44,8 +45,6 @@ export default function Builder() {
 				const params = new URLSearchParams(window.location.search)
 				const storeIdFromQuery = params.get('store_id')
 				const changeLogoFromQuery = params.get('change_logo')
-
-				console.log({ changeLogoFromQuery })
 
 				if (!storeIdFromQuery) return
 
@@ -87,15 +86,21 @@ export default function Builder() {
 
 	// Функция для обработки перехода на следующий шаг
 	const handleNextStep = async () => {
-		if (activeStep === 3 && designStepRef.current) {
+		console.log({ activeStep })
+		if (activeStep === 2) {
+			setIsModalOpen(true)
+		} else if (activeStep === 3 && designStepRef.current) {
 			try {
+				dispatch(setIsLoading(true))
 				await designStepRef.current.getLogoParameters()
+				dispatch(nextStep())
 			} catch (error) {
 				console.error('Error calling getLogoParameters:', error)
 			}
-		}
-
-		if (activeStep === 2 || activeStep === 4) {
+		} else if (
+			activeStep === 4 &&
+			+sessionStorage.getItem('fundraisingCount') > 0
+		) {
 			setIsModalOpen(true)
 		} else dispatch(nextStep())
 	}

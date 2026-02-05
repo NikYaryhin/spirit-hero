@@ -17,8 +17,11 @@
 			align-items: center;
 			justify-content: space-between;
 
+			padding: 0 0;
+			/* 
 			padding: 2.5rem 5.6rem;
-			background-color: #F1EEF4;
+			background-color: #F1EEF4; 
+			*/
 
 			.fundraising__search--form {
 				position: relative;
@@ -56,15 +59,15 @@
 				}
 			}
 
-			.fundraising__head--buttons__box {
-				display: flex;
-				gap: 0.8rem;
-			}
+
 		}
 
 		.products__container {
+			display: flex;
+			flex-direction: column;
 			padding: 2.4rem 3.6rem;
 			background-color: #FBF8FD;
+			min-height: calc(100dvh - 10.7rem);
 
 			.warning {
 				display: flex;
@@ -88,6 +91,17 @@
 					min-width: 2.4rem;
 					width: 2.4rem;
 					height: 2.4rem;
+				}
+			}
+
+			.fundraising__head--buttons__box {
+				display: flex;
+				gap: 0.8rem;
+
+				padding-bottom: 1.2rem;
+
+				.delete__button {
+					padding: 1rem;
 				}
 			}
 
@@ -236,12 +250,18 @@
 			.products__categories {
 				display: flex;
 				flex-direction: column;
+				flex-grow: 1;
 				gap: 0.8rem;
 
+				overflow: hidden;
+
 				background-color: #F1EEF4;
+				transition: opacity 0.75s ease-in-out;
 			}
 		}
 	}
+
+
 
 	.handles {
 		position: relative;

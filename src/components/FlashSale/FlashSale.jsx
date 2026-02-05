@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import Icon from '../Icon'
 import css from './FlashSale.module.css'
 import { DayPicker } from 'react-day-picker'
-import { format } from 'date-fns'
+import { format, set } from 'date-fns'
 import 'react-day-picker/dist/style.css'
 import { useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
@@ -12,8 +12,7 @@ export default function FlashSale() {
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
-	const storeId =
-		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
+	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 
 	const [ordersFiles, setOrdersFiles] = useState([])
 	const [range, setRange] = useState({ from: '', to: '' })
@@ -31,6 +30,7 @@ export default function FlashSale() {
 	})
 	const [isOnDemandChecked, setIsOnDemandChecked] = useState(false)
 	const [isFundaraisingChecked, setIsFundaraisingChecked] = useState(false)
+	const [ordersNote, setOrdersNote] = useState([])
 
 	useEffect(() => {
 		async function fetchFlashSaleSettings() {
@@ -52,6 +52,7 @@ export default function FlashSale() {
 					flash_sale_end_date,
 					on_demand_ordering,
 					location_type,
+					order_notes,
 				} = response.item
 
 				if (response.item) {
@@ -67,14 +68,14 @@ export default function FlashSale() {
 						zip_code,
 						fundraising_goal_amount,
 					}))
+					setOrdersNote(order_notes)
 					setRange((prev) => ({
 						...prev,
 						from: flash_sale_start_date || '',
 						to: flash_sale_end_date,
 					}))
 					setShippingValue(location_type || 'free_shipping')
-					if (typeof fundraising_goal_amount === 'number')
-						setIsFundaraisingChecked(true)
+					if (typeof fundraising_goal_amount === 'number') setIsFundaraisingChecked(true)
 					if (on_demand_ordering) setIsOnDemandChecked(true)
 				}
 			} catch (error) {
@@ -92,7 +93,6 @@ export default function FlashSale() {
 			file,
 		}))
 		setOrdersFiles((prev) => [...prev, ...withIds])
-		console.log({ ordersFiles })
 	}
 
 	const onDeleteFileClick = (e) => {
@@ -119,6 +119,7 @@ export default function FlashSale() {
 			on_demand_ordering: isOnDemandChecked,
 			fundraising_progress_bar: isFundaraisingChecked,
 			fundraising_goal_amount: 12.99,
+			order_notes: ordersNote.filter((value) => value.trim() !== ''),
 		}
 
 		const formData = new FormData()
@@ -136,6 +137,31 @@ export default function FlashSale() {
 		}
 	}
 
+	const onAddMoreClick = (e) => {
+		e.preventDefault()
+		setOrdersNote((prev) => [...prev, { id: uuidv4(), value: '' }])
+	}
+
+	const onNodeDeleteClick = (e) => {
+		e.preventDefault()
+		const id = e.currentTarget.dataset.id
+		setOrdersNote((prev) => prev.filter((note) => note.id !== id))
+	}
+
+	const onNoteInputChange = (e) => {
+		e.preventDefault()
+		const { id, value } = e.target
+
+		setOrdersNote((prev) => {
+			return prev.map((note) => {
+				if (note.id === id) {
+					return { ...note, value }
+				}
+				return note
+			})
+		})
+	}
+
 	return (
 		<section className={css['flash--sale__section']}>
 			<div className={css['flash--sale__head']}>
@@ -145,14 +171,13 @@ export default function FlashSale() {
 					</h1>
 
 					<p className={css['flash--sale__sign']}>
-						Configure how your orders will be grouped, shipped, and fulfilled
-						after the flash sale ends. You can also set your fundraising goal
-						and schedule when the sale should close.
+						Configure how your orders will be grouped, shipped, and fulfilled after the flash sale
+						ends. You can also set your fundraising goal and schedule when the sale should close.
 					</p>
 				</div>
 
 				<a
-					href={storeInfo.store.collection_url || '#'}
+					href={storeInfo?.store?.collection_url || '#'}
 					target="blank"
 					className={css['flash--sale__head--button']}
 				>
@@ -160,11 +185,7 @@ export default function FlashSale() {
 				</a>
 			</div>
 
-			<details
-				className={css['flash--sale__details--form']}
-				name="flash--sale--details"
-				open
-			>
+			<details className={css['flash--sale__details--form']} name="flash--sale--details" open>
 				<summary>
 					<span className={css['details--form__number']}>1</span>
 					How do you want your orders shipped?
@@ -201,9 +222,7 @@ export default function FlashSale() {
 							<div className={css['form__picker--signs']}>
 								<h3 className={css['form__picker--label']}>Ship - to - Home</h3>
 
-								<span className={css['form__picker--sublabel']}>
-									$8.95 shipping
-								</span>
+								<span className={css['form__picker--sublabel']}>$8.95 shipping</span>
 							</div>
 
 							<input
@@ -223,9 +242,7 @@ export default function FlashSale() {
 							<div className={css['form__picker--signs']}>
 								<h3 className={css['form__picker--label']}>Buyer’s choice</h3>
 
-								<span className={css['form__picker--sublabel']}>
-									Give both options
-								</span>
+								<span className={css['form__picker--sublabel']}>Give both options</span>
 							</div>
 
 							<input
@@ -240,141 +257,144 @@ export default function FlashSale() {
 						</label>
 					</fieldset>
 
-					<fieldset className={css.form__inputs}>
-						<label className={`${css['text--label']} width-50`}>
-							<span className={css['input--label']}>First name</span>
-							<input
-								id="first-name"
-								value={shippingData.first_name}
-								onChange={(e) => {
-									setShippingData((prev) => ({
-										...prev,
-										first_name: e.target.value,
-									}))
-								}}
-								type="text"
-								placeholder="Name"
-								required
-							/>
-						</label>
+					{shippingValue === 'free_shipping' && (
+						<fieldset className={css.form__inputs}>
+							<label className={`${css['text--label']} width-50`}>
+								<span className={css['input--label']}>First name</span>
+								<input
+									id="first-name"
+									value={shippingData.first_name}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											first_name: e.target.value,
+										}))
+									}}
+									type="text"
+									placeholder="Name"
+									required
+								/>
+							</label>
 
-						<label className={`${css['text--label']} width-50`}>
-							<span className={css['input--label']}>Last name</span>
-							<input
-								id="last-name"
-								value={shippingData.last_name}
-								onChange={(e) => {
-									setShippingData((prev) => ({
-										...prev,
-										last_name: e.target.value,
-									}))
-								}}
-								type="text"
-								placeholder="Last Name"
-								required
-							/>
-						</label>
+							<label className={`${css['text--label']} width-50`}>
+								<span className={css['input--label']}>Last name</span>
+								<input
+									id="last-name"
+									value={shippingData.last_name}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											last_name: e.target.value,
+										}))
+									}}
+									type="text"
+									placeholder="Last Name"
+									required
+								/>
+							</label>
 
-						<label className={`${css['text--label']} width-100`}>
-							<span className={css['input--label']}>
-								School/Organization Name
-							</span>
-							<input
-								id="school-organization-name"
-								value={shippingData.organization_name}
-								onChange={(e) => {
-									setShippingData((prev) => ({
-										...prev,
-										organization_name: e.target.value,
-									}))
-								}}
-								type="text"
-								placeholder="School or Organization Name"
-								required
-							/>
-						</label>
+							<label className={`${css['text--label']} width-100`}>
+								<span className={css['input--label']}>School/Organization Name</span>
+								<input
+									id="school-organization-name"
+									value={shippingData.organization_name}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											organization_name: e.target.value,
+										}))
+									}}
+									type="text"
+									placeholder="School or Organization Name"
+									required
+								/>
+							</label>
 
-						<label className={`${css['text--label']} width-50`}>
-							<span className={css['input--label']}>Address 1</span>
-							<input
-								id="address-1"
-								value={shippingData.address_1}
-								onChange={(e) => {
-									setShippingData((prev) => ({
-										...prev,
-										address_1: e.target.value,
-									}))
-								}}
-								type="text"
-								placeholder="123 Example Street"
-								required
-							/>
-						</label>
+							<label className={`${css['text--label']} width-50`}>
+								<span className={css['input--label']}>Address 1</span>
+								<input
+									id="address-1"
+									value={shippingData.address_1}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											address_1: e.target.value,
+										}))
+									}}
+									type="text"
+									placeholder="123 Example Street"
+									required
+								/>
+							</label>
 
-						<label className={`${css['text--label']} width-50`}>
-							<span className={css['input--label']}>Address 2 (optional)</span>
-							<input
-								id="address-2"
-								value={shippingData.address_2}
-								onChange={(e) => {
-									setShippingData((prev) => ({
-										...prev,
-										address_2: e.target.value,
-									}))
-								}}
-								type="text"
-								placeholder="123 Example Street"
-							/>
-						</label>
+							<label className={`${css['text--label']} width-50`}>
+								<span className={css['input--label']}>Address 2 (optional)</span>
+								<input
+									id="address-2"
+									value={shippingData.address_2}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											address_2: e.target.value,
+										}))
+									}}
+									type="text"
+									placeholder="123 Example Street"
+								/>
+							</label>
 
-						<label className={`${css['text--label']} width-33`}>
-							<span className={css['input--label']}>City</span>
-							<input
-								id="city"
-								value={shippingData.city}
-								onChange={(e) => {
-									setShippingData((prev) => ({ ...prev, city: e.target.value }))
-								}}
-								type="text"
-								placeholder="City"
-								required
-							/>
-						</label>
+							<label className={`${css['text--label']} width-33`}>
+								<span className={css['input--label']}>City</span>
+								<input
+									id="city"
+									value={shippingData.city}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											city: e.target.value,
+										}))
+									}}
+									type="text"
+									placeholder="City"
+									required
+								/>
+							</label>
 
-						<label className={`${css['text--label']} width-33`}>
-							<span className={css['input--label']}>State</span>
-							<input
-								id="state"
-								value={shippingData.state}
-								onChange={(e) => {
-									setShippingData((prev) => ({
-										...prev,
-										state: e.target.value,
-									}))
-								}}
-								type="text"
-								placeholder="State"
-								required
-							/>
-						</label>
+							<label className={`${css['text--label']} width-33`}>
+								<span className={css['input--label']}>State</span>
+								<input
+									id="state"
+									value={shippingData.state}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											state: e.target.value,
+										}))
+									}}
+									type="text"
+									placeholder="State"
+									required
+								/>
+							</label>
 
-						<label className={`${css['text--label']} width-33`}>
-							<span className={css['input--label']}>Zip Code</span>
-							<input
-								id="zip-code"
-								value={shippingData.zip_code}
-								onChange={(e) => {
-									setShippingData((prev) => ({
-										...prev,
-										zip_code: e.target.value,
-									}))
-								}}
-								type="text"
-								placeholder="Zip Code"
-								required
-							/>
-						</label>
-					</fieldset>
+							<label className={`${css['text--label']} width-33`}>
+								<span className={css['input--label']}>Zip Code</span>
+								<input
+									id="zip-code"
+									value={shippingData.zip_code}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											zip_code: e.target.value,
+										}))
+									}}
+									type="text"
+									placeholder="Zip Code"
+									required
+								/>
+							</label>
+						</fieldset>
+					)}
 
 					<label className={css.checkbox}>
 						<span className={css.checkbox__emulator}>
@@ -394,8 +414,8 @@ export default function FlashSale() {
 								/>
 							</svg>
 						</span>
-						Organize my orders! Examples: Sort by grade level, teacher name,
-						coach name, team name, etc)
+						Organize my orders! Examples: Sort by grade level, teacher name, coach name, team name,
+						etc)
 						<input
 							id="organize-orders-checkbox"
 							type="checkbox"
@@ -406,10 +426,7 @@ export default function FlashSale() {
 				</form>
 			</details>
 
-			<details
-				className={css['flash--sale__details--form']}
-				name="flash--sale--details"
-			>
+			<details className={css['flash--sale__details--form']} name="flash--sale--details">
 				<summary>
 					<span className={css['details--form__number']}>2</span>
 					How should we sort your orders?
@@ -418,9 +435,7 @@ export default function FlashSale() {
 
 				<form className={css.form}>
 					<fieldset className={css.form__uploaders}>
-						<legend>
-							We will sort, labeled and bag your orders accordingly
-						</legend>
+						<legend>We will sort, labeled and bag your orders accordingly</legend>
 
 						<div className={css.uploaders__box}>
 							<label className={css.uploader}>
@@ -458,14 +473,36 @@ export default function FlashSale() {
 								))}
 							</ul>
 						)}
+
+						{ordersNote.length > 0 && (
+							<ul className={css.files__list}>
+								{ordersNote.map((item) => (
+									<li key={item.id} className={css.file__item}>
+										<label>
+											<Icon name={'Burger'} />
+											<input
+												type="text"
+												id={item.id}
+												value={item.value}
+												name="node--input"
+												onChange={onNoteInputChange}
+											/>
+											<button onClick={(e) => onNodeDeleteClick(e)} data-id={item.id}>
+												<Icon name={'Minus'} />
+											</button>
+										</label>
+									</li>
+								))}
+							</ul>
+						)}
+						<button className={css.add_more_button} onClick={(e) => onAddMoreClick(e)}>
+							+<span className={css.accent}>Add more</span>
+						</button>
 					</fieldset>
 				</form>
 			</details>
 
-			<details
-				className={css['flash--sale__details--form']}
-				name="flash--sale--details"
-			>
+			<details className={css['flash--sale__details--form']} name="flash--sale--details">
 				<summary>
 					<span className={css['details--form__number']}>3</span>
 					How should we sort your orders?
@@ -500,10 +537,7 @@ export default function FlashSale() {
 				</div>
 			</details>
 
-			<details
-				className={css['flash--sale__details--form']}
-				name="flash--sale--details"
-			>
+			<details className={css['flash--sale__details--form']} name="flash--sale--details">
 				<summary>
 					<span className={css['details--form__number']}>4</span>
 					Switch to On Demand Ordering After Flash Sale
@@ -536,10 +570,7 @@ export default function FlashSale() {
 				</div>
 			</details>
 
-			<details
-				className={css['flash--sale__details--form']}
-				name="flash--sale--details"
-			>
+			<details className={css['flash--sale__details--form']} name="flash--sale--details">
 				<summary>
 					<span className={css['details--form__number']}>5</span>
 					Do you want to add a fundraising progress bar to you store?
@@ -555,9 +586,7 @@ export default function FlashSale() {
 								type="checkbox"
 								className="visually-hidden"
 								checked={isFundaraisingChecked}
-								onChange={() =>
-									setIsFundaraisingChecked(!isFundaraisingChecked)
-								}
+								onChange={() => setIsFundaraisingChecked(!isFundaraisingChecked)}
 							/>
 						</label>
 						Yes
@@ -580,17 +609,12 @@ export default function FlashSale() {
 							disabled={!isFundaraisingChecked}
 							required={!isFundaraisingChecked}
 						/>
-						<span className={css['input--label']}>
-							This amount will be displayed on you store
-						</span>
+						<span className={css['input--label']}>This amount will be displayed on you store</span>
 					</label>
 				</div>
 			</details>
 
-			<button
-				className={css['flash--sale__head--button']}
-				onClick={onSaveClick}
-			>
+			<button className={css['flash--sale__head--button']} onClick={onSaveClick}>
 				Save
 			</button>
 		</section>

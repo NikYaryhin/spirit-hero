@@ -3,7 +3,13 @@ import Portal from '../Portal/Portal'
 import css from './Modal.module.css'
 import Icon from '../Icon'
 
-export default function Modal({ isOpen, onClose, className, children }) {
+export default function Modal({
+	isOpen,
+	onClose,
+	className,
+	children,
+	closeLabel,
+}) {
 	useEffect(() => {
 		if (!isOpen) return
 		const onKey = (e) => {
@@ -23,7 +29,7 @@ export default function Modal({ isOpen, onClose, className, children }) {
 					onMouseDown={(e) => e.stopPropagation()}
 				>
 					<button className={css.close} onClick={onClose} aria-label="Close">
-						<Icon name="Cancel" />
+						{closeLabel ? closeLabel : <Icon name="Cancel" />}
 					</button>
 					{children}
 				</div>

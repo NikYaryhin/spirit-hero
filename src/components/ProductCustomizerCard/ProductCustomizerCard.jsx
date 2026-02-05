@@ -152,7 +152,12 @@ export default function ProductCustomiserCard({
 				<Icon name={'Colors'} />
 			</button>
 
-			<Modal isOpen={isModalOpen} onClose={onModalClose} className="side">
+			<Modal
+				isOpen={isModalOpen}
+				onClose={onModalClose}
+				className="side"
+				closeLabel={'Save'}
+			>
 				<h3 className={css.modal__title}>Select Colours</h3>
 				<span className={css.modal__subtitle}>
 					{colorsArray.length} of {colors.length} color

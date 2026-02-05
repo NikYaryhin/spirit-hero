@@ -10,6 +10,15 @@ import { steps } from '@/helpers/const'
 export default function BuilderHeader({ onNextStep }) {
 	const dispatch = useDispatch()
 	const activeStep = useSelector((state) => state.navigation.activeStep)
+
+	const saveAndExitHandle = async () => {
+		try {
+			await onNextStep()
+			window.location.href = '/'
+		} catch (error) {
+			console.error('Save and axit error', error)
+		}
+	}
 	return (
 		<div className={css.header}>
 			<div className={css.logo}>
@@ -35,9 +44,9 @@ export default function BuilderHeader({ onNextStep }) {
 			</ul>
 
 			<div className={css.actions}>
-				{/* <Link to="/" className={css.save__button}>
+				<button className={css.save__button} onClick={saveAndExitHandle}>
 					Save and Exit
-				</Link> */}
+				</button>
 
 				<div className={css.buttons__box}>
 					<button

@@ -1,4 +1,14 @@
 .category__details {
+	transition: translate 0.4s ease-in-out, height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+	translate: 0 -100%;
+	opacity: 0;
+
+	&.active {
+		translate: 0% 0;
+		opacity: 1;
+	}
+
+	&.hidden {}
 
 	&:not([open]) summary>svg {
 		rotate: 180deg;

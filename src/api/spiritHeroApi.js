@@ -91,6 +91,14 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async saveColorsDetails(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/save-choose-colors',
+			payload,
+		)
+		return data
+	}
+
 	async setInkModalData(payload) {
 		const { data } = await this.http.post(
 			'/api/builder/edit-ink-color',
@@ -99,11 +107,11 @@ class SpiritHeroApi {
 		return data
 	}
 
-	async deleteFromMyStoreProducts(store_id, ids) {
-		const body = { store_id, ids }
+	async deleteFromMyStoreProducts(payload) {
+		// const body = { store_id, ids }
 		const { data } = await this.http.post(
 			'/api/builder/delete-from-my-store-products',
-			body,
+			payload,
 		)
 		return data
 	}

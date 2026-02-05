@@ -55,4 +55,10 @@
 	border: none;
 	font-size: 18px;
 	cursor: pointer;
+
+	transition: scale 0.25s ease;
+
+	&:hover {
+		scale: 1.05;
+	}
 }

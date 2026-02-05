@@ -35,6 +35,7 @@ export default function StoreDetailsForm({ image }) {
 		storeInfo?.store?.social_media_2 || '',
 	)
 	const [colors, setColors] = useState([])
+	const [colorsIds, setColorsIds] = useState([])
 
 	useEffect(() => {
 		if (storeInfo?.store) {
@@ -48,6 +49,24 @@ export default function StoreDetailsForm({ image }) {
 			setColors(color)
 		}
 	}, [storeInfo])
+
+	// const saveColors = async (e) => {
+	// 	e.preventDefault()
+	// 	const payload = {
+	// 		store_id: storeId,
+	// 		color_id: colorsIds,
+	// 	}
+
+	// 	try {
+	// 		setIsLoading(true)
+	// 		const response = await spiritHeroApi.saveColorsDetails(payload)
+	// 		console.log('saveColorsDetails response', response)
+	// 	} catch (error) {
+	// 		console.error('saveColorsDetails error', error)
+	// 	} finally {
+	// 		setIsLoading(false)
+	// 	}
+	// }
 
 	const onFormSubmit = async (event) => {
 		event.preventDefault()
@@ -100,11 +119,20 @@ export default function StoreDetailsForm({ image }) {
 		}
 	}
 
-	const colorInputHandle = (checked, value) => {
+	const colorInputHandle = (e) => {
+		const { value, checked } = e.target
+		const { id } = e.target.dataset
+
 		setColors((prev) => {
 			const nextColors = checked
 				? [...prev, value]
 				: prev.filter((color) => color !== value)
+			return nextColors
+		})
+		setColorsIds((prev) => {
+			const nextColors = checked
+				? [...prev, id]
+				: prev.filter((color) => color !== id)
 			return nextColors
 		})
 	}
@@ -192,6 +220,17 @@ export default function StoreDetailsForm({ image }) {
 					</p>
 
 					<ColorsList colorInputHandle={colorInputHandle} colors={colors} />
+
+					{/* {storeId && (
+						<button
+							type="button"
+							onClick={saveColors}
+							className={css.next__button}
+							disabled={isLoading}
+						>
+							{isLoading ? 'Saving' : 'Save colors'}
+						</button>
+					)} */}
 				</fieldset>
 
 				<div className={css['next__button--box']}>

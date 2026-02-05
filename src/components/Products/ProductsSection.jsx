@@ -63,29 +63,22 @@ export default function ProductsSection({ isFlashSale }) {
 
 		const matchByFilters = (product) => {
 			if (activeFilters.brands && activeFilters.brands.length > 0) {
-				const passBrand = activeFilters.brands.includes(
-					String(product.brand_id),
-				)
+				const passBrand = activeFilters.brands.includes(String(product.brand_id))
 				if (!passBrand) return false
 			}
 
 			if (activeFilters.categories && activeFilters.categories.length > 0) {
-				const passCategory = activeFilters.categories.includes(
-					String(product.category_id),
-				)
+				const passCategory = activeFilters.categories.includes(String(product.category_id))
 				if (!passCategory) return false
 			}
 
-			if (
-				activeFilters.colorFamilies &&
-				activeFilters.colorFamilies.length > 0
-			) {
+			if (activeFilters.colorFamilies && activeFilters.colorFamilies.length > 0) {
 				const colorIds = Array.isArray(product.colors)
-					? product.colors.map((c) => String(c.id))
+					? product.colors.map((c) => String(c.color_id))
 					: []
-				const passColor = colorIds.some((id) =>
-					activeFilters.colorFamilies.includes(id),
-				)
+				const passColor = colorIds.some((id) => activeFilters.colorFamilies.includes(id))
+				console.log({ passColor, colorIds, product, activeFilters })
+
 				if (!passColor) return false
 			}
 
@@ -95,32 +88,22 @@ export default function ProductsSection({ isFlashSale }) {
 		const applySorting = (arr) => {
 			if (!Array.isArray(arr)) return arr
 			if (sortingBy === 'expensive') {
-				return [...arr].sort(
-					(a, b) => b.params.on_demand_price - a.params.on_demand_price,
-				)
+				return [...arr].sort((a, b) => b.params.on_demand_price - a.params.on_demand_price)
 			}
 			if (sortingBy === 'cheap') {
-				return [...arr].sort(
-					(a, b) => a.params.on_demand_price - b.params.on_demand_price,
-				)
+				return [...arr].sort((a, b) => a.params.on_demand_price - b.params.on_demand_price)
 			}
 			if (sortingBy === 'name') {
-				return [...arr].sort((a, b) =>
-					a.product_title.localeCompare(b.product_title),
-				)
+				return [...arr].sort((a, b) => a.product_title.localeCompare(b.product_title))
 			}
 			return arr
 		}
 
 		const nextCatalog = applySorting(
-			hasAnyFilters
-				? initialCatalogProducts.filter(matchByFilters)
-				: initialCatalogProducts,
+			hasAnyFilters ? initialCatalogProducts.filter(matchByFilters) : initialCatalogProducts,
 		)
 		const nextShop = applySorting(
-			hasAnyFilters
-				? initialMyShopProducts.filter(matchByFilters)
-				: initialMyShopProducts,
+			hasAnyFilters ? initialMyShopProducts.filter(matchByFilters) : initialMyShopProducts,
 		)
 
 		dispatch(setCatalogProducts(nextCatalog))
@@ -138,49 +121,37 @@ export default function ProductsSection({ isFlashSale }) {
 		if (sortingBy === 'expensive') {
 			dispatch(
 				setCatalogProducts(
-					[...catalogProducts].sort(
-						(a, b) => b.params.on_demand_price - a.params.on_demand_price,
-					),
+					[...catalogProducts].sort((a, b) => b.params.on_demand_price - a.params.on_demand_price),
 				),
 			)
 
 			dispatch(
 				setMyShopProducts(
-					[...myShopProducts].sort(
-						(a, b) => b.params.on_demand_price - a.params.on_demand_price,
-					),
+					[...myShopProducts].sort((a, b) => b.params.on_demand_price - a.params.on_demand_price),
 				),
 			)
 		}
 		if (sortingBy === 'cheap') {
 			dispatch(
 				setCatalogProducts(
-					[...catalogProducts].sort(
-						(a, b) => a.params.on_demand_price - b.params.on_demand_price,
-					),
+					[...catalogProducts].sort((a, b) => a.params.on_demand_price - b.params.on_demand_price),
 				),
 			)
 			dispatch(
 				setMyShopProducts(
-					[...myShopProducts].sort(
-						(a, b) => a.params.on_demand_price - b.params.on_demand_price,
-					),
+					[...myShopProducts].sort((a, b) => a.params.on_demand_price - b.params.on_demand_price),
 				),
 			)
 		}
 		if (sortingBy === 'name') {
 			dispatch(
 				setCatalogProducts(
-					[...catalogProducts].sort((a, b) =>
-						a.product_title.localeCompare(b.product_title),
-					),
+					[...catalogProducts].sort((a, b) => a.product_title.localeCompare(b.product_title)),
 				),
 			)
 			dispatch(
 				setMyShopProducts(
-					[...myShopProducts].sort((a, b) =>
-						a.product_title.localeCompare(b.product_title),
-					),
+					[...myShopProducts].sort((a, b) => a.product_title.localeCompare(b.product_title)),
 				),
 			)
 		}
@@ -224,9 +195,7 @@ export default function ProductsSection({ isFlashSale }) {
 
 	const addToStoreButtonHandle = () => {
 		const selectedIds = new Set(
-			(catalogProducts || [])
-				.filter((p) => p.selected)
-				.map((p) => String(p.id)),
+			(catalogProducts || []).filter((p) => p.selected).map((p) => String(p.id)),
 		)
 		if (selectedIds.size === 0) return
 
@@ -244,10 +213,7 @@ export default function ProductsSection({ isFlashSale }) {
 				)
 			})
 			.catch((error) => {
-				showToast(
-					`Error while adding products to your store: ${error}`,
-					'error',
-				)
+				showToast(`Error while adding products to your store: ${error}`, 'error')
 			})
 
 		dispatch(
@@ -256,20 +222,14 @@ export default function ProductsSection({ isFlashSale }) {
 			),
 		)
 
-		const toAppend = initialCatalogProducts.filter((p) =>
-			selectedIds.has(String(p.id)),
-		)
+		const toAppend = initialCatalogProducts.filter((p) => selectedIds.has(String(p.id)))
 
 		if (toAppend.length > 0) {
 			const existing = new Set(initialMyShopProducts.map((p) => String(p.id)))
-			const append = toAppend
-				.filter((p) => !existing.has(String(p.id)))
-				.map((p) => ({ ...p }))
+			const append = toAppend.filter((p) => !existing.has(String(p.id))).map((p) => ({ ...p }))
 
 			if (append.length > 0)
-				dispatch(
-					setInitialMyShopProducts([...initialMyShopProducts, ...append]),
-				)
+				dispatch(setInitialMyShopProducts([...initialMyShopProducts, ...append]))
 		}
 	}
 
@@ -285,7 +245,7 @@ export default function ProductsSection({ isFlashSale }) {
 		}
 
 		spiritHeroApi
-			.deleteFromMyStoreProducts(payload.store_id, payload.ids)
+			.deleteFromMyStoreProducts(payload)
 			.then((res) => {
 				console.debug('spiritHeroApi.deleteFromMyStoreProducts res', res)
 				showToast(
@@ -293,32 +253,21 @@ export default function ProductsSection({ isFlashSale }) {
 				)
 			})
 			.catch((error) => {
-				showToast(
-					`Error while removing products to your store: ${error}`,
-					'error',
-				)
+				showToast(`Error while removing products to your store: ${error}`, 'error')
 			})
 
 		dispatch(
-			setInitialMyShopProducts(
-				initialMyShopProducts.filter((p) => !selectedIds.has(String(p.id))),
-			),
+			setInitialMyShopProducts(initialMyShopProducts.filter((p) => !selectedIds.has(String(p.id)))),
 		)
 
-		const toAppend = (initialMyShopProducts || []).filter((p) =>
-			selectedIds.has(String(p.id)),
-		)
+		const toAppend = (initialMyShopProducts || []).filter((p) => selectedIds.has(String(p.id)))
 
 		if (toAppend.length > 0) {
 			const existing = new Set(initialCatalogProducts.map((p) => String(p.id)))
-			const append = toAppend
-				.filter((p) => !existing.has(String(p.id)))
-				.map((p) => ({ ...p }))
+			const append = toAppend.filter((p) => !existing.has(String(p.id))).map((p) => ({ ...p }))
 
 			if (append.length > 0)
-				dispatch(
-					setInitialCatalogProducts([...initialCatalogProducts, ...append]),
-				)
+				dispatch(setInitialCatalogProducts([...initialCatalogProducts, ...append]))
 		}
 	}
 
@@ -340,8 +289,7 @@ export default function ProductsSection({ isFlashSale }) {
 							<span className={css.icon}>
 								<Check />
 							</span>
-							Product catalog{' '}
-							<span className={css.count}>{catalogProducts?.length || 0}</span>
+							Product catalog <span className={css.count}>{catalogProducts?.length || 0}</span>
 						</button>
 
 						<button
@@ -375,16 +323,15 @@ export default function ProductsSection({ isFlashSale }) {
 							</select>
 						</div>
 
-						<h3 className={css['products__catalog--top__label']}>
-							You have selected {selectedCount} product
-							{myShopProducts?.length === 1 ? '' : 's'}
-						</h3>
+						{selectedCount > 0 && (
+							<h3 className={css['products__catalog--top__label']}>
+								You have selected {selectedCount} product
+								{myShopProducts?.length === 1 ? '' : 's'}
+							</h3>
+						)}
 
 						<div className={css['buttons__box']}>
-							<button
-								className={`${css.select_all} light_button_1`}
-								onClick={onSelectAllClick}
-							>
+							<button className={`${css.select_all} light_button_1`} onClick={onSelectAllClick}>
 								Select All
 							</button>
 
@@ -392,6 +339,7 @@ export default function ProductsSection({ isFlashSale }) {
 								<button
 									className={`${css.delete__selected} light_button_2`}
 									onClick={deleteFromTheStoreButtonHandle}
+									disabled={selectedCount > 0 ? false : true}
 								>
 									Delete
 								</button>
