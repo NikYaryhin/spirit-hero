@@ -14,9 +14,9 @@ export default function BuilderHeader({ onNextStep }) {
 	const saveAndExitHandle = async () => {
 		try {
 			await onNextStep()
-			window.location.href = '/'
+			window.location.href = 'https://spirit-hero.splitdev.org/'
 		} catch (error) {
-			console.error('Save and axit error', error)
+			console.error('Save and exit error', error)
 		}
 	}
 	return (
@@ -44,9 +44,11 @@ export default function BuilderHeader({ onNextStep }) {
 			</ul>
 
 			<div className={css.actions}>
-				<button className={css.save__button} onClick={saveAndExitHandle}>
-					Save and Exit
-				</button>
+				{activeStep !== 5 && (
+					<button className={css.save__button} onClick={saveAndExitHandle}>
+						Save and Exit
+					</button>
+				)}
 
 				<div className={css.buttons__box}>
 					<button
@@ -58,16 +60,22 @@ export default function BuilderHeader({ onNextStep }) {
 						Back
 					</button>
 
-					<button
-						className={`${css.step__button}`}
-						onClick={onNextStep}
-						disabled={activeStep === 5}
-					>
-						Next
-						<Chevron rotated={false} />
-					</button>
+					{activeStep !== 5 ? (
+						<button
+							className={`${css.step__button}`}
+							onClick={onNextStep}
+							disabled={activeStep === 5}
+						>
+							Next
+							<Chevron rotated={false} />
+						</button>
+					) : (
+						<button className={css.save__button} onClick={saveAndExitHandle}>
+							Save and Exit
+						</button>
+					)}
 
-					<Link to="/" className={css.account__button}>
+					<Link to="https://spirit-hero.splitdev.org/" className={css.account__button}>
 						<Account />
 					</Link>
 				</div>

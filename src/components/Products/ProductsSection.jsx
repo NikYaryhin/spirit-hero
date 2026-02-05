@@ -17,7 +17,7 @@ import {
 	selectSortingBy,
 	setSortingBy,
 	toggleProductSelection,
-	selectAllProducts as selectAllProductsAction,
+	selectAllProductsAction,
 	setMyShopProducts,
 	setCatalogProducts,
 	selectInitialCatalogProducts,
@@ -369,6 +369,7 @@ export default function ProductsSection({ isFlashSale }) {
 												filterName={key}
 												category={filters[key]}
 												setActiveFilters={setActiveFilters}
+												open={key === 'colorFamilies'}
 											/>
 										)
 								})}

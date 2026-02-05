@@ -74,12 +74,10 @@ const productsSlice = createSlice({
 			const targetArray = isCatalog ? 'catalogProducts' : 'myShopProducts'
 
 			state[targetArray] = state[targetArray].map((product) =>
-				String(product.id) === String(productId)
-					? { ...product, selected: isSelected }
-					: product,
+				String(product.id) === String(productId) ? { ...product, selected: isSelected } : product,
 			)
 		},
-		selectAllProducts: (state, action) => {
+		selectAllProductsAction: (state, action) => {
 			const { isCatalog, select } = action.payload
 			const targetArray = isCatalog ? 'catalogProducts' : 'myShopProducts'
 
@@ -96,9 +94,7 @@ const productsSlice = createSlice({
 				state.error = null
 			})
 			.addCase(fetchProducts.fulfilled, (state, action) => {
-				const myShopProductIds = new Set(
-					state.initialMyShopProducts.map((p) => String(p.id)),
-				)
+				const myShopProductIds = new Set(state.initialMyShopProducts.map((p) => String(p.id)))
 				const filteredCatalogProducts = action.payload.products.filter(
 					(product) => !myShopProductIds.has(String(product.id)),
 				)
@@ -118,10 +114,8 @@ const productsSlice = createSlice({
 export const selectAllProducts = (state) => state.products
 export const selectCatalogProducts = (state) => state.products.catalogProducts
 export const selectMyShopProducts = (state) => state.products.myShopProducts
-export const selectInitialCatalogProducts = (state) =>
-	state.products.initialCatalogProducts
-export const selectInitialMyShopProducts = (state) =>
-	state.products.initialMyShopProducts
+export const selectInitialCatalogProducts = (state) => state.products.initialCatalogProducts
+export const selectInitialMyShopProducts = (state) => state.products.initialMyShopProducts
 export const selectIsLoading = (state) => state.products.isLoading
 export const selectFilters = (state) => state.products.filters
 export const selectActiveFilters = (state) => state.products.activeFilters
@@ -137,7 +131,7 @@ export const {
 	resetFilters,
 	setIsLoading,
 	toggleProductSelection,
-	selectAllProducts: selectAllProductsAction,
+	selectAllProductsAction,
 } = productsSlice.actions
 
 export default productsSlice.reducer
