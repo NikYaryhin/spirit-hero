@@ -7,6 +7,7 @@ export default function Filters({
 	category,
 	open,
 	setActiveFilters,
+	checkedFilters,
 }) {
 	const filterCheckboxHandle = (event) => {
 		const { value, checked } = event.currentTarget
@@ -25,8 +26,7 @@ export default function Filters({
 	return (
 		<details className={css['products_filter-group']} open={open} key={keyName}>
 			<summary>
-				{filterName === 'colorFamilies' ? 'Colors' : filterName}{' '}
-				<Icon name="ChevronUp" />
+				{filterName === 'colorFamilies' ? 'Colors' : filterName} <Icon name="ChevronUp" />
 			</summary>
 
 			<ul className={css.filters__list}>
@@ -37,15 +37,14 @@ export default function Filters({
 								<Icon name="Checked" />
 							</span>
 
-							<span className={css.category__name}>
-								{category || name || product_color_name}
-							</span>
+							<span className={css.category__name}>{category || name || product_color_name}</span>
 
 							<input
 								onChange={filterCheckboxHandle}
 								className="visually-hidden"
 								type="checkbox"
 								value={id}
+								checked={checkedFilters.includes(String(id)) || false}
 							/>
 						</label>
 					</li>

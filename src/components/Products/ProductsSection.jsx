@@ -31,6 +31,7 @@ export default function ProductsSection({ isFlashSale }) {
 	const dispatch = useDispatch()
 
 	const storeId = useSelector((state) => state.flashSale.storeId)
+	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const catalogProducts = useSelector(selectCatalogProducts)
 	const myShopProducts = useSelector(selectMyShopProducts)
 	const isLoading = useSelector(selectIsLoading)
@@ -42,6 +43,7 @@ export default function ProductsSection({ isFlashSale }) {
 
 	const [selectedCount, setSelectedCount] = useState(0)
 	const [isCatalog, setIsCatalog] = useState(true)
+	// const [isColorFiltersInitialized, setIsColorFiltersInitialized] = useState(false)
 
 	const [activeFilters, setActiveFilters] = useState({
 		brands: [],
@@ -54,6 +56,33 @@ export default function ProductsSection({ isFlashSale }) {
 		}
 		if (catalogProducts.length < 1) fetchData()
 	}, [])
+
+	// Активация цветовых фильтров из storeInfo после загрузки продуктов
+	useEffect(() => {
+		if (!filters) return
+		if (!storeInfo) return
+
+		const storeColors = storeInfo.store.color
+		const colorFamilies = filters.colorFamilies
+
+		const normalizedStoreColors = storeColors.map((color) => color.toUpperCase())
+
+		const matchingColorIds = colorFamilies
+			.filter((colorFamily) => {
+				const normalizedProductColor = colorFamily.product_color.toUpperCase()
+				return normalizedStoreColors.includes(normalizedProductColor)
+			})
+			.map((colorFamily) => String(colorFamily.id))
+
+		console.log({ storeColors, colorFamilies, matchingColorIds })
+
+		if (matchingColorIds.length > 0) {
+			setActiveFilters((prev) => ({
+				...prev,
+				colorFamilies: matchingColorIds,
+			}))
+		}
+	}, [filters, storeInfo])
 
 	useEffect(() => {
 		const hasAnyFilters =
@@ -349,6 +378,7 @@ export default function ProductsSection({ isFlashSale }) {
 								<button
 									className={`${css.add_to_store} contrast_button_1`}
 									onClick={addToStoreButtonHandle}
+									disabled={selectedCount > 0 ? false : true}
 								>
 									<Lightning />
 									Add to my store
@@ -361,6 +391,8 @@ export default function ProductsSection({ isFlashSale }) {
 						<div className={css.products_filters}>
 							{filters &&
 								Object.keys(filters).map((key) => {
+									console.log(activeFilters[key])
+
 									if (key !== 'sizes')
 										return (
 											<Filters
@@ -370,6 +402,7 @@ export default function ProductsSection({ isFlashSale }) {
 												category={filters[key]}
 												setActiveFilters={setActiveFilters}
 												open={key === 'colorFamilies'}
+												checkedFilters={activeFilters[key]}
 											/>
 										)
 								})}
