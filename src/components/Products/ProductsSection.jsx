@@ -391,8 +391,6 @@ export default function ProductsSection({ isFlashSale }) {
 						<div className={css.products_filters}>
 							{filters &&
 								Object.keys(filters).map((key) => {
-									console.log(activeFilters[key])
-
 									if (key !== 'sizes')
 										return (
 											<Filters
