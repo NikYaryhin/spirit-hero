@@ -108,6 +108,7 @@ class SpiritHeroApi {
 	}
 
 	async deleteFromMyStoreProducts(payload) {
+		
 		// const body = { store_id, ids }
 		const { data } = await this.http.post(
 			'/api/builder/delete-from-my-store-products',

@@ -2,7 +2,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
-// Начальное состояние
 const initialState = {
 	myShopProducts: [],
 	catalogProducts: [],
@@ -18,6 +17,7 @@ const initialState = {
 	},
 	isLoading: false,
 	error: null,
+	isFundraisingGroup: false,
 }
 
 export const fetchProducts = createAsyncThunk(
@@ -26,6 +26,7 @@ export const fetchProducts = createAsyncThunk(
 		try {
 			const response = await spiritHeroApi.getProducts()
 			console.log('getProducts response', response)
+			console.log("isFlashSaleType", response.products.filter(product => product.is_flash_sale_type))
 
 			return response
 		} catch (error) {
@@ -86,6 +87,9 @@ const productsSlice = createSlice({
 				selected: select,
 			}))
 		},
+		setIsFundraisingGroup: (state, action) => {
+			state.isFundraisingGroup = action.payload
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -122,6 +126,7 @@ export const selectIsLoading = (state) => state.products.isLoading
 export const selectFilters = (state) => state.products.filters
 export const selectActiveFilters = (state) => state.products.activeFilters
 export const selectSortingBy = (state) => state.products.sortingBy
+export const selectIsFundraisingGroup = (state) => state.products.isFundraisingGroup
 
 export const {
 	setMyShopProducts,
@@ -134,6 +139,7 @@ export const {
 	setIsLoading,
 	toggleProductSelection,
 	selectAllProductsAction,
+	setIsFundraisingGroup,
 } = productsSlice.actions
 
 export default productsSlice.reducer

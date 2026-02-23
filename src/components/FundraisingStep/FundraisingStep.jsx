@@ -24,6 +24,7 @@ export default function FundraisingStep() {
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
 
+	const isFundraisingGroup = useSelector((state) => state.products.isFundraisingGroup)
 	const storeId =
 		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 	const isLoading = useSelector((state) => state.products.isLoading)
@@ -49,12 +50,32 @@ export default function FundraisingStep() {
 
 	useEffect(() => {
 		const fetchStoreData = async () => {
+			dispatch(setIsLoading(true))
 			try {
+
 				const res = await spiritHeroApi.getStore(storeId)
 				console.debug('spiritHeroApi.getStore res', res)
 
+				let products = res.products.map((product) => {
+					return {
+						...product,
+						is_fundraise: isFundraisingGroup,
+					}
+				})
+
+				const updateFundraisingStatusResponse = await spiritHeroApi.updateFundraisingStatus({
+					store_id: storeId,
+					products_info: products.map((product) => ({
+						id: product.id,
+						is_fundraise: isFundraisingGroup,
+					})),
+				})
+				console.debug('updateFundraisingStatusResponse', updateFundraisingStatusResponse)
+				
+				setIsFundraise(isFundraisingGroup)
+
 				const sortedProducts =
-					res.products.reduce((acc, product) => {
+					products.reduce((acc, product) => {
 						acc[product.category_name] = [
 							...(acc[product.category_name] || []),
 							product,

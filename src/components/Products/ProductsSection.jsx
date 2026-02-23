@@ -41,6 +41,14 @@ export default function ProductsSection({ isFlashSale }) {
 	const initialCatalogProducts = useSelector(selectInitialCatalogProducts)
 	const initialMyShopProducts = useSelector(selectInitialMyShopProducts)
 
+	const visibleCatalogProducts = isFlashSale
+		? catalogProducts.filter((p) => p.is_flash_sale_type === true)
+		: catalogProducts
+
+	const visibleMyShopProducts = isFlashSale
+		? myShopProducts.filter((p) => p.is_flash_sale_type === true)
+		: myShopProducts
+
 	const [selectedCount, setSelectedCount] = useState(0)
 	const [isCatalog, setIsCatalog] = useState(true)
 	// const [isColorFiltersInitialized, setIsColorFiltersInitialized] = useState(false)
@@ -137,11 +145,11 @@ export default function ProductsSection({ isFlashSale }) {
 	}, [activeFilters, sortingBy, initialCatalogProducts, initialMyShopProducts])
 
 	useEffect(() => {
-		const targetArray = isCatalog ? catalogProducts : myShopProducts
+		const targetArray = isCatalog ? visibleCatalogProducts : visibleMyShopProducts
 		const count = targetArray.filter((product) => product.selected).length
 
 		setSelectedCount(count)
-	}, [catalogProducts, myShopProducts, isCatalog])
+	}, [visibleCatalogProducts, visibleMyShopProducts, isCatalog])
 
 	useEffect(() => {
 		if (sortingBy === 'expensive') {
@@ -208,7 +216,7 @@ export default function ProductsSection({ isFlashSale }) {
 	}
 
 	const onSelectAllClick = () => {
-		const targetArray = isCatalog ? catalogProducts : myShopProducts
+		const targetArray = isCatalog ? visibleCatalogProducts : visibleMyShopProducts
 		const hasUnselected = targetArray.some((product) => !product.selected)
 
 		dispatch(
@@ -315,7 +323,7 @@ export default function ProductsSection({ isFlashSale }) {
 							<span className={css.icon}>
 								<Check />
 							</span>
-							Product catalog <span className={css.count}>{catalogProducts?.length || 0}</span>
+							Product catalog <span className={css.count}>{visibleCatalogProducts?.length || 0}</span>
 						</button>
 
 						<button
@@ -325,8 +333,8 @@ export default function ProductsSection({ isFlashSale }) {
 							<span className={css.icon}>
 								<Check />
 							</span>
-							My Store
-							<span className={css.count}>{myShopProducts?.length || 0}</span>
+						My Store
+						<span className={css.count}>{visibleMyShopProducts?.length || 0}</span>
 						</button>
 					</div>
 
@@ -405,8 +413,7 @@ export default function ProductsSection({ isFlashSale }) {
 
 						<ul className={css.products__list}>
 							{isCatalog
-								? catalogProducts &&
-									catalogProducts.map((product) => (
+								? visibleCatalogProducts.map((product) => (
 										<ProductCard
 											key={product.id}
 											inputHandle={onCatalogCardClick}
@@ -414,8 +421,7 @@ export default function ProductsSection({ isFlashSale }) {
 											isFlashSale={isFlashSale}
 										/>
 									))
-								: myShopProducts &&
-									myShopProducts.map((product) => (
+								: visibleMyShopProducts.map((product) => (
 										<ProductCard
 											key={product.id}
 											inputHandle={onMyShopCardClick}

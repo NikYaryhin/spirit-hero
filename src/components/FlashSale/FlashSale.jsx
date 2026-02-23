@@ -257,7 +257,7 @@ export default function FlashSale() {
 						</label>
 					</fieldset>
 
-					{shippingValue === 'free_shipping' && (
+					{shippingValue !== 'buyer_choice' && (
 						<fieldset className={css.form__inputs}>
 							<label className={`${css['text--label']} width-50`}>
 								<span className={css['input--label']}>First name</span>

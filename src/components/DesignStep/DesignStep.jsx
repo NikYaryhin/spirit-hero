@@ -24,6 +24,8 @@ import {
 	Circle,
 	Line,
 } from 'fabric'
+import Modal from '@/components/Modal/Modal'
+import FundraisingTypeModal from '../FundraisingTypeModal/FundraisingTypeModal'
 
 const DesignStep = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
@@ -37,6 +39,7 @@ const DesignStep = forwardRef((props, ref) => {
 	const [allProducts, setAllProducts] = useState(null)
 	const [productsByCategory, setProductsByCategory] = useState(null)
 	const [activeCardId, setActiveCardId] = useState(null)
+	const [baseDesign, setBaseDesign] = useState(null)
 	const [customerLogos, setCustomerLogos] = useState({
 		elementsPositionImage: '',
 		customerLogos: [],
@@ -51,44 +54,45 @@ const DesignStep = forwardRef((props, ref) => {
 
 	const [selectedTextObject, setSelectedTextObject] = useState(null)
 
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [isFundraisingModalOpen, setIsFundraisingModalOpen] = useState(false)
+
 	const containerRef = useRef(null)
 	const imageBoxRef = useRef(null)
 	const canvasRef = useRef(null)
 	const fabricCanvasRef = useRef(null)
 
 
-	
-
 	// Функция для конвертации URL в base64
-	const urlToBase64 = async (url) => {
-		try {
-			// Преобразуем protocol-relative URL (//cdn.com/...) в полный URL
-			let fullUrl = url
-			if (url.startsWith('//')) {
-				fullUrl = 'https:' + url
-			}
+	// const urlToBase64 = async (url) => {
+	// 	try {
+	// 		// Преобразуем protocol-relative URL (//cdn.com/...) в полный URL
+	// 		let fullUrl = url
+	// 		if (url.startsWith('//')) {
+	// 			fullUrl = 'https:' + url
+	// 		}
 
-			const response = await fetch(fullUrl, {
-				mode: 'cors',
-				credentials: 'omit',
-			})
-			const blob = await response.blob()
-			return new Promise((resolve) => {
-				const reader = new FileReader()
-				reader.onloadend = () => resolve(reader.result)
-				reader.readAsDataURL(blob)
-			})
-		} catch (error) {
-			console.error('Error converting image to base64:', error)
-			return url
-		}
-	}
+	// 		const response = await fetch(fullUrl, {
+	// 			mode: 'cors',
+	// 			credentials: 'omit',
+	// 		})
+	// 		const blob = await response.blob()
+	// 		return new Promise((resolve) => {
+	// 			const reader = new FileReader()
+	// 			reader.onloadend = () => resolve(reader.result)
+	// 			reader.readAsDataURL(blob)
+	// 		})
+	// 	} catch (error) {
+	// 		console.error('Error converting image to base64:', error)
+	// 		return url
+	// 	}
+	// }
 
 	// Функция для проверки, является ли строка base64
-	const isBase64 = (str) => {
-		if (!str || typeof str !== 'string') return false
-		return str.startsWith('data:image/')
-	}
+	// const isBase64 = (str) => {
+	// 	if (!str || typeof str !== 'string') return false
+	// 	return str.startsWith('data:image/')
+	// }
 
 	// Функция для отрисовки иконки удаления
 	const renderDeleteIcon = (ctx, left, top, styleOverride, fabricObject) => {
@@ -212,11 +216,15 @@ const DesignStep = forwardRef((props, ref) => {
 		const handleTextScaling = (e) => {
 			const obj = e.target
 			if (!obj || obj.customData?.type !== 'text') return
+			console.log("obj", obj.scaleX);
+			
 
 			const scaleX = obj.scaleX
 			const newWidth = obj.width * scaleX
 			const newHeight = obj.height * scaleX
 			const newFontSize = Math.round(obj.fontSize * scaleX)
+			console.log("newFontSize", newFontSize);
+			
 
 			obj.customData.originalFontSize = newFontSize
 			obj.customData.originalWidth = newWidth
@@ -548,13 +556,9 @@ const DesignStep = forwardRef((props, ref) => {
 
 	// useEffect для загрузки текста с сервера на canvas
 	useEffect(() => {
-		console.log("ALLO");
 		
 		if (isLoading) return
 		const canvas = fabricCanvasRef.current
-
-		console.log("CANVAS", canvas);
-		console.log("serverLabels", serverLabels);
 		
 		if (!canvas || serverLabels.length === 0) return
 
@@ -603,6 +607,10 @@ const DesignStep = forwardRef((props, ref) => {
 					lockUniScaling: false,
 				})
 
+				
+
+				
+
 				// Скрываем ненужные контролы
 				textbox.setControlsVisibility({
 					ml: false,
@@ -630,6 +638,16 @@ const DesignStep = forwardRef((props, ref) => {
 				}
 
 				canvas.add(textbox)
+				
+				textbox.customData = {
+					...textbox.customData,
+					originalFontSize: fontSize,
+					originalWidth: width,
+					originalHeight: labelData.height,
+				}
+				console.log({textbox});
+				console.log("textbox.customData", textbox.customData);
+
 			} catch (error) {
 				console.error('❌ Ошибка при добавлении текста на canvas:', error)
 			}
@@ -646,6 +664,7 @@ const DesignStep = forwardRef((props, ref) => {
 				console.debug('spiritHeroApi.getStore', res)
 
 				setCustomerLogos({ ...res.design })
+				setBaseDesign({...res.design})
 
 				const loadedElements = []
 				const serverImageFiles = []
@@ -668,6 +687,8 @@ const DesignStep = forwardRef((props, ref) => {
 				}, {})
 				setProductsByCategory(sortedProducts)
 
+				
+				// const designData =  res.design
 				const designData = [...res.products].find(elem => elem.id === activeId).design || res.design
 
 				console.log("designData", designData);
@@ -707,9 +728,7 @@ const DesignStep = forwardRef((props, ref) => {
 					})
 				}
 				console.debug('Server image files:', serverImageFiles)
-				setUploaderFiles(serverImageFiles)
-
-				
+				setUploaderFiles(serverImageFiles)				
 				
 				if (designData.labels && Array.isArray(designData.labels)) {
 					const labelsData = designData.labels.map((labelData) => ({
@@ -752,69 +771,6 @@ const DesignStep = forwardRef((props, ref) => {
 	// 	}
 	// }, [image])
 
-	// Обработчик клика по карточке продукта
-	const handleCardClick = (productId, productImage) => {
-		setActiveCardId(productId)
-		setImage(productImage)
-
-		const product = allProducts?.find((p) => p.id === productId)
-		if (!product?.design) return
-
-		const designData = product.design
-
-		// Очищаем текстовые объекты с canvas
-		const canvas = fabricCanvasRef.current
-		if (canvas) {
-			const textObjects = canvas
-				.getObjects()
-				.filter((obj) => obj.customData?.type === 'text')
-			textObjects.forEach((obj) => canvas.remove(obj))
-			canvas.renderAll()
-		}
-
-		// Обновляем логотипы
-		const serverImageFiles = []
-		if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
-			designData.customerLogos.forEach((logoData, index) => {
-				serverImageFiles.push({
-					url: logoData.image,
-					base64: logoData.image,
-					file: { name: `Server image ${index + 1}` },
-					isServerImage: true,
-					x: logoData.x,
-					y: logoData.y,
-					width: logoData.width,
-					height: logoData.height,
-					rotation: logoData.rotation || 0,
-				})
-			})
-		}
-		setUploaderFiles(serverImageFiles)
-
-		// Обновляем текстовые метки
-		if (designData.labels && Array.isArray(designData.labels)) {
-			const labelsData = designData.labels.map((labelData) => ({
-				text: labelData.text || '',
-				x: labelData.x,
-				y: labelData.y,
-				width: labelData.width,
-				height: labelData.height,
-				fontSize:
-					typeof labelData.fontSize === 'number'
-						? labelData.fontSize
-						: parseInt(labelData.fontSize) || 54,
-				fontFamily: labelData.fontFamily || 'Montserrat',
-				color: labelData.color || '#000000',
-				bold: labelData.bold || false,
-				italic: labelData.italic || false,
-				rotation: labelData.rotation || 0,
-			}))
-			setServerLabels(labelsData)
-		} else {
-			setServerLabels([])
-		}
-	}
-
 	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
 		const canvas = fabricCanvasRef.current
@@ -838,8 +794,11 @@ const DesignStep = forwardRef((props, ref) => {
 				})
 			}
 
+			
+
 			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
+
 				labelsData.push({
 					text: obj.text,
 					x: Math.round(obj.left),
@@ -871,6 +830,8 @@ const DesignStep = forwardRef((props, ref) => {
 			quality: 0.95,
 		})
 
+		const design = {...customerLogos}
+
 		setCustomerLogos((prev) => ({
 			...prev,
 			elementsPositionImage: base64,
@@ -886,14 +847,152 @@ const DesignStep = forwardRef((props, ref) => {
 			]
 		}
 
+		console.log("saveDesignForCurrentProduct", payload);
+
+		setAllProducts(prev => {
+			const newProducts = [...prev].map(product => {
+				if(product.id === activeCardId) {
+					product.design = customerLogos
+				}
+				return product
+			})			
+			return newProducts
+		})
+
 		console.debug('saveDesignForCurrentProduct payload', payload)
 
 		try {
 			const response = await spiritHeroApi.saveDesignForCurrentProduct(payload)
 			console.debug('saveDesignForCurrentProduct response', response)
+			setCustomerLogos(design)
+			setIsModalOpen(true)
 		} catch (error) {
 			console.error('Error saveDesignForCurrentProduct:', error)
+		} 
+	}
+
+	const saveDesignForEachProducts = async () => {
+		syncCanvasToCustomerLogos()
+
+		const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
+			quality: 0.95,
+		})
+
+		setCustomerLogos((prev) => ({
+			...prev,
+			elementsPositionImage: base64,
+		}))
+
+		const payload = {
+			store_id: storeId,
+			designs: allProducts.map(product => ({
+				product_id: product.id,
+				...customerLogos
+			}))
 		}
+
+
+		setAllProducts(prev => {
+			const newProducts = [...prev].map(product => ({
+				...product,
+				design: customerLogos
+			}))
+			return newProducts
+		})
+
+		try {
+			const response = await spiritHeroApi.saveDesignForCurrentProduct(payload)
+			console.debug('saveDesignForEachProducts response', response)
+			setIsModalOpen(true)
+		} catch (error) {
+			console.error('Error saveDesignForEachProducts:', error)
+		}
+	}
+
+	const onCardClick = (id) => {
+		const designData = allProducts.find(elem => elem.id === id).design || baseDesign
+
+		console.debug("designData", designData);
+		
+		setCustomerLogos(designData)
+
+		
+		if(!designData) return;
+
+		const canvas = fabricCanvasRef.current
+		if (canvas) {
+			const objectsToRemove = canvas.getObjects().filter(
+				(obj) => obj.customData?.type !== 'guide-line'
+			)
+			objectsToRemove.forEach((obj) => canvas.remove(obj))
+			canvas.renderAll()
+		}
+
+		setUploaderFiles([])
+		setServerLabels([])
+
+		const loadedElements = []
+		const serverImageFiles = []
+		let zIndex = 1
+
+		if (
+			designData.customerLogos &&
+			Array.isArray(designData.customerLogos)
+		) {
+			designData.customerLogos.forEach((logoData, index) => {
+				const id = uuidv4()
+				loadedElements.push({
+					id,
+					type: 'image',
+					x: logoData.x || 30,
+					y: logoData.y || 30,
+					width: logoData.width || 100,
+					height: logoData.height || 100,
+					rotation: 0,
+					zIndex: zIndex++,
+					content: { src: logoData.image },
+					isServerImage: true,
+				})
+
+				const serverFile = {
+					url: logoData.image,
+					base64: logoData.image,
+					file: { name: `Server image ${index + 1}` },
+					isServerImage: true,
+					x: logoData.x,
+					y: logoData.y,
+					width: logoData.width,
+					height: logoData.height,
+					rotation: logoData.rotation || 0,
+				}
+
+				serverImageFiles.push(serverFile)
+			})
+		}
+		console.debug('Server image files:', serverImageFiles)
+		setUploaderFiles(serverImageFiles)				
+		
+		if (designData.labels && Array.isArray(designData.labels)) {
+			const labelsData = designData.labels.map((labelData) => ({
+				text: labelData.text || '',
+				x: labelData.x,
+				y: labelData.y,
+				width: labelData.width,
+				height: labelData.height,
+				fontSize:
+					typeof labelData.fontSize === 'number'
+						? labelData.fontSize
+						: parseInt(labelData.fontSize) || 54,
+				fontFamily: labelData.fontFamily || 'Montserrat',
+				color: labelData.color || '#000000',
+				bold: labelData.bold || false,
+				italic: labelData.italic || false,
+				rotation: labelData.rotation || 0,
+			}))
+			console.debug('Server labels:', labelsData)
+			setServerLabels(labelsData)
+		}
+		
 	}
 
 	// Функция для создания скриншота контейнера custom__elements
@@ -929,8 +1028,6 @@ const DesignStep = forwardRef((props, ref) => {
 			return null
 		}
 	}
-
-	
 
 	// Экспозиция функции getLogoParameters через ref
 	useImperativeHandle(ref, () => ({
@@ -1065,6 +1162,9 @@ const DesignStep = forwardRef((props, ref) => {
 											return
 										}
 
+										console.log("options", options);
+										
+
 										// Функция для подбора оптимального размера шрифта
 										const calculateOptimalFontSize = (
 											text,
@@ -1168,17 +1268,13 @@ const DesignStep = forwardRef((props, ref) => {
 										}
 
 										// Добавляем на canvas
-										canvas.add(textbox)
+										canvas.add(textbox)									
+
 										canvas.setActiveObject(textbox)
 										canvas.renderAll()
 									}}
 								/>
 							)}
-						</div>
-
-						<div className={css['save-design-buttons']}>
-							<button className={css['save-design-button']}>Save for each product</button>
-							<button className={css['save-design-button']}>Save for current product</button>
 						</div>
 					</div>
 
@@ -1193,25 +1289,55 @@ const DesignStep = forwardRef((props, ref) => {
 
 									<ul className={css.products__list}>
 										{productsByCategory[key].map((product) => (
-										<ProductCustomizerCard
-											key={product.id}
-											setImage={setImage}
-											activeCardId={activeCardId}
-											setActiveCardId={setActiveCardId}
-											onCardSelect={handleCardClick}
-											product={product}
-											storeId={storeId}
-											setProductsByCategory={setProductsByCategory}
-											saveDesignForCurrentProduct={saveDesignForCurrentProduct}
-											saveDesignForEachProduct={getLogoParameters}
-											allProducts={allProducts}
-										/>
+											<ProductCustomizerCard
+												key={product.id}
+												setImage={setImage}
+												activeCardId={activeCardId}
+												setActiveCardId={setActiveCardId}
+												product={product}
+												storeId={storeId}
+												setProductsByCategory={setProductsByCategory}
+												saveDesignForCurrentProduct={saveDesignForCurrentProduct}
+												saveDesignForEachProduct={saveDesignForEachProducts}
+												onCardClick={onCardClick}
+											/>
 										))}
 									</ul>
 								</details>
 							))}
 					</div>
 				</div>
+
+				<Modal
+					isOpen={isModalOpen}
+					onClose={() => setIsModalOpen(false)}
+					className={`${css.modal} validation--modal`}
+				>
+					<div className={css.modal__content}>
+
+					<Icon name={'Download'} className={css.modal__icon} />
+					<h2 className={css.modal__title}>
+						Your logo is saved!
+						<br />
+						Do you want to create another?
+					</h2>
+
+					<button className={css.modal__button__continue} onClick={() => setIsModalOpen(false)}>Yes, create another logo</button>
+					<button className={css.modal__button__next} onClick={() => {
+						setIsModalOpen(false)
+						setIsFundraisingModalOpen(true)
+						}}>No, move to the next step</button>
+					</div>
+				</Modal>
+						
+				<Modal
+					isOpen={isFundraisingModalOpen}
+					onClose={() => setIsFundraisingModalOpen(false)}
+					className={`${css.fundraising__modal} validation--modal`}
+				>
+					<FundraisingTypeModal setIsFundraisingModalOpen={setIsFundraisingModalOpen} />
+					
+				</Modal>
 			</div>
 		)
 })

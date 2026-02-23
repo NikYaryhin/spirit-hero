@@ -9,14 +9,13 @@ import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 export default function ProductCustomiserCard({
 	setImage,
 	setActiveCardId,
-	onCardSelect,
 	setProductsByCategory,
 	activeCardId,
 	product,
 	storeId,
 	saveDesignForEachProduct,
 	saveDesignForCurrentProduct,
-	allProducts,
+	onCardClick
 }) {
 	const {
 		id,
@@ -26,7 +25,6 @@ export default function ProductCustomiserCard({
 		colors,
 		active,
 		category_id,
-		
 	} = product
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
@@ -34,15 +32,12 @@ export default function ProductCustomiserCard({
 		choosed_colors.length > 0 ? choosed_colors : [...colors].slice(0, 3),
 	)
 
-	const onCardClick = () => {
+	const cardClickHandle = () => {
 		if (active) return
 
-		if (onCardSelect) {
-			onCardSelect(id, product_image)
-		} else {
-			setActiveCardId(id)
-			setImage(product_image)
-		}
+		onCardClick(id)
+		setActiveCardId(id)
+		setImage(product_image)
 	}
 
 	const closeButtonHandle = async () => {
@@ -118,7 +113,7 @@ export default function ProductCustomiserCard({
 
 	return (
 		<li
-			onClick={() => onCardClick()}
+			onClick={() => cardClickHandle()}
 			className={`${css.customizer__card} ${activeCardId === id ? css.active : ''}`}
 			key={id}
 			id={id}
@@ -152,8 +147,16 @@ export default function ProductCustomiserCard({
 			{
 				id === activeCardId && (
 					<div className={css['save-design-buttons']}>
-						<button className={css['save-design-button']} onClick={saveDesignForEachProduct}>Save design for each product</button>
-						<button className={css['save-design-button']} onClick={saveDesignForCurrentProduct}>Save design for current product</button>
+						<button className={css['save-design-button']} onClick={(e) => {
+							e.stopPropagation()
+							saveDesignForEachProduct(product)
+						}}>
+							Save design for each product</button>
+						<button className={css['save-design-button']} onClick={(e) => {
+							e.stopPropagation()
+							saveDesignForCurrentProduct(id)
+						}}>
+							Save design for current product</button>
 					</div>
 				)
 			}

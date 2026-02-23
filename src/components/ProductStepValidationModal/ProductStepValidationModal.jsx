@@ -22,7 +22,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const onStartFlashSaleClick = () => {
 		dispatch(setFlashSale(true))
 		setIsModalOpen(false)
-		dispatch(setActiveStep(3))
+		// dispatch(setActiveStep(3))
 	}
 
 	return (
@@ -174,7 +174,10 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 
 					<div className={css.button__box}>
 						<button
-							onClick={() => setIsModalOpen(false)}
+							onClick={() => {
+								setIsModalOpen(false)
+								dispatch(setFlashSale(true))
+							}}
 							className={css.not__sure}
 						>
 							Not, sure show me the pricing
