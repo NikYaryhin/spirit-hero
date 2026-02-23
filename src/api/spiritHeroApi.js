@@ -130,6 +130,14 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async saveDesignForCurrentProduct(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/save-design-products',
+			payload,
+		)
+		return data
+	}
+
 	async getTemplates() {
 		const { data } = await this.http.get('/api/builder/get-templates')
 		return data

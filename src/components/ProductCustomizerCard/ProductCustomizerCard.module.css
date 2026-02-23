@@ -92,6 +92,29 @@
 		}
 	}
 
+	.save-design-buttons{
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 1rem;
+
+		.save-design-button{
+			padding: 0.5rem 1rem;
+
+			color: white;
+			background-color: #4E008E;
+
+			transition: color 0.2s ease;
+	
+			@media (hover: hover) {
+				&:hover {
+					color: #FBB041;
+				}
+			}
+		}
+	}
+
 	button {
 		padding: 0;
 		border: unset;
@@ -115,12 +138,14 @@
 		position: absolute;
 		top: 0.8rem;
 		right: 1.6rem;
+		z-index: 2;
 	}
 
 	.colors__button {
 		position: absolute;
 		bottom: 0.8rem;
 		right: 1.6rem;
+		z-index: 2;
 
 		display: flex;
 		gap: 0.6rem;

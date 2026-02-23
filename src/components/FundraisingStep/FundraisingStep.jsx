@@ -55,8 +55,8 @@ export default function FundraisingStep() {
 
 				const sortedProducts =
 					res.products.reduce((acc, product) => {
-						acc[product.category_id] = [
-							...(acc[product.category_id] || []),
+						acc[product.category_name] = [
+							...(acc[product.category_name] || []),
 							product,
 						]
 						return acc
@@ -142,7 +142,7 @@ export default function FundraisingStep() {
 
 		// Группируем удаляемые продукты по категориям
 		const idsByCategory = selectedProducts.reduce((acc, prod) => {
-			const cat = prod.category_id
+			const cat = prod.category_name
 			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
 			return acc
 		}, {})
@@ -194,7 +194,7 @@ export default function FundraisingStep() {
 		if (selectedProducts.length < 1) return
 
 		const idsByCategory = selectedProducts.reduce((acc, prod) => {
-			const cat = prod.category_id
+			const cat = prod.category_name
 			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
 			return acc
 		}, {})
@@ -216,7 +216,7 @@ export default function FundraisingStep() {
 			const next = { ...prev }
 			Object.keys(idsByCategory).forEach((cat) => {
 				const itemsToAdd = selectedProducts.filter(
-					(p) => p.category_id === +cat,
+					(p) => p.category_name === +cat,
 				)
 				next[cat] = [...itemsToAdd, ...(next[cat] || [])]
 			})
@@ -231,7 +231,7 @@ export default function FundraisingStep() {
 
 	const onMoveToFundraise = () => {
 		const idsByCategory = selectedProducts.reduce((acc, prod) => {
-			const cat = prod.category_id
+			const cat = prod.category_name
 			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
 			return acc
 		}, {})
@@ -252,7 +252,7 @@ export default function FundraisingStep() {
 			const next = { ...prev }
 			Object.keys(idsByCategory).forEach((cat) => {
 				const itemsToAdd = selectedProducts.filter(
-					(p) => p.category_id === +cat,
+					(p) => p.category_name === +cat,
 				)
 				next[cat] = [...itemsToAdd, ...(next[cat] || [])]
 			})

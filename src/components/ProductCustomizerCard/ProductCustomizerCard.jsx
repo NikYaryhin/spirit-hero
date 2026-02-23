@@ -9,10 +9,14 @@ import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 export default function ProductCustomiserCard({
 	setImage,
 	setActiveCardId,
+	onCardSelect,
 	setProductsByCategory,
 	activeCardId,
 	product,
 	storeId,
+	saveDesignForEachProduct,
+	saveDesignForCurrentProduct,
+	allProducts,
 }) {
 	const {
 		id,
@@ -22,6 +26,7 @@ export default function ProductCustomiserCard({
 		colors,
 		active,
 		category_id,
+		
 	} = product
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
@@ -32,8 +37,12 @@ export default function ProductCustomiserCard({
 	const onCardClick = () => {
 		if (active) return
 
-		setActiveCardId(id)
-		setImage(product_image)
+		if (onCardSelect) {
+			onCardSelect(id, product_image)
+		} else {
+			setActiveCardId(id)
+			setImage(product_image)
+		}
 	}
 
 	const closeButtonHandle = async () => {
@@ -139,6 +148,15 @@ export default function ProductCustomiserCard({
 					))}
 				</fieldset>
 			</div>
+
+			{
+				id === activeCardId && (
+					<div className={css['save-design-buttons']}>
+						<button className={css['save-design-button']} onClick={saveDesignForEachProduct}>Save design for each product</button>
+						<button className={css['save-design-button']} onClick={saveDesignForCurrentProduct}>Save design for current product</button>
+					</div>
+				)
+			}
 
 			<button onClick={closeButtonHandle} className={css.close__button}>
 				<Icon name={'Cancel'} />

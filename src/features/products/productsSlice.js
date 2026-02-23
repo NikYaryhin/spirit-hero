@@ -98,6 +98,8 @@ const productsSlice = createSlice({
 				const filteredCatalogProducts = action.payload.products.filter(
 					(product) => !myShopProductIds.has(String(product.id)),
 				)
+				console.debug({ myShopProductIds, filteredCatalogProducts })
+
 				state.isLoading = false
 				state.catalogProducts = filteredCatalogProducts
 				state.initialCatalogProducts = filteredCatalogProducts

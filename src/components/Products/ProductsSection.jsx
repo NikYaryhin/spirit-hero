@@ -62,7 +62,7 @@ export default function ProductsSection({ isFlashSale }) {
 		if (!filters) return
 		if (!storeInfo) return
 
-		const storeColors = storeInfo.store.color
+		const storeColors = storeInfo.store.color || []
 		const colorFamilies = filters.colorFamilies
 
 		const normalizedStoreColors = storeColors.map((color) => color.toUpperCase())
@@ -73,8 +73,6 @@ export default function ProductsSection({ isFlashSale }) {
 				return normalizedStoreColors.includes(normalizedProductColor)
 			})
 			.map((colorFamily) => String(colorFamily.id))
-
-		console.log({ storeColors, colorFamilies, matchingColorIds })
 
 		if (matchingColorIds.length > 0) {
 			setActiveFilters((prev) => ({
@@ -97,7 +95,7 @@ export default function ProductsSection({ isFlashSale }) {
 			}
 
 			if (activeFilters.categories && activeFilters.categories.length > 0) {
-				const passCategory = activeFilters.categories.includes(String(product.category_id))
+				const passCategory = activeFilters.categories.includes(String(product.category_name))
 				if (!passCategory) return false
 			}
 
@@ -106,7 +104,6 @@ export default function ProductsSection({ isFlashSale }) {
 					? product.colors.map((c) => String(c.color_id))
 					: []
 				const passColor = colorIds.some((id) => activeFilters.colorFamilies.includes(id))
-				console.log({ passColor, colorIds, product, activeFilters })
 
 				if (!passColor) return false
 			}
@@ -408,7 +405,8 @@ export default function ProductsSection({ isFlashSale }) {
 
 						<ul className={css.products__list}>
 							{isCatalog
-								? catalogProducts.map((product) => (
+								? catalogProducts &&
+									catalogProducts.map((product) => (
 										<ProductCard
 											key={product.id}
 											inputHandle={onCatalogCardClick}
@@ -416,7 +414,8 @@ export default function ProductsSection({ isFlashSale }) {
 											isFlashSale={isFlashSale}
 										/>
 									))
-								: myShopProducts.map((product) => (
+								: myShopProducts &&
+									myShopProducts.map((product) => (
 										<ProductCard
 											key={product.id}
 											inputHandle={onMyShopCardClick}

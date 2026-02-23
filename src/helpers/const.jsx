@@ -8,94 +8,44 @@ export const steps = [
 
 export const COLORS = [
 	{
+		id: 1,
+		color: '#000000',
+		name: 'Black',
+	},
+	{
+		id: 18,
+		color: '#00B2AA',
+		name: 'Aquatic Blue',
+	},
+	{
+		id: 502,
+		color: '#C8F526',
+		name: 'Safety Green',
+	},
+	{
 		id: 585,
 		color: '#EFBCCB',
 		name: 'Pink',
 	},
 	{
-		id: 638,
-		color: '#ffffff',
-		name: 'White',
-	},
-	{
 		id: 639,
 		color: '#565457',
-		name: 'Gravel',
-	},
-	{
-		id: 671,
-		color: '#734f96',
-		name: 'Affair',
-	},
-	{
-		id: 825,
-		color: '#7ddbff',
-		name: 'Anakiwa',
-	},
-	{
-		id: 826,
-		color: '#4AE642',
-		name: 'Pastel Green',
-	},
-	{
-		id: 827,
-		color: '#DCD2C9',
-		name: 'Wafer',
-	},
-	{
-		id: 828,
-		color: '#000033',
-		name: 'Stratos',
-	},
-	{
-		id: 829,
-		color: '#CCCCD4',
-		name: 'Ghost',
+		name: 'Asphalt',
 	},
 	{
 		id: 830,
 		color: '#CC0000',
-		name: 'Guardsman Red',
+		name: 'Red',
 	},
 	{
 		id: 831,
 		color: '#003366',
-		name: 'Midnight Blue',
+		name: 'True Royal',
 	},
 	{
 		id: 832,
 		color: '#6a6b6c',
-		name: 'Nevada',
-	},
-	{
-		id: 833,
-		color: '#9A1729',
-		name: 'Tamarillo',
-	},
-	{
-		id: 834,
-		color: '#6EACDB',
-		name: 'Aqua Pearl',
-	},
-	{
-		id: 835,
-		color: '#1B231A',
-		name: 'Log Cabin',
-	},
-	{
-		id: 836,
-		color: '#626A71',
-		name: 'Nevada',
-	},
-	{
-		id: 837,
-		color: '#660000',
-		name: 'Lonestar',
-	},
-	{
-		id: 838,
-		color: '#660066',
-		name: 'Pompadour',
+		name: 'Asphalt',
 	},
 ]
 

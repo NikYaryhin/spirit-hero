@@ -34,6 +34,7 @@ const DesignStep = forwardRef((props, ref) => {
 	const [customizerType, setCustomizerType] = useState(null)
 
 	const [isLoading, setIsLoading] = useState(true)
+	const [allProducts, setAllProducts] = useState(null)
 	const [productsByCategory, setProductsByCategory] = useState(null)
 	const [activeCardId, setActiveCardId] = useState(null)
 	const [customerLogos, setCustomerLogos] = useState({
@@ -48,13 +49,15 @@ const DesignStep = forwardRef((props, ref) => {
 	const [serverLabels, setServerLabels] = useState([])
 	const [uploaderDragOver, setUploaderDragOver] = useState(false)
 
-	const [hideBorders, setHideBorders] = useState(false)
 	const [selectedTextObject, setSelectedTextObject] = useState(null)
 
 	const containerRef = useRef(null)
 	const imageBoxRef = useRef(null)
 	const canvasRef = useRef(null)
 	const fabricCanvasRef = useRef(null)
+
+
+	
 
 	// Функция для конвертации URL в base64
 	const urlToBase64 = async (url) => {
@@ -342,6 +345,7 @@ const DesignStep = forwardRef((props, ref) => {
 			obj.setCoords() // Обновляем координаты объекта
 		}
 
+
 		// Обработчик окончания перемещения - скрываем направляющие
 		const handleMovingEnd = () => {
 			verticalGuideLine.set({ visible: false })
@@ -544,8 +548,14 @@ const DesignStep = forwardRef((props, ref) => {
 
 	// useEffect для загрузки текста с сервера на canvas
 	useEffect(() => {
+		console.log("ALLO");
+		
 		if (isLoading) return
 		const canvas = fabricCanvasRef.current
+
+		console.log("CANVAS", canvas);
+		console.log("serverLabels", serverLabels);
+		
 		if (!canvas || serverLabels.length === 0) return
 
 		const currentObjects = canvas.getObjects()
@@ -554,6 +564,8 @@ const DesignStep = forwardRef((props, ref) => {
 		const currentTexts = currentObjects
 			.filter((obj) => obj.customData?.type === 'text')
 			.map((obj) => obj.customData.serverId)
+
+			console.log("currentTexts", currentTexts);
 
 		// Добавляем новые тексты
 		serverLabels.forEach((labelData, index) => {
@@ -639,11 +651,32 @@ const DesignStep = forwardRef((props, ref) => {
 				const serverImageFiles = []
 				let zIndex = 1
 
+				let activeId;
+
+				setAllProducts(res.products)
+				const sortedProducts = res.products.reduce((acc, product, idx) => {
+					acc[product.category_name] = [
+						...(acc[product.category_name] || []),
+						product,
+					]
+					if (idx === 0) {
+						activeId = product.id;
+						setActiveCardId(product.id)
+						setImage(product.product_image)
+					}
+					return acc
+				}, {})
+				setProductsByCategory(sortedProducts)
+
+				const designData = [...res.products].find(elem => elem.id === activeId).design || res.design
+
+				console.log("designData", designData);
+
 				if (
-					res.design.customerLogos &&
-					Array.isArray(res.design.customerLogos)
+					designData.customerLogos &&
+					Array.isArray(designData.customerLogos)
 				) {
-					res.design.customerLogos.forEach((logoData, index) => {
+					designData.customerLogos.forEach((logoData, index) => {
 						const id = uuidv4()
 						loadedElements.push({
 							id,
@@ -676,8 +709,10 @@ const DesignStep = forwardRef((props, ref) => {
 				console.debug('Server image files:', serverImageFiles)
 				setUploaderFiles(serverImageFiles)
 
-				if (res.design.labels && Array.isArray(res.design.labels)) {
-					const labelsData = res.design.labels.map((labelData) => ({
+				
+				
+				if (designData.labels && Array.isArray(designData.labels)) {
+					const labelsData = designData.labels.map((labelData) => ({
 						text: labelData.text || '',
 						x: labelData.x,
 						y: labelData.y,
@@ -697,19 +732,6 @@ const DesignStep = forwardRef((props, ref) => {
 					setServerLabels(labelsData)
 				}
 
-				const sortedProducts = res.products.reduce((acc, product, idx) => {
-					acc[product.category_id] = [
-						...(acc[product.category_id] || []),
-						product,
-					]
-					if (idx === 0) {
-						setActiveCardId(product.id)
-						setImage(product.product_image)
-					}
-					return acc
-				}, {})
-
-				setProductsByCategory(sortedProducts)
 			} catch (error) {
 				console.error(`spiritHeroApi.getStore error`, error)
 			} finally {
@@ -720,13 +742,78 @@ const DesignStep = forwardRef((props, ref) => {
 	}, [])
 
 	// Автоматически конвертируем image в base64 при изменении
-	useEffect(() => {
-		if (image && !isBase64(image)) {
-			urlToBase64(image).then((base64) => {
-				setImage(base64)
+	// useEffect(() => {
+	// 	if (image && !isBase64(image)) {
+	// 		console.log("image", image);
+			
+	// 		urlToBase64(image).then((base64) => {
+	// 			setImage(base64)
+	// 		})
+	// 	}
+	// }, [image])
+
+	// Обработчик клика по карточке продукта
+	const handleCardClick = (productId, productImage) => {
+		setActiveCardId(productId)
+		setImage(productImage)
+
+		const product = allProducts?.find((p) => p.id === productId)
+		if (!product?.design) return
+
+		const designData = product.design
+
+		// Очищаем текстовые объекты с canvas
+		const canvas = fabricCanvasRef.current
+		if (canvas) {
+			const textObjects = canvas
+				.getObjects()
+				.filter((obj) => obj.customData?.type === 'text')
+			textObjects.forEach((obj) => canvas.remove(obj))
+			canvas.renderAll()
+		}
+
+		// Обновляем логотипы
+		const serverImageFiles = []
+		if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
+			designData.customerLogos.forEach((logoData, index) => {
+				serverImageFiles.push({
+					url: logoData.image,
+					base64: logoData.image,
+					file: { name: `Server image ${index + 1}` },
+					isServerImage: true,
+					x: logoData.x,
+					y: logoData.y,
+					width: logoData.width,
+					height: logoData.height,
+					rotation: logoData.rotation || 0,
+				})
 			})
 		}
-	}, [image])
+		setUploaderFiles(serverImageFiles)
+
+		// Обновляем текстовые метки
+		if (designData.labels && Array.isArray(designData.labels)) {
+			const labelsData = designData.labels.map((labelData) => ({
+				text: labelData.text || '',
+				x: labelData.x,
+				y: labelData.y,
+				width: labelData.width,
+				height: labelData.height,
+				fontSize:
+					typeof labelData.fontSize === 'number'
+						? labelData.fontSize
+						: parseInt(labelData.fontSize) || 54,
+				fontFamily: labelData.fontFamily || 'Montserrat',
+				color: labelData.color || '#000000',
+				bold: labelData.bold || false,
+				italic: labelData.italic || false,
+				rotation: labelData.rotation || 0,
+			}))
+			setServerLabels(labelsData)
+		} else {
+			setServerLabels([])
+		}
+	}
 
 	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
@@ -777,12 +864,43 @@ const DesignStep = forwardRef((props, ref) => {
 		}))
 	}
 
+	const saveDesignForCurrentProduct = async () => {
+		syncCanvasToCustomerLogos()
+
+		const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
+			quality: 0.95,
+		})
+
+		setCustomerLogos((prev) => ({
+			...prev,
+			elementsPositionImage: base64,
+		}))
+
+		const payload = {
+			store_id: storeId,
+			designs: [
+				{
+					product_id: +activeCardId,
+					...customerLogos
+				}
+			]
+		}
+
+		console.debug('saveDesignForCurrentProduct payload', payload)
+
+		try {
+			const response = await spiritHeroApi.saveDesignForCurrentProduct(payload)
+			console.debug('saveDesignForCurrentProduct response', response)
+		} catch (error) {
+			console.error('Error saveDesignForCurrentProduct:', error)
+		}
+	}
+
 	// Функция для создания скриншота контейнера custom__elements
 	const getLogoParameters = async () => {
 		try {
 			syncCanvasToCustomerLogos()
 
-			setHideBorders(true)
 			const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
 				quality: 0.95,
 			})
@@ -807,10 +925,12 @@ const DesignStep = forwardRef((props, ref) => {
 			const response = await spiritHeroApi.createDesign(storeId, payload)
 			console.debug('spiritHeroApi.createDesign response', response)
 		} catch (error) {
-			console.error('Error creating screenshot:', error)
+			console.error('Error spiritHeroApi.createDesign:', error)
 			return null
 		}
 	}
+
+	
 
 	// Экспозиция функции getLogoParameters через ref
 	useImperativeHandle(ref, () => ({
@@ -826,7 +946,7 @@ const DesignStep = forwardRef((props, ref) => {
 
 					<div
 						ref={containerRef}
-						className={`${css.custom__elements} ${hideBorders ? 'hide--borders' : ''}`}
+						className={`${css.custom__elements}`}
 					>
 						<canvas ref={canvasRef} />
 					</div>
@@ -834,7 +954,7 @@ const DesignStep = forwardRef((props, ref) => {
 
 				<div className={css.settings__box}>
 					<button
-						onClick={() => setHideBorders(false)}
+						onClick={() => {console.log("CLICK")}}
 						className={`${css.button} contrast_button_1`}
 						disabled
 					>
@@ -1055,6 +1175,11 @@ const DesignStep = forwardRef((props, ref) => {
 								/>
 							)}
 						</div>
+
+						<div className={css['save-design-buttons']}>
+							<button className={css['save-design-button']}>Save for each product</button>
+							<button className={css['save-design-button']}>Save for current product</button>
+						</div>
 					</div>
 
 					<div className={css['products--list__by--category']}>
@@ -1068,15 +1193,19 @@ const DesignStep = forwardRef((props, ref) => {
 
 									<ul className={css.products__list}>
 										{productsByCategory[key].map((product) => (
-											<ProductCustomizerCard
-												key={product.id}
-												setImage={setImage}
-												activeCardId={activeCardId}
-												setActiveCardId={setActiveCardId}
-												product={product}
-												storeId={storeId}
-												setProductsByCategory={setProductsByCategory}
-											/>
+										<ProductCustomizerCard
+											key={product.id}
+											setImage={setImage}
+											activeCardId={activeCardId}
+											setActiveCardId={setActiveCardId}
+											onCardSelect={handleCardClick}
+											product={product}
+											storeId={storeId}
+											setProductsByCategory={setProductsByCategory}
+											saveDesignForCurrentProduct={saveDesignForCurrentProduct}
+											saveDesignForEachProduct={getLogoParameters}
+											allProducts={allProducts}
+										/>
 										))}
 									</ul>
 								</details>
