@@ -217,14 +217,12 @@ const DesignStep = forwardRef((props, ref) => {
 		const handleTextScaling = (e) => {
 			const obj = e.target
 			if (!obj || obj.customData?.type !== 'text') return
-			console.log("obj", obj.scaleX);
 			
 
 			const scaleX = obj.scaleX
 			const newWidth = obj.width * scaleX
 			const newHeight = obj.height * scaleX
 			const newFontSize = Math.round(obj.fontSize * scaleX)
-			console.log("newFontSize", newFontSize);
 			
 
 			obj.customData.originalFontSize = newFontSize
@@ -570,7 +568,6 @@ const DesignStep = forwardRef((props, ref) => {
 			.filter((obj) => obj.customData?.type === 'text')
 			.map((obj) => obj.customData.serverId)
 
-			console.log("currentTexts", currentTexts);
 
 		// Добавляем новые тексты
 		serverLabels.forEach((labelData, index) => {
@@ -646,8 +643,6 @@ const DesignStep = forwardRef((props, ref) => {
 					originalWidth: width,
 					originalHeight: labelData.height,
 				}
-				console.log({textbox});
-				console.log("textbox.customData", textbox.customData);
 
 			} catch (error) {
 				console.error('❌ Ошибка при добавлении текста на canvas:', error)
@@ -692,8 +687,6 @@ const DesignStep = forwardRef((props, ref) => {
 				// const designData =  res.design
 				const designData = [...res.products].find(elem => elem.id === activeId).design || res.design
 
-				console.log("designData", designData);
-
 				if (
 					designData.customerLogos &&
 					Array.isArray(designData.customerLogos)
@@ -728,7 +721,6 @@ const DesignStep = forwardRef((props, ref) => {
 						serverImageFiles.push(serverFile)
 					})
 				}
-				console.debug('Server image files:', serverImageFiles)
 				setUploaderFiles(serverImageFiles)				
 				
 				if (designData.labels && Array.isArray(designData.labels)) {
@@ -748,7 +740,6 @@ const DesignStep = forwardRef((props, ref) => {
 						italic: labelData.italic || false,
 						rotation: labelData.rotation || 0,
 					}))
-					console.debug('Server labels:', labelsData)
 					setServerLabels(labelsData)
 				}
 
@@ -795,9 +786,7 @@ const DesignStep = forwardRef((props, ref) => {
 				})
 			}
 			// Собираем данные о текстах
-			if (obj.customData?.type === 'text') {
-				console.log("obj", obj.fontFamily);
-				
+			if (obj.customData?.type === 'text') {				
 				labelsData.push({
 					text: obj.text,
 					x: Math.round(obj.left),
@@ -812,10 +801,7 @@ const DesignStep = forwardRef((props, ref) => {
 					rotation: Math.round(obj.angle),
 				})
 			}
-		})
-
-		console.log("labelsData", labelsData);
-		
+		})		
 
 		// Обновляем customerLogos
 		setCustomerLogos((prev) => ({
@@ -917,11 +903,8 @@ const DesignStep = forwardRef((props, ref) => {
 
 	const onCardClick = (id) => {
 		const designData = allProducts.find(elem => elem.id === id).design || baseDesign
-
-		console.debug("designData", designData);
 		
 		setCustomerLogos(designData)
-
 		
 		if(!designData) return;
 
@@ -975,7 +958,6 @@ const DesignStep = forwardRef((props, ref) => {
 				serverImageFiles.push(serverFile)
 			})
 		}
-		console.debug('Server image files:', serverImageFiles)
 		setUploaderFiles(serverImageFiles)				
 		
 		if (designData.labels && Array.isArray(designData.labels)) {
@@ -995,7 +977,6 @@ const DesignStep = forwardRef((props, ref) => {
 				italic: labelData.italic || false,
 				rotation: labelData.rotation || 0,
 			}))
-			console.debug('Server labels:', labelsData)
 			setServerLabels(labelsData)
 		}
 		
@@ -1167,10 +1148,7 @@ const DesignStep = forwardRef((props, ref) => {
 										if (!canvas) {
 											console.error('Canvas не готов для добавления текста')
 											return
-										}
-
-										console.log("options", options);
-										
+										}								
 
 										// Функция для подбора оптимального размера шрифта
 										const calculateOptimalFontSize = (

@@ -15,7 +15,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const dispatch = useDispatch()
 
 	const productsByCategory = useSelector((state) => state.products.productsByCategory)
-	console.log('productsByCategory', productsByCategory)
+
 
 	const onConfitmButtonClick = () => {
 		setIsModalOpen(false)
@@ -44,12 +44,13 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					</h3>
 
 					<fieldset className={css.fieldset}>
-						{Object.keys(productsByCategory).map((key) => (
+						{(Object.keys(productsByCategory).length > 0 ? Object.keys(productsByCategory) : ['default']).map((key) => (
 							<label className={css.label} key={key}>
 								<span className={css.checkbox__emulator}>
 									<Icon name={'InputChecked'} />
 								</span>
-								Standard Collection (36-piece minimum)
+								{key} 
+								
 								<input
 									type="radio"
 									name="modal-select"
