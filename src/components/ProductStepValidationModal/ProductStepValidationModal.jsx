@@ -9,10 +9,13 @@ import css from './ProductStepValidationModal.module.css'
 
 export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
-	const [isStendart, setIsStendart] = useState(true)
+	const [choosedCollection, setChoosedCollection] = useState([])
 	const [isApprove, setIsApprove] = useState(false)
 
 	const dispatch = useDispatch()
+
+	const productsByCategory = useSelector((state) => state.products.productsByCategory)
+	console.log('productsByCategory', productsByCategory)
 
 	const onConfitmButtonClick = () => {
 		setIsModalOpen(false)
@@ -23,6 +26,11 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 		dispatch(setFlashSale(true))
 		setIsModalOpen(false)
 		// dispatch(setActiveStep(3))
+	}
+
+	const handleCollectionChange = (e) => {
+		const { value, checked } = e.target
+		setChoosedCollection((prev) => checked ? [...prev, value] : prev.filter((item) => item !== value))
 	}
 
 	return (
@@ -36,7 +44,23 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					</h3>
 
 					<fieldset className={css.fieldset}>
-						<label className={css.label}>
+						{Object.keys(productsByCategory).map((key) => (
+							<label className={css.label} key={key}>
+								<span className={css.checkbox__emulator}>
+									<Icon name={'InputChecked'} />
+								</span>
+								Standard Collection (36-piece minimum)
+								<input
+									type="radio"
+									name="modal-select"
+									value={key}
+									className="visually-hidden"
+									onChange={handleCollectionChange}
+									checked={choosedCollection.includes(key)}
+								/>
+							</label>
+						))}
+						{/* <label className={css.label}>
 							<span className={css.checkbox__emulator}>
 								<Icon name={'InputChecked'} />
 							</span>
@@ -63,7 +87,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 								checked={!isStendart}
 								onChange={() => setIsStendart(false)}
 							/>
-						</label>
+						</label> */}
 					</fieldset>
 
 					<div className={css.text__wrap}>

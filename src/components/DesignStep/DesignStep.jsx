@@ -162,6 +162,7 @@ const DesignStep = forwardRef((props, ref) => {
 		return true
 	}
 
+
 	// Инициализация fabric canvas
 	useEffect(() => {
 		// Ждём, пока данные загрузятся и компонент отрендерится
@@ -793,12 +794,10 @@ const DesignStep = forwardRef((props, ref) => {
 					rotation: Math.round(obj.angle),
 				})
 			}
-
-			
-
 			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
-
+				console.log("obj", obj.fontFamily);
+				
 				labelsData.push({
 					text: obj.text,
 					x: Math.round(obj.left),
@@ -815,44 +814,49 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		})
 
+		console.log("labelsData", labelsData);
+		
+
 		// Обновляем customerLogos
 		setCustomerLogos((prev) => ({
 			...prev,
 			customerLogos: customerLogosData,
 			labels: labelsData,
 		}))
+
+		return {
+			customerLogos: customerLogosData,
+			labels: labelsData,
+		}
 	}
 
 	const saveDesignForCurrentProduct = async () => {
-		syncCanvasToCustomerLogos()
+		const syncData = syncCanvasToCustomerLogos()
 
 		const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
 			quality: 0.95,
 		})
 
-		const design = {...customerLogos}
-
-		setCustomerLogos((prev) => ({
-			...prev,
+		const design = {
 			elementsPositionImage: base64,
-		}))
+			customerLogos: syncData.customerLogos,
+			labels: syncData.labels,
+		}
 
 		const payload = {
 			store_id: storeId,
 			designs: [
 				{
 					product_id: +activeCardId,
-					...customerLogos
+					...design,
 				}
 			]
 		}
 
-		console.log("saveDesignForCurrentProduct", payload);
-
 		setAllProducts(prev => {
 			const newProducts = [...prev].map(product => {
 				if(product.id === activeCardId) {
-					product.design = customerLogos
+					product.design = design
 				}
 				return product
 			})			
@@ -872,22 +876,23 @@ const DesignStep = forwardRef((props, ref) => {
 	}
 
 	const saveDesignForEachProducts = async () => {
-		syncCanvasToCustomerLogos()
+		const syncData = syncCanvasToCustomerLogos()
 
 		const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
 			quality: 0.95,
 		})
 
-		setCustomerLogos((prev) => ({
-			...prev,
+		const design = {
 			elementsPositionImage: base64,
-		}))
+			customerLogos: syncData.customerLogos,
+			labels: syncData.labels,
+		}
 
 		const payload = {
 			store_id: storeId,
 			designs: allProducts.map(product => ({
 				product_id: product.id,
-				...customerLogos
+				...design,
 			}))
 		}
 
@@ -895,7 +900,7 @@ const DesignStep = forwardRef((props, ref) => {
 		setAllProducts(prev => {
 			const newProducts = [...prev].map(product => ({
 				...product,
-				design: customerLogos
+				design,
 			}))
 			return newProducts
 		})
@@ -904,6 +909,7 @@ const DesignStep = forwardRef((props, ref) => {
 			const response = await spiritHeroApi.saveDesignForCurrentProduct(payload)
 			console.debug('saveDesignForEachProducts response', response)
 			setIsModalOpen(true)
+			setCustomerLogos(design)
 		} catch (error) {
 			console.error('Error saveDesignForEachProducts:', error)
 		}
@@ -1142,7 +1148,7 @@ const DesignStep = forwardRef((props, ref) => {
 
 										const canvas = fabricCanvasRef.current
 										if (!canvas) return
-
+										
 										// Обновляем текст
 										selectedTextObject.set({
 											text: text,
@@ -1152,6 +1158,7 @@ const DesignStep = forwardRef((props, ref) => {
 											fill: options.color,
 											textAlign: 'center',
 										})
+
 
 										canvas.renderAll()
 									}}
