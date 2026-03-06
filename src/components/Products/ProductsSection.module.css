@@ -144,9 +144,41 @@ section:has(.products__section) {
 
 
 	.products__handle {
+		position: relative;
 		flex-grow: 1;
 		display: flex;
 		height: 100%;
+
+		.local_loader{
+			position: absolute;
+			inset: 0 0 0 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background-color: rgba(255, 255, 255, 0.5);
+			z-index: 10;
+
+			&::after{
+				content: '';
+
+				position: absolute;
+				top: 20%;
+				left: 50%;
+				translate: -50% 0;
+				z-index: 10;
+
+				display: block;
+				width: 10rem;
+				height: 10rem;
+				
+				border-radius: 50%;
+				border: 0.8rem solid rgba(0, 0, 0, 0.08);
+				border-top-color: #4E008E;
+				animation: spin 0.9s linear infinite;
+			}
+
+			
+		}
 
 		.products_filters {
 			flex: 0.25;
@@ -207,5 +239,11 @@ section:has(.products__section) {
 				}
 			}
 		}
+	}
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
 	}
 }

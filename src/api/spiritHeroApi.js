@@ -61,6 +61,13 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async getColors(){
+		const { data } = await this.http.get(
+			`/api/builder/get-colors`,
+		)
+		return data
+	}
+
 	async getStore(store_id) {
 		const { data } = await this.http.get(
 			`/api/builder/get-store?store_id=${store_id}`,

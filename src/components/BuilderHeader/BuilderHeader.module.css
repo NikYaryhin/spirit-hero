@@ -25,7 +25,9 @@
 
 		li {
 			display: flex;
+			flex-wrap: wrap;
 			align-items: center;
+			justify-content: center;
 			gap: 0.8rem;
 
 			font-size: clamp(1rem, 1dvw, 1.4rem);
