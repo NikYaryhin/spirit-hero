@@ -191,30 +191,13 @@ section:has(.products__section) {
 			background-color: #F1EEF4;
 		}
 
-		.products__list {
+		.products__groups__list{
 			flex: 0.75;
-
 			display: flex;
-			align-items: flex-start;
-			flex-wrap: wrap;
-			row-gap: 2.4rem;
-
-			height: fit-content;
-			padding-bottom: 10rem;
-
-			background-color: #FCFCFC;
-
-			&:empty {
-				opacity: 0;
-			}
-
-			li {
-				max-width: 30rem;
-				width: calc(100% / 5);
-				height: 28.2rem;
-				box-sizing: border-box;
-			}
+			flex-direction: column;
 		}
+
+		
 	}
 }
 

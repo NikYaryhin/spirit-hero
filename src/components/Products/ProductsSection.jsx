@@ -4,6 +4,7 @@ import css from './ProductsSection.module.css'
 import Check from '../Icons/Check'
 import Lightning from '../Icons/Lightning'
 import ProductCard from '../ProductCard/ProductCard'
+import ProductDetails from '../ProductDetails/ProductDetails'
 import Filters from '../Filters/Filters'
 import Loader from '../Loader/Loader'
 import { showToast } from '@/helpers/toastCall'
@@ -446,8 +447,26 @@ export default function ProductsSection({ isFlashSale }) {
 								})}
 						</div>
 
-						<ul className={css.products__list}>
+						<div className={css.products__groups__list}>
 							{isCatalog
+								&& minimalGroups.map(minimalGroup => (<ProductDetails 
+									products={visibleCatalogProducts} 
+									minimalGroup={minimalGroup} 
+									isFlashSale={isFlashSale} 
+									cardClickHandle={onCatalogCardClick} 
+								/>))
+							}
+
+							{!isCatalog
+								&& minimalGroups.map(minimalGroup => (<ProductDetails 
+									products={visibleMyShopProducts} 
+									minimalGroup={minimalGroup} 
+									isFlashSale={isFlashSale} 
+									cardClickHandle={onMyShopCardClick} 
+								/>))
+							}
+
+							{/* {isCatalog
 								&& visibleCatalogProducts.map((product) => {
 									
 									return(
@@ -469,8 +488,8 @@ export default function ProductsSection({ isFlashSale }) {
 										product={product}
 										isFlashSale={isFlashSale}
 									/>
-								)})}
-						</ul>
+								)})} */}
+						</div>
 					</div>
 				</>
 			) : (

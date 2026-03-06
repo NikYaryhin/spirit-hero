@@ -8,8 +8,6 @@
 		opacity: 1;
 	}
 
-	&.hidden {}
-
 	&:not([open]) summary>svg {
 		rotate: 180deg;
 	}

@@ -9,7 +9,7 @@ const initialState = {
 	initialMyShopProducts: [],
 	productsByCategory: [],
 	filters: null,
-	minimalGroups: null,
+	minimalGroups: [],
 	sortingBy: '',
 	activeFilters: {
 		brands: [],
@@ -50,6 +50,9 @@ const productsSlice = createSlice({
 		},
 		setInitialMyShopProducts: (state, action) => {
 			state.initialMyShopProducts = action.payload
+		},
+		setMinimalGroups: (state, action) => {
+			state.minimalGroups = action.payload
 		},
 		setSortingBy: (state, action) => {
 			state.sortingBy = action.payload
@@ -103,11 +106,14 @@ const productsSlice = createSlice({
 					(product) => !myShopProductIds.has(String(product.id)),
 				)
 
+				console.log('minimal_groups', action.payload.minimum_groups);
+				
+
 				state.isLoading = false
 				state.catalogProducts = filteredCatalogProducts
 				state.initialCatalogProducts = filteredCatalogProducts
 				state.filters = action.payload.filters
-				state.minimalGroups = action.payload.minimal_groups
+				state.minimalGroups = action.payload.minimum_groups
 			})
 			.addCase(fetchProducts.rejected, (state, action) => {
 				state.isLoading = false
