@@ -27,6 +27,8 @@ export const fetchProducts = createAsyncThunk(
 		try {
 			const response = await spiritHeroApi.getProducts()
 			console.log('getProducts response', response)
+			console.log("isFlashSaleType", response.products.filter(product => product.is_flash_sale_type))
+
 			
 			return response
 		} catch (error) {
@@ -105,10 +107,8 @@ const productsSlice = createSlice({
 				const filteredCatalogProducts = action.payload.products.filter(
 					(product) => !myShopProductIds.has(String(product.id)),
 				)
-
-				console.log('minimal_groups', action.payload.minimum_groups);
 				
-
+				
 				state.isLoading = false
 				state.catalogProducts = filteredCatalogProducts
 				state.initialCatalogProducts = filteredCatalogProducts

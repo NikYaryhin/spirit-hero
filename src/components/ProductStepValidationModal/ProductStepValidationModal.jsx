@@ -210,7 +210,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 
 						<button
 							onClick={onConfitmButtonClick}
-							disabled={!isApprove}
+							// disabled={!isApprove}
 							className={`${css.later} light_button_1`}
 						>
 							Maybe Later
