@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import css from './FundraisingStep.module.css'
 import Loader from '../Loader/Loader'
 import spiritHeroApi from '@/api/spiritHeroApi'
@@ -25,8 +25,8 @@ export default function FundraisingStep() {
 	const storeIdFromQuery = params.get('store_id')
 
 	const isFundraisingGroup = useSelector((state) => state.products.isFundraisingGroup)
-	const storeId =
-		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
+	const minimalGroupsFromStore = useSelector((state) => state.products.minimalGroups)
+	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 	const isLoading = useSelector((state) => state.products.isLoading)
 	const initialMyShopProducts = useSelector(selectInitialMyShopProducts)
 
@@ -47,70 +47,90 @@ export default function FundraisingStep() {
 	const [sellOutCount, setSellOutCount] = useState(0)
 
 	const [selectedCategory, setSelectedCategory] = useState('all')
+	const [fallbackMinimalGroups, setFallbackMinimalGroups] = useState([])
+
+	const minimalGroups = useMemo(() => {
+		if (Array.isArray(minimalGroupsFromStore) && minimalGroupsFromStore.length > 0) {
+			return minimalGroupsFromStore
+		}
+		return Array.isArray(fallbackMinimalGroups) ? fallbackMinimalGroups : []
+	}, [minimalGroupsFromStore, fallbackMinimalGroups])
+
+	const minimalGroupNameById = useMemo(() => {
+		return minimalGroups.reduce((acc, group) => {
+			acc[String(group.id)] = group.name
+			return acc
+		}, {})
+	}, [minimalGroups])
+
+	const getGroupKey = useCallback((product) => String(product?.minimum_group_id ?? 'no_group'), [])
+
+	const getGroupLabel = (groupKey) => minimalGroupNameById[groupKey] || `Group ${groupKey}`
+
+	const fetchStoreData = useCallback(async () => {
+		dispatch(setIsLoading(true))
+		try {
+			if (!minimalGroupsFromStore || minimalGroupsFromStore.length < 1) {
+				const productsResponse = await spiritHeroApi.getProducts()
+				setFallbackMinimalGroups(productsResponse?.minimum_groups || [])
+			}
+
+			const res = await spiritHeroApi.getStore(storeId)
+			console.debug('spiritHeroApi.getStore res', res)
+
+			let products = res.products.map((product) => {
+				return {
+					...product,
+					is_fundraise: isFundraisingGroup,
+				}
+			})
+
+			const updateFundraisingStatusResponse = await spiritHeroApi.updateFundraisingStatus({
+				store_id: storeId,
+				products_info: products.map((product) => ({
+					id: product.id,
+					is_fundraise: isFundraisingGroup,
+				})),
+			})
+			console.debug('updateFundraisingStatusResponse', updateFundraisingStatusResponse)
+
+			setIsFundraise(isFundraisingGroup)
+
+			const sortedProducts =
+				products.reduce((acc, product) => {
+					const groupKey = getGroupKey(product)
+					acc[groupKey] = [...(acc[groupKey] || []), product]
+					return acc
+				}, {}) || {}
+
+			setInitialProductsArray(sortedProducts)
+
+			const isFundraisingProducts = {}
+			const isSellAtCostProducts = {}
+
+			Object.keys(sortedProducts).forEach((key) => {
+				isFundraisingProducts[key] = [...sortedProducts[key]].filter((product) => {
+					return product.is_fundraise
+				})
+
+				isSellAtCostProducts[key] = [...sortedProducts[key]].filter(
+					(product) => !product.is_fundraise,
+				)
+			})
+
+			setProductsByCategory(isFundraisingProducts)
+			setSellAtCostProducts(isSellAtCostProducts)
+			setAmountProfit(!res.store.is_percent_profit)
+		} catch (error) {
+			console.error(`spiritHeroApi.getStore error`, error)
+		} finally {
+			dispatch(setIsLoading(false))
+		}
+	}, [dispatch, getGroupKey, isFundraisingGroup, minimalGroupsFromStore, storeId])
 
 	useEffect(() => {
-		const fetchStoreData = async () => {
-			dispatch(setIsLoading(true))
-			try {
-
-				const res = await spiritHeroApi.getStore(storeId)
-				console.debug('spiritHeroApi.getStore res', res)
-
-				let products = res.products.map((product) => {
-					return {
-						...product,
-						is_fundraise: isFundraisingGroup,
-					}
-				})
-
-				const updateFundraisingStatusResponse = await spiritHeroApi.updateFundraisingStatus({
-					store_id: storeId,
-					products_info: products.map((product) => ({
-						id: product.id,
-						is_fundraise: isFundraisingGroup,
-					})),
-				})
-				console.debug('updateFundraisingStatusResponse', updateFundraisingStatusResponse)
-				
-				setIsFundraise(isFundraisingGroup)
-
-				const sortedProducts =
-					products.reduce((acc, product) => {
-						acc[product.category_name] = [
-							...(acc[product.category_name] || []),
-							product,
-						]
-						return acc
-					}, {}) || {}
-
-				setInitialProductsArray(sortedProducts)
-
-				const isFundraisingProducts = {}
-				const isSellAtCostProducts = {}
-
-				Object.keys(sortedProducts).forEach((key) => {
-					isFundraisingProducts[key] = [...sortedProducts[key]].filter(
-						(product) => {
-							return product.is_fundraise
-						},
-					)
-
-					isSellAtCostProducts[key] = [...sortedProducts[key]].filter(
-						(product) => !product.is_fundraise,
-					)
-				})
-
-				setProductsByCategory(isFundraisingProducts)
-				setSellAtCostProducts(isSellAtCostProducts)
-				setAmountProfit(!res.store.is_percent_profit)
-			} catch (error) {
-				console.error(`spiritHeroApi.getStore error`, error)
-			} finally {
-				dispatch(setIsLoading(false))
-			}
-		}
 		fetchStoreData()
-	}, [])
+	}, [fetchStoreData])
 
 	useEffect(() => {
 		const fundraisingProductsCount =
@@ -155,6 +175,7 @@ export default function FundraisingStep() {
 		if (selectedProducts.length < 1) return
 
 		const selectedProductsIdList = selectedProducts.map((prod) => prod.id)
+		const selectedProductsIdSet = new Set(selectedProductsIdList)
 
 		const payload = {
 			store_id: +storeId,
@@ -163,20 +184,18 @@ export default function FundraisingStep() {
 
 		// Группируем удаляемые продукты по категориям
 		const idsByCategory = selectedProducts.reduce((acc, prod) => {
-			const cat = prod.category_name
-			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
+			const groupKey = getGroupKey(prod)
+			acc[groupKey] = acc[groupKey] ? acc[groupKey].add(prod.id) : new Set([prod.id])
 			return acc
 		}, {})
 
 		try {
 			const response = await spiritHeroApi.deleteFromMyStoreProducts(payload)
-			console.log('deleteFromMyStoreProducts response', response)
+			console.debug('deleteFromMyStoreProducts response', response)
 
 			dispatch(
 				setInitialMyShopProducts(
-					initialMyShopProducts.filter(
-						(p) => !selectedProductsIdList.has(p.id),
-					),
+					initialMyShopProducts.filter((p) => !selectedProductsIdSet.has(p.id)),
 				),
 			)
 
@@ -215,8 +234,8 @@ export default function FundraisingStep() {
 		if (selectedProducts.length < 1) return
 
 		const idsByCategory = selectedProducts.reduce((acc, prod) => {
-			const cat = prod.category_name
-			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
+			const groupKey = getGroupKey(prod)
+			acc[groupKey] = acc[groupKey] ? acc[groupKey].add(prod.id) : new Set([prod.id])
 			return acc
 		}, {})
 
@@ -236,9 +255,7 @@ export default function FundraisingStep() {
 			if (!prev) return prev
 			const next = { ...prev }
 			Object.keys(idsByCategory).forEach((cat) => {
-				const itemsToAdd = selectedProducts.filter(
-					(p) => p.category_name === +cat,
-				)
+				const itemsToAdd = selectedProducts.filter((p) => getGroupKey(p) === cat)
 				next[cat] = [...itemsToAdd, ...(next[cat] || [])]
 			})
 
@@ -252,8 +269,8 @@ export default function FundraisingStep() {
 
 	const onMoveToFundraise = () => {
 		const idsByCategory = selectedProducts.reduce((acc, prod) => {
-			const cat = prod.category_name
-			acc[cat] = acc[cat] ? acc[cat].add(prod.id) : new Set([prod.id])
+			const groupKey = getGroupKey(prod)
+			acc[groupKey] = acc[groupKey] ? acc[groupKey].add(prod.id) : new Set([prod.id])
 			return acc
 		}, {})
 
@@ -272,9 +289,7 @@ export default function FundraisingStep() {
 			if (!prev) return prev
 			const next = { ...prev }
 			Object.keys(idsByCategory).forEach((cat) => {
-				const itemsToAdd = selectedProducts.filter(
-					(p) => p.category_name === +cat,
-				)
+				const itemsToAdd = selectedProducts.filter((p) => getGroupKey(p) === cat)
 				next[cat] = [...itemsToAdd, ...(next[cat] || [])]
 			})
 			return next
@@ -297,10 +312,7 @@ export default function FundraisingStep() {
 
 		// Если выбрана конкретная категория, ставим её первой
 		if (selectedCategory !== 'all' && keys.includes(selectedCategory)) {
-			return [
-				selectedCategory,
-				...keys.filter((key) => key !== selectedCategory),
-			]
+			return [selectedCategory, ...keys.filter((key) => key !== selectedCategory)]
 		}
 
 		return keys
@@ -332,10 +344,9 @@ export default function FundraisingStep() {
 						<div className={css.warning}>
 							<Icon name={'Danger'} />
 							<p>
-								Heads up! Your base price includes 1 ink color—want more? It’s
-								just $1 extra per color. Don’t worry, we’ve got your back—our
-								team will review your store once submitted to make sure
-								everything looks great!
+								Heads up! Your base price includes 1 ink color—want more? It’s just $1 extra per
+								color. Don’t worry, we’ve got your back—our team will review your store once
+								submitted to make sure everything looks great!
 							</p>
 						</div>
 						<div className={css.fundraising__head}>
@@ -410,21 +421,15 @@ export default function FundraisingStep() {
 							</div>
 
 							<div className={css.category__group}>
-								<span className={css['category__group--label']}>
-									Product Group
-								</span>
+								<span className={css['category__group--label']}>Product Group</span>
 
-								<select
-									name="select"
-									value={selectedCategory}
-									onChange={(e) => onSortChange(e)}
-								>
+								<select name="select" value={selectedCategory} onChange={(e) => onSortChange(e)}>
 									<option value="all">All</option>
 
 									{initialProductsArray &&
 										Object.keys(initialProductsArray).map((key) => (
 											<option key={key} value={key}>
-												{key}
+												{getGroupLabel(key)}
 											</option>
 										))}
 								</select>
@@ -440,6 +445,7 @@ export default function FundraisingStep() {
 										key={key}
 										keyIdx={keyIdx}
 										categoryKey={key}
+										categoryLabel={getGroupLabel(key)}
 										productsByCategory={productsByCategory}
 										profitValue={profitValue}
 										amountProfit={amountProfit}
@@ -454,11 +460,12 @@ export default function FundraisingStep() {
 								))}
 
 							{sellOutCount > 0 &&
-								getSortedCategoryKeys(productsByCategory).map((key, keyIdx) => (
+								getSortedCategoryKeys(sellAtCostProducts).map((key, keyIdx) => (
 									<FundraisingCategoryDetails
 										key={key}
 										keyIdx={keyIdx}
 										categoryKey={key}
+										categoryLabel={getGroupLabel(key)}
 										productsByCategory={sellAtCostProducts}
 										profitValue={profitValue}
 										amountProfit={amountProfit}
@@ -479,9 +486,7 @@ export default function FundraisingStep() {
 					<ul className={css.handles__container}>
 						<li className={css.handle__item}>
 							<fieldset>
-								<span className={css.handle__title}>
-									Set your profit for each item:
-								</span>
+								<span className={css.handle__title}>Set your profit for each item:</span>
 
 								<label className={css.radio__label}>
 									<span className={css.input__emulator}></span>
@@ -531,9 +536,7 @@ export default function FundraisingStep() {
 						)}
 
 						<li className={css.handle__item}>
-							<span className={css.handle__title}>
-								Make the selling price ends at round number
-							</span>
+							<span className={css.handle__title}>Make the selling price ends at round number</span>
 
 							<fieldset className={css.row}>
 								{fundraisingPriceEndsValues.map((value) => (

@@ -6,6 +6,7 @@ import FundraisingProductCard from '../FundraisingProductCard/FundraisingProduct
 export default function FundraisingCategoryDetails({
 	keyIdx,
 	categoryKey,
+	categoryLabel,
 	productsByCategory,
 	profitValue,
 	amountProfit,
@@ -64,7 +65,7 @@ export default function FundraisingCategoryDetails({
 							checked={isChecked}
 						/>
 					</label>
-					{categoryKey} ({productsByCategory[categoryKey].length} items)
+					{categoryLabel || categoryKey} ({productsByCategory[categoryKey].length} items)
 				</summary>
 
 				<ul className={css.product__list}>

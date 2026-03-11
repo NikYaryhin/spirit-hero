@@ -1,6 +1,6 @@
 import css from './FundraisingProductCard.module.css'
 import Icon from '../Icon'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
@@ -29,47 +29,29 @@ export default function FundraisingProductCard({
 
 	const [isChecked, setIsChecked] = useState(checked)
 	const [profit, setProfit] = useState(profitValue)
-	const [price, setPrice] = useState(+params.on_demand_price + colorPrice)
-	const [sellingPrice, setSellingPrice] = useState(price + profit)
 
-	useEffect(() => {
-		const basePrice = isFlashSale
+	const basePrice = useMemo(() => {
+		return isFlashSale
 			? +params.flash_sale_price + colorPrice
 			: +params.on_demand_price + colorPrice
+	}, [isFlashSale, params.flash_sale_price, params.on_demand_price, colorPrice])
 
-		setPrice(basePrice)
+	const sellingPrice = useMemo(() => {
+		const computed = amountProfit
+			? +(basePrice + profit).toFixed(2)
+			: +(((basePrice * profit) / 100 + basePrice).toFixed(2))
+		const formatted = computed.toFixed(2)
 
-		setSellingPrice(basePrice + profit)
-	}, [])
-	// }, [colorPrice])
+		return pricesEnd ? formatted.replace(/\.[^.]+$/, `${pricesEnd}`) : formatted
+	}, [amountProfit, basePrice, profit, pricesEnd])
 
 	useEffect(() => {
 		setProfit(profitValue)
 	}, [profitValue])
 
 	useEffect(() => {
-		setSellingPrice(
-			(prev) =>
-				pricesEnd && prev.toString().replace(/\.[^.]+$/, `${pricesEnd}`),
-		)
-	}, [pricesEnd])
-
-	useEffect(() => {
 		setIsChecked(checked)
 	}, [checked])
-
-	useEffect(() => {
-		if (amountProfit) setSellingPrice(+price + profit)
-		else {
-			const countedPrice = ((+price * profit) / 100 + +price).toFixed(2)
-
-			setSellingPrice(
-				pricesEnd
-					? countedPrice.replace(/\.[^.]+$/, `${pricesEnd}`)
-					: countedPrice,
-			)
-		}
-	}, [profit, amountProfit, price])
 
 	const updateFundraisingStatus = async (is_fundraising) => {
 		try {
@@ -147,9 +129,19 @@ export default function FundraisingProductCard({
 
 	const debounceTimeoutRef = useRef(null)
 
+	useEffect(() => {
+		return () => {
+			if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current)
+		}
+	}, [])
+
 	const onPriceInputChange = useCallback(
 		(event) => {
 			let { value } = event.target
+			value = value.replace(',', '.')
+
+			// Allow only non-negative numbers with up to 2 decimal places.
+			if (!/^\d*\.?\d{0,2}$/.test(value)) return
 
 			if (value.length > 1 && value.startsWith('0') && value[1] !== '.') {
 				event.target.value = value.replace(/^0+/, '')
@@ -214,7 +206,7 @@ export default function FundraisingProductCard({
 
 			{isFundraise ? (
 				<>
-					<span className={css.price}>${(+price).toFixed(2)}</span>
+					<span className={css.price}>${basePrice.toFixed(2)}</span>
 
 					<div className={css.input__wrapper}>
 						<input
@@ -222,6 +214,8 @@ export default function FundraisingProductCard({
 							value={profit}
 							onChange={onPriceInputChange}
 							min="0"
+							step="0.01"
+							inputMode="decimal"
 							name="profit--input"
 						/>
 						<span className={css.input__unit}>{amountProfit ? '$' : '%'}</span>
@@ -235,7 +229,7 @@ export default function FundraisingProductCard({
 				</>
 			) : (
 				<>
-					<span className={css.price}>${(+price).toFixed(2)}</span>
+					<span className={css.price}>${basePrice.toFixed(2)}</span>
 
 					<button onClick={onFundraiseClick} className={css.sell__at__cost}>
 						{' '}
