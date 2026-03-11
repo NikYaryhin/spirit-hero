@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { steps } from '@/helpers/const'
+import { STEPS_LIST } from '@/helpers/const'
 
 const initialState = {
 	activeStep: 1,
-	totalSteps: steps.length,
+	totalSteps: STEPS_LIST.length + 1,
 }
 
 const navigationSlice = createSlice({

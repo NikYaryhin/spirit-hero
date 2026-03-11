@@ -1,17 +1,22 @@
 import css from './ProductDetails.module.css'
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import ProductCard from '../ProductCard/ProductCard'
 
 import Icon from '../Icon'
 
-export default function ProductDetails({products, minimalGroup, isFlashSale, cardClickHandle}) {
-	const [productsToShow, setProductsToShow] = useState([])
-
-	useEffect(() => {
+export default function ProductDetails({
+	products,
+	minimalGroup,
+	isFlashSale,
+	cardClickHandle,
+	onGroupCheckHandle,
+}) {
+	const productsToShow = useMemo(() => {
 		const minimalGroupProductsId = minimalGroup.products.map(product => product.id)
-		const minimalGroupProducts = products.filter(product => minimalGroupProductsId.includes(product.id))
-		setProductsToShow(minimalGroupProducts)
-	}, [products])
+		return products.filter(product => minimalGroupProductsId.includes(product.id))
+	}, [products, minimalGroup])
+	const isGroupChecked =
+		productsToShow.length > 0 && productsToShow.every((product) => Boolean(product.selected))
 
 	if (productsToShow.length > 0) return (
 		<details className={css.products__group} name={minimalGroup.name} open>
@@ -23,7 +28,10 @@ export default function ProductDetails({products, minimalGroup, isFlashSale, car
 						</span>
 
 						<input
-							// onChange={(e) => onCheckboxChange(e)}
+							checked={isGroupChecked}
+							onChange={(event) =>
+								onGroupCheckHandle?.(event.currentTarget.checked, productsToShow)
+							}
 							type="checkbox"
 							className="visually-hidden"
 							value={minimalGroup.name}

@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit'
 // Начальное состояние
 const initialState = {
 	isFlashSale: false,
+	customerApproveFlashSale: false,
 	storeId: null,
 	storeInfo: null,
 	pricePerColor: 0,
@@ -17,6 +18,9 @@ const flashSaleSlice = createSlice({
 		},
 		setFlashSale: (state, action) => {
 			state.isFlashSale = action.payload
+		},
+		setCustomerApproveFlashSale: (state, action) => {
+			state.customerApproveFlashSale = action.payload
 		},
 		setStoreId: (state, action) => {
 			state.storeId = action.payload
@@ -42,6 +46,7 @@ const flashSaleSlice = createSlice({
 export const {
 	toggleFlashSale,
 	setFlashSale,
+	setCustomerApproveFlashSale,
 	setStoreId,
 	clearStoreId,
 	setStoreInfo,

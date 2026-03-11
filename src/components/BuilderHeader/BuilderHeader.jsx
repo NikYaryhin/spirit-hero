@@ -5,11 +5,21 @@ import css from './BuilderHeader.module.css'
 import logoImage from '@/assets/SpiritHero__Logo.png'
 import Chevron from '../Icons/Chevron'
 import Account from '../Icons/Account'
-import { steps } from '@/helpers/const'
+import { STEPS_LIST } from '@/helpers/const'
+import { useEffect, useState } from 'react'
 
 export default function BuilderHeader({ onNextStep }) {
 	const dispatch = useDispatch()
+	const [steps, setSteps] = useState(STEPS_LIST)
 	const activeStep = useSelector((state) => state.navigation.activeStep)
+	const customerApproveFlashSale = useSelector((state) => state.flashSale.customerApproveFlashSale)
+
+	useEffect(()=>{
+		setSteps(prev => {
+			return customerApproveFlashSale ? [...prev, { name: 'Flash sale Settings', id: 5 }] : STEPS_LIST
+		})
+	},[customerApproveFlashSale])
+
 
 	const saveAndExitHandle = async () => {
 		try {
@@ -19,6 +29,7 @@ export default function BuilderHeader({ onNextStep }) {
 			console.error('Save and exit error', error)
 		}
 	}
+
 	return (
 		<div className={css.header}>
 			<div className={css.logo}>
@@ -60,7 +71,7 @@ export default function BuilderHeader({ onNextStep }) {
 						Back
 					</button>
 
-					{activeStep !== 5 ? (
+					{activeStep !== steps.length ? (
 						<button
 							className={`${css.step__button}`}
 							onClick={onNextStep}

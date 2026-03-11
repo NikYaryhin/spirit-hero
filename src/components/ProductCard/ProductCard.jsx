@@ -46,7 +46,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle }) {
 					<Icon name="Checked" />
 				</span>
 				<input
-					checked={selected}
+					checked={Boolean(selected)}
 					type="checkbox"
 					className="visually-hidden"
 					value={id}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import css from './ProductsSection.module.css'
 import Check from '../Icons/Check'
@@ -19,6 +19,7 @@ import {
 	setSortingBy,
 	toggleProductSelection,
 	selectAllProductsAction,
+	selectProductsByIdsAction,
 	setMyShopProducts,
 	setCatalogProducts,
 	selectInitialCatalogProducts,
@@ -33,7 +34,7 @@ export default function ProductsSection({ isFlashSale }) {
 
 	const storeId = useSelector((state) => state.flashSale.storeId)
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
-	const minimalGroups = useSelector(state => state.products.minimalGroups)
+	const minimalGroups = useSelector((state) => state.products.minimalGroups)
 	const catalogProducts = useSelector(selectCatalogProducts)
 	const myShopProducts = useSelector(selectMyShopProducts)
 	const isLoading = useSelector(selectIsLoading)
@@ -43,13 +44,17 @@ export default function ProductsSection({ isFlashSale }) {
 	const initialCatalogProducts = useSelector(selectInitialCatalogProducts)
 	const initialMyShopProducts = useSelector(selectInitialMyShopProducts)
 
-	const visibleCatalogProducts = isFlashSale
-		? catalogProducts.filter((p) => p.is_flash_sale_type === true)
-		: catalogProducts
+	const visibleCatalogProducts = useMemo(
+		() =>
+			isFlashSale ? catalogProducts.filter((p) => p.is_flash_sale_type === true) : catalogProducts,
+		[isFlashSale, catalogProducts],
+	)
 
-	const visibleMyShopProducts = isFlashSale
-		? myShopProducts.filter((p) => p.is_flash_sale_type === true)
-		: myShopProducts
+	const visibleMyShopProducts = useMemo(
+		() =>
+			isFlashSale ? myShopProducts.filter((p) => p.is_flash_sale_type === true) : myShopProducts,
+		[isFlashSale, myShopProducts],
+	)
 
 	const [selectedCount, setSelectedCount] = useState(0)
 	const [isCatalog, setIsCatalog] = useState(true)
@@ -95,11 +100,15 @@ export default function ProductsSection({ isFlashSale }) {
 	}, [filters, storeInfo])
 
 	useEffect(() => {
-		const hasAnyFilters = Object.values(activeFilters).some((value) => Array.isArray(value) && value.length > 0)
-		
+		const hasAnyFilters = Object.values(activeFilters).some(
+			(value) => Array.isArray(value) && value.length > 0,
+		)
+
 		const matchByFilters = (product) => {
-			if(activeFilters.productGroups && activeFilters.productGroups.length > 0) {
-				const passProductGroup = activeFilters.productGroups.includes(String(product.minimum_group_id))
+			if (activeFilters.productGroups && activeFilters.productGroups.length > 0) {
+				const passProductGroup = activeFilters.productGroups.includes(
+					String(product.minimum_group_id),
+				)
 				if (!passProductGroup) return false
 			}
 			if (activeFilters.brands && activeFilters.brands.length > 0) {
@@ -197,23 +206,23 @@ export default function ProductsSection({ isFlashSale }) {
 	}, [sortingBy])
 
 	useEffect(() => {
-		if (isCatalog && visibleCatalogProducts.length < 1) {
+		if (!isCatalog) return
+		if (visibleCatalogProducts.length < 1)
 			setActiveFilters({
 				brands: [],
 				categories: [],
 				colorFamilies: [],
 			})
-		}
 	}, [visibleCatalogProducts])
 
 	useEffect(() => {
-		if (!isCatalog && visibleMyShopProducts.length < 1) {
+		if (isCatalog) return
+		if (visibleMyShopProducts.length < 1)
 			setActiveFilters({
 				brands: [],
 				categories: [],
 				colorFamilies: [],
 			})
-		}
 	}, [visibleMyShopProducts])
 
 	const onCatalogCardClick = (event) => {
@@ -252,6 +261,26 @@ export default function ProductsSection({ isFlashSale }) {
 		)
 	}
 
+	const onCatalogGroupCheckHandle = (checked, groupProducts) => {
+		dispatch(
+			selectProductsByIdsAction({
+				isCatalog: true,
+				select: checked,
+				ids: (groupProducts || []).map((product) => product.id),
+			}),
+		)
+	}
+
+	const onMyShopGroupCheckHandle = (checked, groupProducts) => {
+		dispatch(
+			selectProductsByIdsAction({
+				isCatalog: false,
+				select: checked,
+				ids: (groupProducts || []).map((product) => product.id),
+			}),
+		)
+	}
+
 	const addToStoreButtonHandle = async () => {
 		setFetchLoader(true)
 		const selectedIds = new Set(
@@ -267,7 +296,7 @@ export default function ProductsSection({ isFlashSale }) {
 		try {
 			const response = await spiritHeroApi.addToMyStoreProductsList(payload.store_id, payload.ids)
 			console.debug('spiritHeroApi.addToMyStoreProductsList res', response)
-			
+
 			showToast(
 				`${selectedCount} item${selectedCount !== 1 ? 's' : ''} ${selectedCount === 1 ? 'was' : 'were'} successfully added to your store.`,
 			)
@@ -278,17 +307,16 @@ export default function ProductsSection({ isFlashSale }) {
 				),
 			)
 			const toAppend = initialCatalogProducts.filter((p) => selectedIds.has(String(p.id)))
-	
+
 			if (toAppend.length > 0) {
 				const existing = new Set(initialMyShopProducts.map((p) => String(p.id)))
 				const append = toAppend.filter((p) => !existing.has(String(p.id))).map((p) => ({ ...p }))
-	
+
 				if (append.length > 0)
 					dispatch(setInitialMyShopProducts([...initialMyShopProducts, ...append]))
-			}		
-			
+			}
 		} catch (error) {
-			showToast(`Error while adding products to your store: ${error}`, 'error')	
+			showToast(`Error while adding products to your store: ${error}`, 'error')
 		} finally {
 			setFetchLoader(false)
 		}
@@ -314,15 +342,17 @@ export default function ProductsSection({ isFlashSale }) {
 			)
 
 			dispatch(
-				setInitialMyShopProducts(initialMyShopProducts.filter((p) => !selectedIds.has(String(p.id)))),
+				setInitialMyShopProducts(
+					initialMyShopProducts.filter((p) => !selectedIds.has(String(p.id))),
+				),
 			)
-	
+
 			const toAppend = (initialMyShopProducts || []).filter((p) => selectedIds.has(String(p.id)))
-	
+
 			if (toAppend.length > 0) {
 				const existing = new Set(initialCatalogProducts.map((p) => String(p.id)))
 				const append = toAppend.filter((p) => !existing.has(String(p.id))).map((p) => ({ ...p }))
-	
+
 				if (append.length > 0)
 					dispatch(setInitialCatalogProducts([...initialCatalogProducts, ...append]))
 			}
@@ -331,8 +361,6 @@ export default function ProductsSection({ isFlashSale }) {
 		} finally {
 			setFetchLoader(false)
 		}
-
-		
 	}
 
 	const sortingSelectHandle = (event) => {
@@ -353,7 +381,8 @@ export default function ProductsSection({ isFlashSale }) {
 							<span className={css.icon}>
 								<Check />
 							</span>
-							Product catalog <span className={css.count}>{visibleCatalogProducts?.length || 0}</span>
+							Product catalog{' '}
+							<span className={css.count}>{visibleCatalogProducts?.length || 0}</span>
 						</button>
 
 						<button
@@ -363,8 +392,8 @@ export default function ProductsSection({ isFlashSale }) {
 							<span className={css.icon}>
 								<Check />
 							</span>
-						My Store
-						<span className={css.count}>{visibleMyShopProducts?.length || 0}</span>
+							My Store
+							<span className={css.count}>{visibleMyShopProducts?.length || 0}</span>
 						</button>
 					</div>
 
@@ -423,11 +452,7 @@ export default function ProductsSection({ isFlashSale }) {
 					</div>
 
 					<div className={css.products__handle}>
-
-						{fetchLoader && (
-							<div className={css.local_loader}>
-							</div>
-						)}
+						{fetchLoader && <div className={css.local_loader}></div>}
 						<div className={css.products_filters}>
 							{filters &&
 								Object.keys(filters).map((key) => {
@@ -448,23 +473,35 @@ export default function ProductsSection({ isFlashSale }) {
 						</div>
 
 						<div className={css.products__groups__list}>
-							{isCatalog
-								&& minimalGroups.map(minimalGroup => (<ProductDetails 
-									products={visibleCatalogProducts} 
-									minimalGroup={minimalGroup} 
-									isFlashSale={isFlashSale} 
-									cardClickHandle={onCatalogCardClick} 
-								/>))
-							}
+							{isCatalog &&
+								visibleCatalogProducts.length > 0 &&
+								minimalGroups.map((minimalGroup) => {
+									return (
+										<ProductDetails
+											key={minimalGroup.id || minimalGroup.name}
+											products={visibleCatalogProducts}
+											minimalGroup={minimalGroup}
+											isFlashSale={isFlashSale}
+											cardClickHandle={onCatalogCardClick}
+											onGroupCheckHandle={onCatalogGroupCheckHandle}
+										/>
+									)
+								})}
 
-							{!isCatalog
-								&& minimalGroups.map(minimalGroup => (<ProductDetails 
-									products={visibleMyShopProducts} 
-									minimalGroup={minimalGroup} 
-									isFlashSale={isFlashSale} 
-									cardClickHandle={onMyShopCardClick} 
-								/>))
-							}
+							{!isCatalog &&
+								visibleMyShopProducts.length > 0 &&
+								minimalGroups.map((minimalGroup) => {
+									return (
+										<ProductDetails
+											key={minimalGroup.id || minimalGroup.name}
+											products={visibleMyShopProducts}
+											minimalGroup={minimalGroup}
+											isFlashSale={isFlashSale}
+											cardClickHandle={onMyShopCardClick}
+											onGroupCheckHandle={onMyShopGroupCheckHandle}
+										/>
+									)
+								})}
 
 							{/* {isCatalog
 								&& visibleCatalogProducts.map((product) => {

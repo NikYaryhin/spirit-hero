@@ -1,9 +1,8 @@
-export const steps = [
+export const STEPS_LIST = [
 	{ name: 'Details', id: 1 },
 	{ name: 'Products', id: 2 },
 	{ name: 'Design', id: 3 },
 	{ name: 'Fundraising', id: 4 },
-	{ name: 'Flash sale Settings', id: 5 },
 ]
 
 export const COLORS = [

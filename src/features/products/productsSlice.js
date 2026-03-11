@@ -26,10 +26,8 @@ export const fetchProducts = createAsyncThunk(
 	async (_, { rejectWithValue }) => {
 		try {
 			const response = await spiritHeroApi.getProducts()
-			console.log('getProducts response', response)
-			console.log("isFlashSaleType", response.products.filter(product => product.is_flash_sale_type))
-
-			
+			console.debug('getProducts response', response)
+			console.debug("isFlashSaleType", response.products.filter(product => product.is_flash_sale_type))			
 			return response
 		} catch (error) {
 			return rejectWithValue(error.message)
@@ -92,6 +90,15 @@ const productsSlice = createSlice({
 				selected: select,
 			}))
 		},
+		selectProductsByIdsAction: (state, action) => {
+			const { isCatalog, select, ids } = action.payload
+			const targetArray = isCatalog ? 'catalogProducts' : 'myShopProducts'
+			const idsSet = new Set((ids || []).map((id) => String(id)))
+
+			state[targetArray] = state[targetArray].map((product) =>
+				idsSet.has(String(product.id)) ? { ...product, selected: select } : product,
+			)
+		},
 		setIsFundraisingGroup: (state, action) => {
 			state.isFundraisingGroup = action.payload
 		},
@@ -107,8 +114,6 @@ const productsSlice = createSlice({
 				const filteredCatalogProducts = action.payload.products.filter(
 					(product) => !myShopProductIds.has(String(product.id)),
 				)
-				
-				
 				state.isLoading = false
 				state.catalogProducts = filteredCatalogProducts
 				state.initialCatalogProducts = filteredCatalogProducts
@@ -122,7 +127,6 @@ const productsSlice = createSlice({
 	},
 })
 
-// Селекторы
 export const selectAllProducts = (state) => state.products
 export const selectCatalogProducts = (state) => state.products.catalogProducts
 export const selectMyShopProducts = (state) => state.products.myShopProducts
@@ -145,6 +149,7 @@ export const {
 	setIsLoading,
 	toggleProductSelection,
 	selectAllProductsAction,
+	selectProductsByIdsAction,
 	setIsFundraisingGroup,
 } = productsSlice.actions
 

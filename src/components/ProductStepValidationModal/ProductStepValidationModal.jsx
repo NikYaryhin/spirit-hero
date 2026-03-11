@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
-import { setFlashSale } from '@/features/flashSale/flashSaleSlice'
+import { setFlashSale,setCustomerApproveFlashSale } from '@/features/flashSale/flashSaleSlice'
 import Icon from '../Icon'
 import css from './ProductStepValidationModal.module.css'
 
@@ -14,16 +14,19 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 
 	const dispatch = useDispatch()
 
-	const productsByCategory = useSelector((state) => state.products.productsByCategory)
+	// const productsByCategory = useSelector((state) => state.products.productsByCategory)
+	const minimalGroups = useSelector((state) => state.products.minimalGroups)
 
 
 	const onConfitmButtonClick = () => {
 		setIsModalOpen(false)
+		dispatch(setCustomerApproveFlashSale(true))
 		dispatch(setActiveStep(3))
 	}
 
 	const onStartFlashSaleClick = () => {
 		dispatch(setFlashSale(true))
+		dispatch(setCustomerApproveFlashSale(true))
 		setIsModalOpen(false)
 		// dispatch(setActiveStep(3))
 	}
@@ -44,20 +47,20 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					</h3>
 
 					<fieldset className={css.fieldset}>
-						{(Object.keys(productsByCategory).length > 0 ? Object.keys(productsByCategory) : ['default']).map((key) => (
-							<label className={css.label} key={key}>
+						{minimalGroups.length > 0 && minimalGroups.map((item) => (
+							<label className={css.label} key={item.id || item.name}>
 								<span className={css.checkbox__emulator}>
 									<Icon name={'InputChecked'} />
 								</span>
-								{key} 
+								{item.name} 
 								
 								<input
-									type="radio"
+									type="checkbox"
 									name="modal-select"
-									value={key}
+									value={item.name}
 									className="visually-hidden"
 									onChange={handleCollectionChange}
-									checked={choosedCollection.includes(key)}
+									checked={choosedCollection.includes(item.name)}
 								/>
 							</label>
 						))}
@@ -137,7 +140,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						</button>
 						<button
 							onClick={onConfitmButtonClick}
-							disabled={!isApprove}
+							disabled={!isApprove || choosedCollection.length < 1}
 							className={`${css.confirm} contrast_button_1`}
 						>
 							Yes, confirm
