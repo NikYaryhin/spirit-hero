@@ -106,10 +106,7 @@ export default function ProductsSection({ isFlashSale }) {
 
 		const matchByFilters = (product) => {
 			if (activeFilters.productGroups && activeFilters.productGroups.length > 0) {
-				const passProductGroup = activeFilters.productGroups.includes(
-					String(product.group_id),
-					// String(product.group_id),
-				)
+				const passProductGroup = activeFilters.productGroups.includes(String(product.group_id))
 				if (!passProductGroup) return false
 			}
 			if (activeFilters.brands && activeFilters.brands.length > 0) {
@@ -485,6 +482,7 @@ export default function ProductsSection({ isFlashSale }) {
 											isFlashSale={isFlashSale}
 											cardClickHandle={onCatalogCardClick}
 											onGroupCheckHandle={onCatalogGroupCheckHandle}
+											activeColors={activeFilters.colorFamilies}
 										/>
 									)
 								})}
@@ -500,6 +498,7 @@ export default function ProductsSection({ isFlashSale }) {
 											isFlashSale={isFlashSale}
 											cardClickHandle={onMyShopCardClick}
 											onGroupCheckHandle={onMyShopGroupCheckHandle}
+											activeColors={activeFilters.colorFamilies}
 										/>
 									)
 								})}

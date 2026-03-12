@@ -12,16 +12,16 @@ export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 	const dispatch = useDispatch()
 	const [steps, setSteps] = useState(STEPS_LIST)
 	const activeStep = useSelector((state) => state.navigation.activeStep)
-	const customerApproveFlashSale = useSelector((state) => state.flashSale.customerApproveFlashSale)
+	// const customerApproveFlashSale = useSelector((state) => state.flashSale.customerApproveFlashSale)
 	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
 
-	useEffect(()=>{
-		setSteps(
-			isFlashSale 
-				? [...STEPS_LIST, { name: 'Flash sale Settings', id: 5 }]
-				: STEPS_LIST
-		)
-	},[customerApproveFlashSale, isFlashSale])
+	// useEffect(()=>{
+	// 	setSteps(
+	// 		isFlashSale 
+	// 			? [...STEPS_LIST, { name: 'Flash sale Settings', id: 5 }]
+	// 			: STEPS_LIST
+	// 	)
+	// },[customerApproveFlashSale, isFlashSale])
 
 
 	const saveAndExitHandle = async () => {
@@ -59,6 +59,22 @@ export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 						{step.name}
 					</li>
 				))}
+
+				{isFlashSale && activeStep > 2 && (
+					<li
+					key={5}
+					className={
+						5 > activeStep
+							? css.inactive
+							: 5 === activeStep
+								? css.active
+								: css.complete
+					}
+				>
+					<span>5</span>
+					Flash sale Settings
+				</li>
+				)}
 			</ul>
 
 			<div className={css.actions}>

@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Icon from '../Icon'
 import css from './ProductCard.module.css'
 import previewImage from '@/assets/SpiritHero__Preloader.png'
 import { useSelector } from 'react-redux'
 
-export default function ProductCard({ product, isFlashSale, inputHandle }) {
+export default function ProductCard({ product, isFlashSale, inputHandle, activeColors }) {
 	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
-	const { id, product_title, product_image, selected, params, colors } = product
+	const { id, product_title, product_image, selected, params, colors, colors_family } = product
 
 	const [image, setImage] = useState(product_image || previewImage)
 
@@ -15,6 +15,27 @@ export default function ProductCard({ product, isFlashSale, inputHandle }) {
 
 		setImage(value)
 	}
+
+	const filteredColors = useMemo(() => {
+		if (!Array.isArray(colors)) return []
+		if (!Array.isArray(activeColors) || activeColors.length < 1) return colors
+		if (!Array.isArray(colors_family) || colors_family.length < 1) return []
+
+		const activeFamilyIds = new Set(activeColors.map((id) => String(id)))
+		const allowedChildColors = new Set(
+			colors_family
+				.filter((family) => activeFamilyIds.has(String(family.color_family_id)))
+				.flatMap((family) => family.child_colors || [])
+				.map((id) => String(id)),
+		)
+
+		const filteredColor = colors.filter((color) => allowedChildColors.has(String(color.color_id)))
+
+		filteredColor.length > 0 && setImage(filteredColor[0]?.color_image || product_image)
+
+		return filteredColor
+		// return colors
+	}, [activeColors])
 
 	return (
 		<li className={`${css.product__item}`} key={id} id={id}>
@@ -35,9 +56,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle }) {
 						</span>
 					</>
 				) : (
-					<span className={css.price}>
-						${(+params.on_demand_price + colorPrice).toFixed(2)}
-					</span>
+					<span className={css.price}>${(+params.on_demand_price + colorPrice).toFixed(2)}</span>
 				)}
 			</div>
 
@@ -55,24 +74,26 @@ export default function ProductCard({ product, isFlashSale, inputHandle }) {
 			</label>
 
 			<fieldset className={css.fieldset}>
-				{colors &&
-					colors.map((color) => (
-						<label key={color.id}>
-							<span className={css.checkbox__emulator}>
-								<span
-									className={css.checkbox__emulator__color}
-									style={{ backgroundColor: `${color.color}` }}
-								></span>
-							</span>
-							<input
-								type="radio"
-								name={`color-of-${id}`}
-								value={color.color_image || ''}
-								className="visually-hidden"
-								onChange={colorSwatchHandle}
-							/>
-						</label>
-					))}
+				{filteredColors &&
+					filteredColors.map((color) => {
+						return (
+							<label key={color.id}>
+								<span className={css.checkbox__emulator}>
+									<span
+										className={css.checkbox__emulator__color}
+										style={{ backgroundColor: `${color.color}` }}
+									></span>
+								</span>
+								<input
+									type="radio"
+									name={`color-of-${id}`}
+									value={color.color_image || ''}
+									className="visually-hidden"
+									onChange={colorSwatchHandle}
+								/>
+							</label>
+						)
+					})}
 			</fieldset>
 		</li>
 	)
