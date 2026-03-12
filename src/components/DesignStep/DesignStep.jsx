@@ -983,8 +983,13 @@ const DesignStep = forwardRef((props, ref) => {
 				quality: 0.95,
 			})
 
-			console.debug('base64', base64);
-			
+			// const link = document.createElement('a')
+			// link.href = base64
+			// link.download = `design-${activeCardId || 'preview'}.jpeg`
+			// // document.body.appendChild(link)
+			// link.click()
+			// // document.body.removeChild(link)
+
 
 			const design = {
 				elementsPositionImage: base64,

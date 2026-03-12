@@ -618,9 +618,9 @@ const FlashSale = forwardRef((props, ref) => {
 				</div>
 			</details>
 
-			<button className={css['flash--sale__head--button']} onClick={onSaveClick}>
+			{/* <button className={css['flash--sale__head--button']} onClick={onSaveClick}>
 				Save
-			</button>
+			</button> */}
 		</section>
 	)
 })
