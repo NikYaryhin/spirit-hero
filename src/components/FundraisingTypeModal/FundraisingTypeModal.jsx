@@ -3,6 +3,7 @@ import Icon from '../Icon'
 import { useDispatch } from 'react-redux'
 import { setIsFundraisingGroup } from '@/features/products/productsSlice'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
+import { setIsLoading } from '@/features/products/productsSlice'
 
 export default function FundraisingTypeModal({ setIsFundraisingModalOpen }) {
 	const dispatch = useDispatch()
@@ -11,12 +12,14 @@ export default function FundraisingTypeModal({ setIsFundraisingModalOpen }) {
 		dispatch(setIsFundraisingGroup(true))
 		setIsFundraisingModalOpen(false)
 		dispatch(setActiveStep(4))
+		dispatch(setIsLoading(true))
 	}
 
 	const handleSellAtCost = () => {
 		dispatch(setIsFundraisingGroup(false))
 		setIsFundraisingModalOpen(false)
 		dispatch(setActiveStep(4))
+		dispatch(setIsLoading(true))
 	}
 
 	return (

@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import Icon from '../Icon'
 import css from './FlashSale.module.css'
 import { DayPicker } from 'react-day-picker'
-import { format, set } from 'date-fns'
+import { format } from 'date-fns'
 import 'react-day-picker/dist/style.css'
 import { useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
-export default function FlashSale() {
+const FlashSale = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
@@ -84,7 +84,7 @@ export default function FlashSale() {
 		}
 
 		fetchFlashSaleSettings()
-	}, [])
+	}, [storeId])
 
 	const handleFilesChange = (e) => {
 		const files = Array.from(e.target.files || [])
@@ -136,6 +136,10 @@ export default function FlashSale() {
 			console.error('Error saving flash sale settings:', error)
 		}
 	}
+
+	useImperativeHandle(ref, () => ({
+		onSaveClick,
+	}))
 
 	const onAddMoreClick = (e) => {
 		e.preventDefault()
@@ -257,7 +261,7 @@ export default function FlashSale() {
 						</label>
 					</fieldset>
 
-					{shippingValue !== 'buyer_choice' && (
+					{shippingValue !== 'ship_home' && (
 						<fieldset className={css.form__inputs}>
 							<label className={`${css['text--label']} width-50`}>
 								<span className={css['input--label']}>First name</span>
@@ -619,4 +623,8 @@ export default function FlashSale() {
 			</button>
 		</section>
 	)
-}
+})
+
+FlashSale.displayName = 'FlashSale'
+
+export default FlashSale

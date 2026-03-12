@@ -8,22 +8,29 @@ import Account from '../Icons/Account'
 import { STEPS_LIST } from '@/helpers/const'
 import { useEffect, useState } from 'react'
 
-export default function BuilderHeader({ onNextStep }) {
+export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 	const dispatch = useDispatch()
 	const [steps, setSteps] = useState(STEPS_LIST)
 	const activeStep = useSelector((state) => state.navigation.activeStep)
 	const customerApproveFlashSale = useSelector((state) => state.flashSale.customerApproveFlashSale)
+	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
 
 	useEffect(()=>{
-		setSteps(prev => {
-			return customerApproveFlashSale ? [...prev, { name: 'Flash sale Settings', id: 5 }] : STEPS_LIST
-		})
-	},[customerApproveFlashSale])
+		setSteps(
+			isFlashSale 
+				? [...STEPS_LIST, { name: 'Flash sale Settings', id: 5 }]
+				: STEPS_LIST
+		)
+	},[customerApproveFlashSale, isFlashSale])
 
 
 	const saveAndExitHandle = async () => {
 		try {
-			await onNextStep()
+			if (activeStep === 5 && onFlashSaleSave) {
+				await onFlashSaleSave()
+			} else {
+				await onNextStep()
+			}
 			window.location.href = 'https://spirit-hero.splitdev.org/'
 		} catch (error) {
 			console.error('Save and exit error', error)

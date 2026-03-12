@@ -22,7 +22,6 @@ import {
 	setMyShopProducts,
 	setInitialMyShopProducts,
 	fetchProducts,
-	setIsLoading,
 } from '@/features/products/productsSlice'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 
@@ -33,6 +32,7 @@ export default function Builder() {
 	// const storeId = useSelector((state) => state.flashSale.storeId)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const designStepRef = useRef(null)
+	const flashSaleRef = useRef(null)
 
 	useEffect(() => {
 		const initBuilder = async () => {
@@ -86,14 +86,12 @@ export default function Builder() {
 
 	// Функция для обработки перехода на следующий шаг
 	const handleNextStep = async () => {
-		console.log({ activeStep })
 		if (activeStep === 2) {
 			setIsModalOpen(true)
 		} else if (activeStep === 3 && designStepRef.current) {
 			try {
-				dispatch(setIsLoading(true))
 				await designStepRef.current.getLogoParameters()
-				dispatch(nextStep())
+				// dispatch(nextStep())
 			} catch (error) {
 				console.error('Error calling getLogoParameters:', error)
 			}
@@ -105,10 +103,15 @@ export default function Builder() {
 		} else dispatch(nextStep())
 	}
 
+	const handleFlashSaleSave = async () => {
+		if (!flashSaleRef.current?.onSaveClick) return
+		await flashSaleRef.current.onSaveClick()
+	}
+
 	return (
 		<>
 			{isLoading && <Loader />}
-			<BuilderHeader onNextStep={handleNextStep} />
+			<BuilderHeader onNextStep={handleNextStep} onFlashSaleSave={handleFlashSaleSave} />
 
 			<div className="content--wrapper">
 				{activeStep === 1 && <Details />}
@@ -116,7 +119,7 @@ export default function Builder() {
 				{activeStep === 3 && <DesignStep ref={designStepRef} />}
 
 				{activeStep === 4 && <FundraisingStep />}
-				{activeStep === 5 && <FlashSale />}
+				{activeStep === 5 && <FlashSale ref={flashSaleRef} />}
 			</div>
 
 			<Modal

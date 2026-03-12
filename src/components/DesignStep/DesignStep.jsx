@@ -1,11 +1,5 @@
 import css from './DesignStep.module.css'
-import {
-	useEffect,
-	useState,
-	useRef,
-	useImperativeHandle,
-	forwardRef,
-} from 'react'
+import { useEffect, useMemo, useState, useRef, useImperativeHandle, forwardRef } from 'react'
 import ProductCustomizerCard from '../ProductCustomizerCard/ProductCustomizerCard'
 import ImageUploader from '../ImageUploader/ImageUploader'
 import Icon from '../Icon'
@@ -15,29 +9,22 @@ import TextHandle from '../TextHandle/TextHandle'
 import { v4 as uuidv4 } from 'uuid'
 import { useSelector } from 'react-redux'
 import domtoimage from 'dom-to-image-more'
-import {
-	Canvas,
-	FabricImage,
-	Control,
-	util,
-	Textbox,
-	Circle,
-	Line,
-} from 'fabric'
+import { Canvas, FabricImage, Control, util, Textbox, Line } from 'fabric'
 import Modal from '@/components/Modal/Modal'
 import FundraisingTypeModal from '../FundraisingTypeModal/FundraisingTypeModal'
 
 const DesignStep = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
-	const storeId =
-		useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
+	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
+	const minimalGroupsFromStore = useSelector((state) => state.products.minimalGroups)
 
 	const [customizerType, setCustomizerType] = useState(null)
 
 	const [isLoading, setIsLoading] = useState(true)
 	const [allProducts, setAllProducts] = useState(null)
 	const [productsByCategory, setProductsByCategory] = useState(null)
+	const [fallbackMinimalGroups, setFallbackMinimalGroups] = useState([])
 	const [activeCardId, setActiveCardId] = useState(null)
 	const [baseDesign, setBaseDesign] = useState(null)
 	const [customerLogos, setCustomerLogos] = useState({
@@ -62,11 +49,33 @@ const DesignStep = forwardRef((props, ref) => {
 	const canvasRef = useRef(null)
 	const fabricCanvasRef = useRef(null)
 
+	const minimalGroups = useMemo(() => {
+		if (Array.isArray(minimalGroupsFromStore) && minimalGroupsFromStore.length > 0) {
+			return minimalGroupsFromStore
+		}
+		return Array.isArray(fallbackMinimalGroups) ? fallbackMinimalGroups : []
+	}, [minimalGroupsFromStore, fallbackMinimalGroups])
+
+	const minimalGroupNameById = useMemo(() => {
+		return minimalGroups.reduce((acc, group) => {
+			acc[String(group.id)] = group.name
+			return acc
+		}, {})
+	}, [minimalGroups])
+
+	const getGroupKey = (product) => String(product?.group_id ?? 'no_group')
+	const getGroupLabel = (groupKey) => minimalGroupNameById[groupKey] || `Group ${groupKey}`
+
+	const getSortedGroupKeys = (groups) => {
+		if (!groups) return []
+
+		const keys = Object.keys(groups)
+		return keys
+	}
 
 	// Функция для конвертации URL в base64
 	// const urlToBase64 = async (url) => {
 	// 	try {
-	// 		// Преобразуем protocol-relative URL (//cdn.com/...) в полный URL
 	// 		let fullUrl = url
 	// 		if (url.startsWith('//')) {
 	// 			fullUrl = 'https:' + url
@@ -162,7 +171,6 @@ const DesignStep = forwardRef((props, ref) => {
 		return true
 	}
 
-
 	// Инициализация fabric canvas
 	useEffect(() => {
 		// Ждём, пока данные загрузятся и компонент отрендерится
@@ -217,13 +225,11 @@ const DesignStep = forwardRef((props, ref) => {
 		const handleTextScaling = (e) => {
 			const obj = e.target
 			if (!obj || obj.customData?.type !== 'text') return
-			
 
 			const scaleX = obj.scaleX
 			const newWidth = obj.width * scaleX
 			const newHeight = obj.height * scaleX
 			const newFontSize = Math.round(obj.fontSize * scaleX)
-			
 
 			obj.customData.originalFontSize = newFontSize
 			obj.customData.originalWidth = newWidth
@@ -307,11 +313,7 @@ const DesignStep = forwardRef((props, ref) => {
 		// Обработчик перемещения с магнитным выравниванием по центру канваса
 		const handleMoving = (e) => {
 			const obj = e.target
-			if (
-				!obj ||
-				obj.customData?.type === 'center-marker' ||
-				obj.customData?.type === 'guide-line'
-			)
+			if (!obj || obj.customData?.type === 'center-marker' || obj.customData?.type === 'guide-line')
 				return
 
 			const snapThreshold = 10 // Магнитная зона ±10px
@@ -351,7 +353,6 @@ const DesignStep = forwardRef((props, ref) => {
 
 			obj.setCoords() // Обновляем координаты объекта
 		}
-
 
 		// Обработчик окончания перемещения - скрываем направляющие
 		const handleMovingEnd = () => {
@@ -466,10 +467,7 @@ const DesignStep = forwardRef((props, ref) => {
 		// Удаляем изображения, которых больше нет в uploaderFiles
 		const uploaderUrls = uploaderFiles.map((f) => f.url)
 		currentObjects.forEach((obj) => {
-			if (
-				obj.customData?.type === 'uploaded-image' &&
-				!uploaderUrls.includes(obj.customData.url)
-			) {
+			if (obj.customData?.type === 'uploaded-image' && !uploaderUrls.includes(obj.customData.url)) {
 				canvas.remove(obj)
 			}
 		})
@@ -555,10 +553,9 @@ const DesignStep = forwardRef((props, ref) => {
 
 	// useEffect для загрузки текста с сервера на canvas
 	useEffect(() => {
-		
 		if (isLoading) return
 		const canvas = fabricCanvasRef.current
-		
+
 		if (!canvas || serverLabels.length === 0) return
 
 		const currentObjects = canvas.getObjects()
@@ -567,7 +564,6 @@ const DesignStep = forwardRef((props, ref) => {
 		const currentTexts = currentObjects
 			.filter((obj) => obj.customData?.type === 'text')
 			.map((obj) => obj.customData.serverId)
-
 
 		// Добавляем новые тексты
 		serverLabels.forEach((labelData, index) => {
@@ -581,8 +577,7 @@ const DesignStep = forwardRef((props, ref) => {
 				const left = labelData.x !== undefined ? labelData.x : 50
 				const top = labelData.y !== undefined ? labelData.y : 50
 				const fontSize = labelData.fontSize || 54
-				const width =
-					labelData.width !== undefined ? labelData.width : canvas.width
+				const width = labelData.width !== undefined ? labelData.width : canvas.width
 
 				const textbox = new Textbox(labelData.text, {
 					left,
@@ -604,10 +599,6 @@ const DesignStep = forwardRef((props, ref) => {
 					lockScalingFlip: true,
 					lockUniScaling: false,
 				})
-
-				
-
-				
 
 				// Скрываем ненужные контролы
 				textbox.setControlsVisibility({
@@ -636,14 +627,13 @@ const DesignStep = forwardRef((props, ref) => {
 				}
 
 				canvas.add(textbox)
-				
+
 				textbox.customData = {
 					...textbox.customData,
 					originalFontSize: fontSize,
 					originalWidth: width,
 					originalHeight: labelData.height,
 				}
-
 			} catch (error) {
 				console.error('❌ Ошибка при добавлении текста на canvas:', error)
 			}
@@ -655,27 +645,30 @@ const DesignStep = forwardRef((props, ref) => {
 	useEffect(() => {
 		const fetchStoreData = async () => {
 			try {
+				if (!minimalGroupsFromStore || minimalGroupsFromStore.length < 1) {
+					const productsResponse = await spiritHeroApi.getProducts()
+					setFallbackMinimalGroups(productsResponse?.minimum_groups || [])
+				}
+
 				const res = await spiritHeroApi.getStore(storeId)
 
 				console.debug('spiritHeroApi.getStore', res)
 
 				setCustomerLogos({ ...res.design })
-				setBaseDesign({...res.design})
+				setBaseDesign({ ...res.design })
 
 				const loadedElements = []
 				const serverImageFiles = []
 				let zIndex = 1
 
-				let activeId;
+				let activeId
 
 				setAllProducts(res.products)
 				const sortedProducts = res.products.reduce((acc, product, idx) => {
-					acc[product.category_name] = [
-						...(acc[product.category_name] || []),
-						product,
-					]
+					const groupKey = getGroupKey(product)
+					acc[groupKey] = [...(acc[groupKey] || []), product]
 					if (idx === 0) {
-						activeId = product.id;
+						activeId = product.id
 						setActiveCardId(product.id)
 						setImage(product.product_image)
 					}
@@ -683,14 +676,11 @@ const DesignStep = forwardRef((props, ref) => {
 				}, {})
 				setProductsByCategory(sortedProducts)
 
-				
 				// const designData =  res.design
-				const designData = [...res.products].find(elem => elem.id === activeId).design || res.design
+				const designData =
+					[...res.products].find((elem) => elem.id === activeId).design || res.design
 
-				if (
-					designData.customerLogos &&
-					Array.isArray(designData.customerLogos)
-				) {
+				if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
 					designData.customerLogos.forEach((logoData, index) => {
 						const id = uuidv4()
 						loadedElements.push({
@@ -721,8 +711,8 @@ const DesignStep = forwardRef((props, ref) => {
 						serverImageFiles.push(serverFile)
 					})
 				}
-				setUploaderFiles(serverImageFiles)				
-				
+				setUploaderFiles(serverImageFiles)
+
 				if (designData.labels && Array.isArray(designData.labels)) {
 					const labelsData = designData.labels.map((labelData) => ({
 						text: labelData.text || '',
@@ -742,7 +732,6 @@ const DesignStep = forwardRef((props, ref) => {
 					}))
 					setServerLabels(labelsData)
 				}
-
 			} catch (error) {
 				console.error(`spiritHeroApi.getStore error`, error)
 			} finally {
@@ -750,13 +739,13 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		}
 		fetchStoreData()
-	}, [])
+	}, [minimalGroupsFromStore, storeId])
 
 	// Автоматически конвертируем image в base64 при изменении
 	// useEffect(() => {
 	// 	if (image && !isBase64(image)) {
 	// 		console.log("image", image);
-			
+
 	// 		urlToBase64(image).then((base64) => {
 	// 			setImage(base64)
 	// 		})
@@ -786,7 +775,7 @@ const DesignStep = forwardRef((props, ref) => {
 				})
 			}
 			// Собираем данные о текстах
-			if (obj.customData?.type === 'text') {				
+			if (obj.customData?.type === 'text') {
 				labelsData.push({
 					text: obj.text,
 					x: Math.round(obj.left),
@@ -801,7 +790,7 @@ const DesignStep = forwardRef((props, ref) => {
 					rotation: Math.round(obj.angle),
 				})
 			}
-		})		
+		})
 
 		// Обновляем customerLogos
 		setCustomerLogos((prev) => ({
@@ -817,6 +806,7 @@ const DesignStep = forwardRef((props, ref) => {
 	}
 
 	const saveDesignForCurrentProduct = async () => {
+		setIsLoading(true)
 		const syncData = syncCanvasToCustomerLogos()
 
 		const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
@@ -835,17 +825,17 @@ const DesignStep = forwardRef((props, ref) => {
 				{
 					product_id: +activeCardId,
 					...design,
-				}
-			]
+				},
+			],
 		}
 
-		setAllProducts(prev => {
-			const newProducts = [...prev].map(product => {
-				if(product.id === activeCardId) {
+		setAllProducts((prev) => {
+			const newProducts = [...prev].map((product) => {
+				if (product.id === activeCardId) {
 					product.design = design
 				}
 				return product
-			})			
+			})
 			return newProducts
 		})
 
@@ -858,10 +848,14 @@ const DesignStep = forwardRef((props, ref) => {
 			setIsModalOpen(true)
 		} catch (error) {
 			console.error('Error saveDesignForCurrentProduct:', error)
-		} 
+		}
+		finally {
+			setIsLoading(false)
+		}
 	}
 
 	const saveDesignForEachProducts = async () => {
+		setIsLoading(true)
 		const syncData = syncCanvasToCustomerLogos()
 
 		const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
@@ -876,15 +870,14 @@ const DesignStep = forwardRef((props, ref) => {
 
 		const payload = {
 			store_id: storeId,
-			designs: allProducts.map(product => ({
+			designs: allProducts.map((product) => ({
 				product_id: product.id,
 				...design,
-			}))
+			})),
 		}
 
-
-		setAllProducts(prev => {
-			const newProducts = [...prev].map(product => ({
+		setAllProducts((prev) => {
+			const newProducts = [...prev].map((product) => ({
 				...product,
 				design,
 			}))
@@ -898,21 +891,23 @@ const DesignStep = forwardRef((props, ref) => {
 			setCustomerLogos(design)
 		} catch (error) {
 			console.error('Error saveDesignForEachProducts:', error)
+		} finally {
+			setIsLoading(false)
 		}
 	}
 
 	const onCardClick = (id) => {
-		const designData = allProducts.find(elem => elem.id === id).design || baseDesign
-		
+		const designData = allProducts.find((elem) => elem.id === id).design || baseDesign
+
 		setCustomerLogos(designData)
-		
-		if(!designData) return;
+
+		if (!designData) return
 
 		const canvas = fabricCanvasRef.current
 		if (canvas) {
-			const objectsToRemove = canvas.getObjects().filter(
-				(obj) => obj.customData?.type !== 'guide-line'
-			)
+			const objectsToRemove = canvas
+				.getObjects()
+				.filter((obj) => obj.customData?.type !== 'guide-line')
 			objectsToRemove.forEach((obj) => canvas.remove(obj))
 			canvas.renderAll()
 		}
@@ -924,10 +919,7 @@ const DesignStep = forwardRef((props, ref) => {
 		const serverImageFiles = []
 		let zIndex = 1
 
-		if (
-			designData.customerLogos &&
-			Array.isArray(designData.customerLogos)
-		) {
+		if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
 			designData.customerLogos.forEach((logoData, index) => {
 				const id = uuidv4()
 				loadedElements.push({
@@ -958,8 +950,8 @@ const DesignStep = forwardRef((props, ref) => {
 				serverImageFiles.push(serverFile)
 			})
 		}
-		setUploaderFiles(serverImageFiles)				
-		
+		setUploaderFiles(serverImageFiles)
+
 		if (designData.labels && Array.isArray(designData.labels)) {
 			const labelsData = designData.labels.map((labelData) => ({
 				text: labelData.text || '',
@@ -979,22 +971,26 @@ const DesignStep = forwardRef((props, ref) => {
 			}))
 			setServerLabels(labelsData)
 		}
-		
 	}
 
-	// Функция для создания скриншота контейнера custom__elements
+	// Функция для получения параметров логотипа
 	const getLogoParameters = async () => {
 		try {
-			syncCanvasToCustomerLogos()
+			setIsLoading(true)
+			const syncData = syncCanvasToCustomerLogos()
 
 			const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
 				quality: 0.95,
 			})
 
-			// const link = document.createElement('a')
-			// link.download = 'my-component-image.png'
-			// link.href = base64
-			// link.click()
+			console.debug('base64', base64);
+			
+
+			const design = {
+				elementsPositionImage: base64,
+				customerLogos: syncData.customerLogos,
+				labels: syncData.labels,
+			}
 
 			setCustomerLogos((prev) => ({
 				...prev,
@@ -1002,17 +998,32 @@ const DesignStep = forwardRef((props, ref) => {
 			}))
 
 			const payload = {
-				...customerLogos,
-				elementsPositionImage: base64,
+				...design,
 				store_id: storeId,
 				product_id: +activeCardId,
 			}
 
 			const response = await spiritHeroApi.createDesign(storeId, payload)
 			console.debug('spiritHeroApi.createDesign response', response)
+
+			const saveForEachPayload = {
+				store_id: storeId,
+				designs: allProducts.map((product) => ({
+					product_id: product.id,
+					...design,
+				})),
+			}
+
+			const saveForEachResponse = await spiritHeroApi.saveDesignForCurrentProduct(saveForEachPayload)
+			console.debug('saveDesignForEachProducts response', saveForEachResponse)
+
+			setIsModalOpen(true)
+			setCustomerLogos(design)
 		} catch (error) {
 			console.error('Error spiritHeroApi.createDesign:', error)
 			return null
+		} finally {
+			setIsLoading(false)
 		}
 	}
 
@@ -1021,309 +1032,308 @@ const DesignStep = forwardRef((props, ref) => {
 		getLogoParameters,
 	}))
 
-	if (isLoading) return <Loader />
-	else
 		return (
-			<div className={css.design_section}>
-				<div className={css.image__box} ref={imageBoxRef}>
-					<img src={image} alt="Customizer image" />
+			<>
+				{isLoading && <Loader />}
+				<div className={css.design_section}>
+					<div className={css.image__box} ref={imageBoxRef}>
+						<img src={image} alt="Customizer image" />
 
-					<div
-						ref={containerRef}
-						className={`${css.custom__elements}`}
-					>
-						<canvas ref={canvasRef} />
-					</div>
-				</div>
-
-				<div className={css.settings__box}>
-					<button
-						onClick={() => {console.log("CLICK")}}
-						className={`${css.button} contrast_button_1`}
-						disabled
-					>
-						<Icon name={'Palette'} />
-						Request a custom design
-					</button>
-
-					<h1 className={css.title}>Create your design</h1>
-
-					<span className={css.subtitle}>
-						Choose options from ready solutions to the custom ones
-					</span>
-
-					<div className={css.customizer}>
-						<fieldset className={css.customizer__pickers}>
-							<label>
-								<Icon name={'Frame'} />
-								Add Image
-								<input
-									onChange={(event) =>
-										setCustomizerType(event.currentTarget.value)
-									}
-									value="image"
-									type="radio"
-									name="customizer--option"
-									className="visually-hidden"
-								/>
-							</label>
-
-							<label>
-								<Icon name={'Letters'} />
-								Add Text
-								<input
-									onChange={(event) =>
-										setCustomizerType(event.currentTarget.value)
-									}
-									value="text"
-									type="radio"
-									name="customizer--option"
-									className="visually-hidden"
-								/>
-							</label>
-
-							<label>
-								<Icon name={'Edits'} />
-								Templates
-								<input
-									onChange={(event) =>
-										setCustomizerType(event.currentTarget.value)
-									}
-									value="template"
-									type="radio"
-									name="customizer--option"
-									className="visually-hidden"
-									disabled
-								/>
-							</label>
-						</fieldset>
-
-						<div className={css.customizer__tools}>
-							{customizerType === 'image' && (
-								<ImageUploader
-									files={uploaderFiles}
-									setFiles={setUploaderFiles}
-									dragOver={uploaderDragOver}
-									setDragOver={setUploaderDragOver}
-								/>
-							)}
-
-							{customizerType === 'text' && (
-								<TextHandle
-									selectedText={
-										selectedTextObject
-											? {
-													text: selectedTextObject.text,
-													font: selectedTextObject.fontFamily,
-													size: Math.round(selectedTextObject.fontSize),
-													bold:
-														selectedTextObject.fontWeight === 'bold' ||
-														selectedTextObject.fontWeight === 700,
-													italic: selectedTextObject.fontStyle === 'italic',
-													color: selectedTextObject.fill,
-												}
-											: null
-									}
-									onUpdate={(text, options) => {
-										if (!selectedTextObject) return
-
-										const canvas = fabricCanvasRef.current
-										if (!canvas) return
-										
-										// Обновляем текст
-										selectedTextObject.set({
-											text: text,
-											fontFamily: options.font,
-											fontWeight: options.bold ? 'bold' : 'normal',
-											fontStyle: options.italic ? 'italic' : 'normal',
-											fill: options.color,
-											textAlign: 'center',
-										})
-
-
-										canvas.renderAll()
-									}}
-									onAdd={(text, options) => {
-										const canvas = fabricCanvasRef.current
-										if (!canvas) {
-											console.error('Canvas не готов для добавления текста')
-											return
-										}								
-
-										// Функция для подбора оптимального размера шрифта
-										const calculateOptimalFontSize = (
-											text,
-											targetWidth,
-											initialFontSize,
-											fontFamily,
-											fontWeight,
-											fontStyle,
-										) => {
-											// Создаём canvas context для измерения текста
-											const ctx = canvas.getContext()
-
-											// Устанавливаем стиль шрифта
-											const fontStyle2 = `${fontStyle} ${fontWeight} ${initialFontSize}px ${fontFamily}`
-											ctx.font = fontStyle2
-
-											// Измеряем реальную ширину текста
-											const metrics = ctx.measureText(text)
-											const actualWidth = metrics.width
-
-											// Добавляем небольшой отступ (5%) для безопасности
-											const safeTargetWidth = targetWidth * 0.95
-
-											// Вычисляем коэффициент масштабирования
-											const widthRatio = safeTargetWidth / actualWidth
-											let fontSize = initialFontSize * widthRatio
-
-											// Ограничиваем размер шрифта разумными пределами
-											fontSize = Math.max(fontSize, 16) // Минимум 16px
-											fontSize = Math.min(fontSize, 200) // Максимум 200px
-
-											return fontSize
-										}
-
-										// Вычисляем оптимальный размер шрифта
-										const optimalFontSize = calculateOptimalFontSize(
-											text,
-											canvas.width,
-											options.size,
-											options.font,
-											options.bold ? 'bold' : 'normal',
-											options.italic ? 'italic' : 'normal',
-										)
-
-										// Создаём текстовый объект с оптимальным размером шрифта
-										const textbox = new Textbox(text, {
-											left: 0, // Будет центрирован после создания
-											top: 0,
-											width: canvas.width, // Ширина равна ширине canvas
-											fontFamily: options.font,
-											fontSize: optimalFontSize,
-											fontWeight: options.bold ? 'bold' : 'normal',
-											fontStyle: options.italic ? 'italic' : 'normal',
-											fill: options.color,
-											textAlign: 'center',
-											// Настройки для пропорционального изменения
-											lockScalingFlip: true,
-											// Разрешаем изменение только по ширине для пропорционального масштабирования
-											lockUniScaling: false,
-											// Стили контролов
-											cornerStyle: 'circle',
-											cornerColor: '#4E008E',
-											cornerStrokeColor: '#ffffff',
-											borderColor: '#4E008E',
-											borderScaleFactor: 2,
-											transparentCorners: false,
-										})
-
-										// Центрируем текст на канвасе
-										textbox.set({
-											left: canvas.width / 2,
-											top: canvas.height / 2,
-										})
-
-										// Скрываем контролы масштабирования по вертикали и горизонтали
-										// Оставляем только угловые для пропорционального изменения
-										textbox.setControlsVisibility({
-											mt: false,
-											mb: false,
-											ml: false,
-											mr: false,
-										})
-
-										// Добавляем кнопку удаления
-										textbox.controls.deleteControl = new Control({
-											x: 0.5,
-											y: -0.5,
-											offsetY: -16,
-											offsetX: 16,
-											cursorStyle: 'pointer',
-											mouseUpHandler: deleteObject,
-											render: renderDeleteIcon,
-											cornerSize: 24,
-										})
-
-										// Добавляем кастомные данные
-										textbox.customData = {
-											type: 'text',
-											originalFontSize: optimalFontSize,
-											originalWidth: canvas.width,
-										}
-
-										// Добавляем на canvas
-										canvas.add(textbox)									
-
-										canvas.setActiveObject(textbox)
-										canvas.renderAll()
-									}}
-								/>
-							)}
+						<div ref={containerRef} className={`${css.custom__elements}`}>
+							<canvas ref={canvasRef} />
 						</div>
 					</div>
 
-					<div className={css['products--list__by--category']}>
-						{productsByCategory &&
-							Object.keys(productsByCategory).map((key) => (
-								<details key={key} open>
-									<summary>
-										<Icon name={'ChevronUp'} />
-										<strong>{key}</strong>
-									</summary>
+					<div className={css.settings__box}>
+						<button
+							onClick={() => {
+								console.debug('CLICK')
+							}}
+							className={`${css.button} contrast_button_1`}
+							disabled
+						>
+							<Icon name={'Palette'} />
+							Request a custom design
+						</button>
 
-									<ul className={css.products__list}>
-										{productsByCategory[key].map((product) => (
-											<ProductCustomizerCard
-												key={product.id}
-												setImage={setImage}
-												activeCardId={activeCardId}
-												setActiveCardId={setActiveCardId}
-												product={product}
-												storeId={storeId}
-												setProductsByCategory={setProductsByCategory}
-												saveDesignForCurrentProduct={saveDesignForCurrentProduct}
-												saveDesignForEachProduct={saveDesignForEachProducts}
-												onCardClick={onCardClick}
-											/>
-										))}
-									</ul>
-								</details>
-							))}
+						<h1 className={css.title}>Create your design</h1>
+
+						<span className={css.subtitle}>
+							Choose options from ready solutions to the custom ones
+						</span>
+
+						<div className={css.customizer}>
+							<fieldset className={css.customizer__pickers}>
+								<label>
+									<Icon name={'Frame'} />
+									Add Image
+									<input
+										onChange={(event) => setCustomizerType(event.currentTarget.value)}
+										value="image"
+										type="radio"
+										name="customizer--option"
+										className="visually-hidden"
+									/>
+								</label>
+
+								<label>
+									<Icon name={'Letters'} />
+									Add Text
+									<input
+										onChange={(event) => setCustomizerType(event.currentTarget.value)}
+										value="text"
+										type="radio"
+										name="customizer--option"
+										className="visually-hidden"
+									/>
+								</label>
+
+								<label>
+									<Icon name={'Edits'} />
+									Templates
+									<input
+										onChange={(event) => setCustomizerType(event.currentTarget.value)}
+										value="template"
+										type="radio"
+										name="customizer--option"
+										className="visually-hidden"
+										disabled
+									/>
+								</label>
+							</fieldset>
+
+							<div className={css.customizer__tools}>
+								{customizerType === 'image' && (
+									<ImageUploader
+										files={uploaderFiles}
+										setFiles={setUploaderFiles}
+										dragOver={uploaderDragOver}
+										setDragOver={setUploaderDragOver}
+									/>
+								)}
+
+								{customizerType === 'text' && (
+									<TextHandle
+										selectedText={
+											selectedTextObject
+												? {
+														text: selectedTextObject.text,
+														font: selectedTextObject.fontFamily,
+														size: Math.round(selectedTextObject.fontSize),
+														bold:
+															selectedTextObject.fontWeight === 'bold' ||
+															selectedTextObject.fontWeight === 700,
+														italic: selectedTextObject.fontStyle === 'italic',
+														color: selectedTextObject.fill,
+													}
+												: null
+										}
+										onUpdate={(text, options) => {
+											if (!selectedTextObject) return
+
+											const canvas = fabricCanvasRef.current
+											if (!canvas) return
+
+											// Обновляем текст
+											selectedTextObject.set({
+												text: text,
+												fontFamily: options.font,
+												fontWeight: options.bold ? 'bold' : 'normal',
+												fontStyle: options.italic ? 'italic' : 'normal',
+												fill: options.color,
+												textAlign: 'center',
+											})
+
+											canvas.renderAll()
+										}}
+										onAdd={(text, options) => {
+											const canvas = fabricCanvasRef.current
+											if (!canvas) {
+												console.error('Canvas не готов для добавления текста')
+												return
+											}
+
+											// Функция для подбора оптимального размера шрифта
+											const calculateOptimalFontSize = (
+												text,
+												targetWidth,
+												initialFontSize,
+												fontFamily,
+												fontWeight,
+												fontStyle,
+											) => {
+												// Создаём canvas context для измерения текста
+												const ctx = canvas.getContext()
+
+												// Устанавливаем стиль шрифта
+												const fontStyle2 = `${fontStyle} ${fontWeight} ${initialFontSize}px ${fontFamily}`
+												ctx.font = fontStyle2
+
+												// Измеряем реальную ширину текста
+												const metrics = ctx.measureText(text)
+												const actualWidth = metrics.width
+
+												// Добавляем небольшой отступ (5%) для безопасности
+												const safeTargetWidth = targetWidth * 0.95
+
+												// Вычисляем коэффициент масштабирования
+												const widthRatio = safeTargetWidth / actualWidth
+												let fontSize = initialFontSize * widthRatio
+
+												// Ограничиваем размер шрифта разумными пределами
+												fontSize = Math.max(fontSize, 16) // Минимум 16px
+												fontSize = Math.min(fontSize, 200) // Максимум 200px
+
+												return fontSize
+											}
+
+											// Вычисляем оптимальный размер шрифта
+											const optimalFontSize = calculateOptimalFontSize(
+												text,
+												canvas.width,
+												options.size,
+												options.font,
+												options.bold ? 'bold' : 'normal',
+												options.italic ? 'italic' : 'normal',
+											)
+
+											// Создаём текстовый объект с оптимальным размером шрифта
+											const textbox = new Textbox(text, {
+												left: 0, // Будет центрирован после создания
+												top: 0,
+												width: canvas.width, // Ширина равна ширине canvas
+												fontFamily: options.font,
+												fontSize: optimalFontSize,
+												fontWeight: options.bold ? 'bold' : 'normal',
+												fontStyle: options.italic ? 'italic' : 'normal',
+												fill: options.color,
+												textAlign: 'center',
+												// Настройки для пропорционального изменения
+												lockScalingFlip: true,
+												// Разрешаем изменение только по ширине для пропорционального масштабирования
+												lockUniScaling: false,
+												// Стили контролов
+												cornerStyle: 'circle',
+												cornerColor: '#4E008E',
+												cornerStrokeColor: '#ffffff',
+												borderColor: '#4E008E',
+												borderScaleFactor: 2,
+												transparentCorners: false,
+											})
+
+											// Центрируем текст на канвасе
+											textbox.set({
+												left: canvas.width / 2,
+												top: canvas.height / 2,
+											})
+
+											// Скрываем контролы масштабирования по вертикали и горизонтали
+											// Оставляем только угловые для пропорционального изменения
+											textbox.setControlsVisibility({
+												mt: false,
+												mb: false,
+												ml: false,
+												mr: false,
+											})
+
+											// Добавляем кнопку удаления
+											textbox.controls.deleteControl = new Control({
+												x: 0.5,
+												y: -0.5,
+												offsetY: -16,
+												offsetX: 16,
+												cursorStyle: 'pointer',
+												mouseUpHandler: deleteObject,
+												render: renderDeleteIcon,
+												cornerSize: 24,
+											})
+
+											// Добавляем кастомные данные
+											textbox.customData = {
+												type: 'text',
+												originalFontSize: optimalFontSize,
+												originalWidth: canvas.width,
+											}
+
+											// Добавляем на canvas
+											canvas.add(textbox)
+
+											canvas.setActiveObject(textbox)
+											canvas.renderAll()
+										}}
+									/>
+								)}
+							</div>
+						</div>
+
+						<div className={css['products--list__by--category']}>
+							{productsByCategory &&
+								getSortedGroupKeys(productsByCategory).map((key) => (
+									<details key={key} open>
+										<summary>
+											<Icon name={'ChevronUp'} />
+											<strong>{getGroupLabel(key)}</strong>
+										</summary>
+
+										<ul className={css.products__list}>
+											{productsByCategory[key].map((product) => (
+												<ProductCustomizerCard
+													key={product.id}
+													groupKey={key}
+													setImage={setImage}
+													activeCardId={activeCardId}
+													setActiveCardId={setActiveCardId}
+													product={product}
+													storeId={storeId}
+													setProductsByCategory={setProductsByCategory}
+													saveDesignForCurrentProduct={saveDesignForCurrentProduct}
+													saveDesignForEachProduct={saveDesignForEachProducts}
+													onCardClick={onCardClick}
+												/>
+											))}
+										</ul>
+									</details>
+								))}
+						</div>
 					</div>
+
+					<Modal
+						isOpen={isModalOpen}
+						onClose={() => setIsModalOpen(false)}
+						className={`${css.modal} validation--modal`}
+					>
+						<div className={css.modal__content}>
+							<Icon name={'Download'} className={css.modal__icon} />
+							<h2 className={css.modal__title}>
+								Your logo is saved!
+								<br />
+								Do you want to create another?
+							</h2>
+
+							<button className={css.modal__button__continue} onClick={() => setIsModalOpen(false)}>
+								Yes, create another logo
+							</button>
+							<button
+								className={css.modal__button__next}
+								onClick={() => {
+									setIsModalOpen(false)
+									setIsFundraisingModalOpen(true)
+								}}
+							>
+								No, move to the next step
+							</button>
+						</div>
+					</Modal>
+
+					<Modal
+						isOpen={isFundraisingModalOpen}
+						onClose={() => setIsFundraisingModalOpen(false)}
+						className={`${css.fundraising__modal} validation--modal`}
+					>
+						<FundraisingTypeModal setIsFundraisingModalOpen={setIsFundraisingModalOpen} />
+					</Modal>
 				</div>
-
-				<Modal
-					isOpen={isModalOpen}
-					onClose={() => setIsModalOpen(false)}
-					className={`${css.modal} validation--modal`}
-				>
-					<div className={css.modal__content}>
-
-					<Icon name={'Download'} className={css.modal__icon} />
-					<h2 className={css.modal__title}>
-						Your logo is saved!
-						<br />
-						Do you want to create another?
-					</h2>
-
-					<button className={css.modal__button__continue} onClick={() => setIsModalOpen(false)}>Yes, create another logo</button>
-					<button className={css.modal__button__next} onClick={() => {
-						setIsModalOpen(false)
-						setIsFundraisingModalOpen(true)
-						}}>No, move to the next step</button>
-					</div>
-				</Modal>
-						
-				<Modal
-					isOpen={isFundraisingModalOpen}
-					onClose={() => setIsFundraisingModalOpen(false)}
-					className={`${css.fundraising__modal} validation--modal`}
-				>
-					<FundraisingTypeModal setIsFundraisingModalOpen={setIsFundraisingModalOpen} />
-					
-				</Modal>
-			</div>
+			</>
 		)
 })
 

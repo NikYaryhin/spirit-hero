@@ -7,14 +7,13 @@ import Modal from '../Modal/Modal'
 import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 
 export default function ProductCustomiserCard({
+	groupKey,
 	setImage,
 	setActiveCardId,
 	setProductsByCategory,
 	activeCardId,
 	product,
 	storeId,
-	saveDesignForEachProduct,
-	saveDesignForCurrentProduct,
 	onCardClick
 }) {
 	const {
@@ -24,7 +23,6 @@ export default function ProductCustomiserCard({
 		choosed_colors,
 		colors,
 		active,
-		category_id,
 	} = product
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
@@ -59,8 +57,9 @@ export default function ProductCustomiserCard({
 				const objectToReturn = {
 					...prev,
 				}
+				const targetGroupKey = String(groupKey ?? product?.group_id ?? 'no_group')
 
-				objectToReturn[category_id] = prev[category_id].filter(
+				objectToReturn[targetGroupKey] = (prev[targetGroupKey] || []).filter(
 					(p) => p.id !== id,
 				)
 
@@ -144,7 +143,7 @@ export default function ProductCustomiserCard({
 				</fieldset>
 			</div>
 
-			{
+			{/* {
 				id === activeCardId && (
 					<div className={css['save-design-buttons']}>
 						<button className={css['save-design-button']} onClick={(e) => {
@@ -159,7 +158,7 @@ export default function ProductCustomiserCard({
 							Save design for current product</button>
 					</div>
 				)
-			}
+			} */}
 
 			<button onClick={closeButtonHandle} className={css.close__button}>
 				<Icon name={'Cancel'} />

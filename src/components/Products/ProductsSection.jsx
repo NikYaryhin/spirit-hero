@@ -107,7 +107,8 @@ export default function ProductsSection({ isFlashSale }) {
 		const matchByFilters = (product) => {
 			if (activeFilters.productGroups && activeFilters.productGroups.length > 0) {
 				const passProductGroup = activeFilters.productGroups.includes(
-					String(product.minimum_group_id),
+					String(product.group_id),
+					// String(product.group_id),
 				)
 				if (!passProductGroup) return false
 			}

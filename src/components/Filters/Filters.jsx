@@ -26,7 +26,7 @@ export default function Filters({
 		let pass
 
 		if (keyNameLowerCase === 'productgroups') {
-			pass = products.some((product) => product.minimum_group_id === id)
+			pass = products.some((product) => product.group_id === id)
 		}
 		if (keyNameLowerCase === 'categories') {
 			pass = products.some((product) => product.category_id === id)

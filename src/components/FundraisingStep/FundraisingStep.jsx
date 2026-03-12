@@ -63,7 +63,7 @@ export default function FundraisingStep() {
 		}, {})
 	}, [minimalGroups])
 
-	const getGroupKey = useCallback((product) => String(product?.minimum_group_id ?? 'no_group'), [])
+	const getGroupKey = useCallback((product) => String(product?.group_id ?? 'no_group'), [])
 
 	const getGroupLabel = (groupKey) => minimalGroupNameById[groupKey] || `Group ${groupKey}`
 
