@@ -34,10 +34,10 @@
 			width: 100%;
 
 			font-size: 1.4rem;
-		line-height: 1.47;
-		font-weight: 400;
-		color: #FCFCFC;
-	background-color: #4E008E;
+			line-height: 1.47;
+			font-weight: 400;
+			color: #FCFCFC;
+			background-color: #4E008E;
 			transition: color 0.2s ease;
 
 			@media (hover: hover) {
@@ -58,5 +58,5 @@
 	color: #4E008E;
 
 	text-align: center;
-		text-decoration: underline;
+	text-decoration: underline;
 }

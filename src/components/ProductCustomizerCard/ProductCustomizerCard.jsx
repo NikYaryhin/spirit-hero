@@ -30,10 +30,11 @@ export default function ProductCustomiserCard({
 		choosed_colors.length > 0 ? choosed_colors : [...colors].slice(0, 3),
 	)
 
-	const cardClickHandle = () => {
+	const cardClickHandle = (event) => {
 		if (active) return
 
-		onCardClick(id)
+		const groupIdFromDataset = event?.currentTarget?.dataset?.groupId
+		onCardClick(id, groupIdFromDataset)
 		setActiveCardId(id)
 		setImage(product_image)
 	}
@@ -112,10 +113,11 @@ export default function ProductCustomiserCard({
 
 	return (
 		<li
-			onClick={() => cardClickHandle()}
+			onClick={cardClickHandle}
 			className={`${css.customizer__card} ${activeCardId === id ? css.active : ''}`}
 			key={id}
 			id={id}
+			data-group-id={groupKey ?? null}
 		>
 			<div className={css.image__box}>
 				<img src={product_image} alt={product_title} loading="lazy" />

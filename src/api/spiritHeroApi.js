@@ -81,6 +81,13 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async createNewMinimalGroup(minimumGroupId) {
+		const { data } = await this.http.post(
+			`/api/builder/duplicate-minimal-group?minimum_group_id=${minimumGroupId}`
+		)
+		return data
+	}
+
 	async addToMyStoreProductsList(store_id, ids) {
 		const body = { store_id, ids }
 		const { data } = await this.http.post(
@@ -135,6 +142,24 @@ class SpiritHeroApi {
 	async createDesign(store_id, design) {
 		const body = { design, store_id }
 		const { data } = await this.http.post('/api/builder/create-design', body)
+		return data
+	}
+
+	async saveDesignForGroups(payload) {
+		// Example payload
+		// const payload = {
+		// 	store_id: 1111,
+		// 	minimum_groups: [10, 11],
+		// 	design: {
+		// 		elementsPositionImage: 'base64',
+		// 		customerLogos: [],
+		// 		labels: [],
+		// 	}
+		// }
+		const { data } = await this.http.post(
+			'/api/builder/save-design-minimum-group',
+			payload,
+		)
 		return data
 	}
 

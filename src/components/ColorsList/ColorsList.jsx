@@ -9,7 +9,6 @@ export default function ColorsList({ colorInputHandle, colors }) {
 	useEffect(()=>{
 		const fetchColors = async () => {
 			const colorsData = await spiritHeroApi.getColors()
-			console.log("colorsData", colorsData);
 		}
 		fetchColors()
 	},[])

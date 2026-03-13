@@ -7,13 +7,16 @@ import Loader from '../Loader/Loader'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import TextHandle from '../TextHandle/TextHandle'
 import { v4 as uuidv4 } from 'uuid'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import domtoimage from 'dom-to-image-more'
 import { Canvas, FabricImage, Control, util, Textbox, Line } from 'fabric'
 import Modal from '@/components/Modal/Modal'
 import FundraisingTypeModal from '../FundraisingTypeModal/FundraisingTypeModal'
+import NewDesignModal from '../NewDesignModal/NewDesignModal'
+import { setMinimalGroups } from '@/features/products/productsSlice'
 
 const DesignStep = forwardRef((props, ref) => {
+	const dispatch = useDispatch()
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
 	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
@@ -22,10 +25,9 @@ const DesignStep = forwardRef((props, ref) => {
 	const [customizerType, setCustomizerType] = useState(null)
 
 	const [isLoading, setIsLoading] = useState(true)
-	const [allProducts, setAllProducts] = useState(null)
 	const [productsByCategory, setProductsByCategory] = useState(null)
-	const [fallbackMinimalGroups, setFallbackMinimalGroups] = useState([])
 	const [activeCardId, setActiveCardId] = useState(null)
+	const [activeGroupId, setActiveGroupId] = useState(null)
 	const [baseDesign, setBaseDesign] = useState(null)
 	const [customerLogos, setCustomerLogos] = useState({
 		elementsPositionImage: '',
@@ -42,6 +44,7 @@ const DesignStep = forwardRef((props, ref) => {
 	const [selectedTextObject, setSelectedTextObject] = useState(null)
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [isNewDesignModalOpen, setIsNewDesignModalOpen] = useState(false)
 	const [isFundraisingModalOpen, setIsFundraisingModalOpen] = useState(false)
 
 	const containerRef = useRef(null)
@@ -49,12 +52,10 @@ const DesignStep = forwardRef((props, ref) => {
 	const canvasRef = useRef(null)
 	const fabricCanvasRef = useRef(null)
 
-	const minimalGroups = useMemo(() => {
-		if (Array.isArray(minimalGroupsFromStore) && minimalGroupsFromStore.length > 0) {
-			return minimalGroupsFromStore
-		}
-		return Array.isArray(fallbackMinimalGroups) ? fallbackMinimalGroups : []
-	}, [minimalGroupsFromStore, fallbackMinimalGroups])
+	const minimalGroups = useMemo(
+		() => (Array.isArray(minimalGroupsFromStore) ? minimalGroupsFromStore : []),
+		[minimalGroupsFromStore],
+	)
 
 	const minimalGroupNameById = useMemo(() => {
 		return minimalGroups.reduce((acc, group) => {
@@ -63,45 +64,12 @@ const DesignStep = forwardRef((props, ref) => {
 		}, {})
 	}, [minimalGroups])
 
-	const getGroupKey = (product) => String(product?.group_id ?? 'no_group')
 	const getGroupLabel = (groupKey) => minimalGroupNameById[groupKey] || `Group ${groupKey}`
-
-	const getSortedGroupKeys = (groups) => {
-		if (!groups) return []
-
-		const keys = Object.keys(groups)
-		return keys
+	const getProductsFromActiveGroup = () => {
+		if (!activeGroupId) return []
+		const groupProducts = productsByCategory?.[activeGroupId]
+		return Array.isArray(groupProducts) ? groupProducts : []
 	}
-
-	// Функция для конвертации URL в base64
-	// const urlToBase64 = async (url) => {
-	// 	try {
-	// 		let fullUrl = url
-	// 		if (url.startsWith('//')) {
-	// 			fullUrl = 'https:' + url
-	// 		}
-
-	// 		const response = await fetch(fullUrl, {
-	// 			mode: 'cors',
-	// 			credentials: 'omit',
-	// 		})
-	// 		const blob = await response.blob()
-	// 		return new Promise((resolve) => {
-	// 			const reader = new FileReader()
-	// 			reader.onloadend = () => resolve(reader.result)
-	// 			reader.readAsDataURL(blob)
-	// 		})
-	// 	} catch (error) {
-	// 		console.error('Error converting image to base64:', error)
-	// 		return url
-	// 	}
-	// }
-
-	// Функция для проверки, является ли строка base64
-	// const isBase64 = (str) => {
-	// 	if (!str || typeof str !== 'string') return false
-	// 	return str.startsWith('data:image/')
-	// }
 
 	// Функция для отрисовки иконки удаления
 	const renderDeleteIcon = (ctx, left, top, styleOverride, fabricObject) => {
@@ -645,12 +613,9 @@ const DesignStep = forwardRef((props, ref) => {
 	useEffect(() => {
 		const fetchStoreData = async () => {
 			try {
-				if (!minimalGroupsFromStore || minimalGroupsFromStore.length < 1) {
-					const productsResponse = await spiritHeroApi.getProducts()
-					setFallbackMinimalGroups(productsResponse?.minimum_groups || [])
-				}
-
 				const res = await spiritHeroApi.getStore(storeId)
+				const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : []
+				dispatch(setMinimalGroups(storeMinimalGroups))
 
 				console.debug('spiritHeroApi.getStore', res)
 
@@ -661,24 +626,33 @@ const DesignStep = forwardRef((props, ref) => {
 				const serverImageFiles = []
 				let zIndex = 1
 
-				let activeId
+				const sortedProducts = storeMinimalGroups.reduce((acc, group) => {
+					const groupKey = String(group?.id)
+					const groupProducts = Array.isArray(group?.products) ? group.products : []
 
-				setAllProducts(res.products)
-				const sortedProducts = res.products.reduce((acc, product, idx) => {
-					const groupKey = getGroupKey(product)
-					acc[groupKey] = [...(acc[groupKey] || []), product]
-					if (idx === 0) {
-						activeId = product.id
-						setActiveCardId(product.id)
-						setImage(product.product_image)
+					if (groupProducts.length > 0) {
+						acc[groupKey] = groupProducts
 					}
+
 					return acc
 				}, {})
 				setProductsByCategory(sortedProducts)
 
+				const firstGroupKey = Object.keys(sortedProducts)[0]
+				const firstProduct =
+					firstGroupKey && Array.isArray(sortedProducts[firstGroupKey])
+						? sortedProducts[firstGroupKey][0]
+						: null
+
+				if (firstProduct) {
+					setActiveCardId(firstProduct.id)
+					setActiveGroupId(firstGroupKey)
+					setImage(firstProduct.product_image)
+				}
+
 				// const designData =  res.design
-				const designData =
-					[...res.products].find((elem) => elem.id === activeId).design || res.design
+				const activeProduct = firstProduct
+				const designData = activeProduct?.design || res.design
 
 				if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
 					designData.customerLogos.forEach((logoData, index) => {
@@ -739,18 +713,7 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		}
 		fetchStoreData()
-	}, [minimalGroupsFromStore, storeId])
-
-	// Автоматически конвертируем image в base64 при изменении
-	// useEffect(() => {
-	// 	if (image && !isBase64(image)) {
-	// 		console.log("image", image);
-
-	// 		urlToBase64(image).then((base64) => {
-	// 			setImage(base64)
-	// 		})
-	// 	}
-	// }, [image])
+	}, [dispatch, storeId])
 
 	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
@@ -829,14 +792,15 @@ const DesignStep = forwardRef((props, ref) => {
 			],
 		}
 
-		setAllProducts((prev) => {
-			const newProducts = [...prev].map((product) => {
-				if (product.id === activeCardId) {
-					product.design = design
-				}
-				return product
-			})
-			return newProducts
+		setProductsByCategory((prev) => {
+			if (!prev || !activeGroupId) return prev
+			const currentGroupProducts = Array.isArray(prev[activeGroupId]) ? prev[activeGroupId] : []
+			return {
+				...prev,
+				[activeGroupId]: currentGroupProducts.map((product) =>
+					product.id === activeCardId ? { ...product, design } : product,
+				),
+			}
 		})
 
 		console.debug('saveDesignForCurrentProduct payload', payload)
@@ -867,21 +831,23 @@ const DesignStep = forwardRef((props, ref) => {
 			customerLogos: syncData.customerLogos,
 			labels: syncData.labels,
 		}
+		const activeGroupProducts = getProductsFromActiveGroup()
 
 		const payload = {
 			store_id: storeId,
-			designs: allProducts.map((product) => ({
+			designs: activeGroupProducts.map((product) => ({
 				product_id: product.id,
 				...design,
 			})),
 		}
 
-		setAllProducts((prev) => {
-			const newProducts = [...prev].map((product) => ({
-				...product,
-				design,
-			}))
-			return newProducts
+		setProductsByCategory((prev) => {
+			if (!prev || !activeGroupId) return prev
+			const currentGroupProducts = Array.isArray(prev[activeGroupId]) ? prev[activeGroupId] : []
+			return {
+				...prev,
+				[activeGroupId]: currentGroupProducts.map((product) => ({ ...product, design })),
+			}
 		})
 
 		try {
@@ -896,8 +862,14 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 	}
 
-	const onCardClick = (id) => {
-		const designData = allProducts.find((elem) => elem.id === id).design || baseDesign
+	const onCardClick = (id, groupId) => {
+		const nextActiveGroupId = String(groupId ?? '')
+		setActiveGroupId(nextActiveGroupId)
+		const currentGroupProducts = Array.isArray(productsByCategory?.[nextActiveGroupId])
+			? productsByCategory[nextActiveGroupId]
+			: []
+		const currentProduct = currentGroupProducts.find((elem) => elem.id === id)
+		const designData = currentProduct?.design || baseDesign
 
 		setCustomerLogos(designData)
 
@@ -983,14 +955,6 @@ const DesignStep = forwardRef((props, ref) => {
 				quality: 0.95,
 			})
 
-			// const link = document.createElement('a')
-			// link.href = base64
-			// link.download = `design-${activeCardId || 'preview'}.jpeg`
-			// // document.body.appendChild(link)
-			// link.click()
-			// // document.body.removeChild(link)
-
-
 			const design = {
 				elementsPositionImage: base64,
 				customerLogos: syncData.customerLogos,
@@ -1002,30 +966,30 @@ const DesignStep = forwardRef((props, ref) => {
 				elementsPositionImage: base64,
 			}))
 
-			const payload = {
-				...design,
+			// const payload = {
+			// 	...design,
+			// 	store_id: storeId,
+			// 	product_id: +activeCardId,
+			// }
+
+			// const response = await spiritHeroApi.createDesign(storeId, payload)
+			// console.debug('spiritHeroApi.createDesign response', response)
+
+			const saveDesignForGroupsPayload = {
 				store_id: storeId,
-				product_id: +activeCardId,
+				minimum_groups: [+activeGroupId],
+				design,
 			}
 
-			const response = await spiritHeroApi.createDesign(storeId, payload)
-			console.debug('spiritHeroApi.createDesign response', response)
+			console.debug('saveDesignForGroupsPayload', saveDesignForGroupsPayload)
 
-			const saveForEachPayload = {
-				store_id: storeId,
-				designs: allProducts.map((product) => ({
-					product_id: product.id,
-					...design,
-				})),
-			}
-
-			const saveForEachResponse = await spiritHeroApi.saveDesignForCurrentProduct(saveForEachPayload)
-			console.debug('saveDesignForEachProducts response', saveForEachResponse)
+			const saveDesignForGroupsResponse = await spiritHeroApi.saveDesignForGroups(saveDesignForGroupsPayload)
+			console.debug('saveDesignForGroupsResponse response', saveDesignForGroupsResponse)
 
 			setIsModalOpen(true)
 			setCustomerLogos(design)
 		} catch (error) {
-			console.error('Error spiritHeroApi.createDesign:', error)
+			console.error('Error spiritHeroApi.saveDesignForGroups:', error)
 			return null
 		} finally {
 			setIsLoading(false)
@@ -1272,8 +1236,17 @@ const DesignStep = forwardRef((props, ref) => {
 						</div>
 
 						<div className={css['products--list__by--category']}>
-							{productsByCategory &&
-								getSortedGroupKeys(productsByCategory).map((key) => (
+							{minimalGroups
+								.filter((group) => Array.isArray(group?.products) && group.products.length > 0)
+								.map((group) => {
+									const key = String(group.id)
+									const groupProducts = Array.isArray(productsByCategory?.[key])
+										? productsByCategory[key]
+										: group.products
+
+									if (!Array.isArray(groupProducts) || groupProducts.length < 1) return null
+
+									return (
 									<details key={key} open>
 										<summary>
 											<Icon name={'ChevronUp'} />
@@ -1281,7 +1254,7 @@ const DesignStep = forwardRef((props, ref) => {
 										</summary>
 
 										<ul className={css.products__list}>
-											{productsByCategory[key].map((product) => (
+											{groupProducts.map((product) => (
 												<ProductCustomizerCard
 													key={product.id}
 													groupKey={key}
@@ -1298,7 +1271,7 @@ const DesignStep = forwardRef((props, ref) => {
 											))}
 										</ul>
 									</details>
-								))}
+								)})}
 						</div>
 					</div>
 
@@ -1315,7 +1288,11 @@ const DesignStep = forwardRef((props, ref) => {
 								Do you want to create another?
 							</h2>
 
-							<button className={css.modal__button__continue} onClick={() => setIsModalOpen(false)}>
+							<button className={css.modal__button__continue} 
+								onClick={() => {
+									setIsModalOpen(false)
+									setIsNewDesignModalOpen(true)
+								}}>
 								Yes, create another logo
 							</button>
 							<button
@@ -1336,6 +1313,14 @@ const DesignStep = forwardRef((props, ref) => {
 						className={`${css.fundraising__modal} validation--modal`}
 					>
 						<FundraisingTypeModal setIsFundraisingModalOpen={setIsFundraisingModalOpen} />
+					</Modal>
+
+					<Modal
+						isOpen={isNewDesignModalOpen}
+						onClose={() => setIsNewDesignModalOpen(false)}
+						className={`${css.design__modal} validation--modal`}
+					>
+						<NewDesignModal setIsNewDesignModalOpen={setIsNewDesignModalOpen} />
 					</Modal>
 				</div>
 			</>
