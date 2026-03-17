@@ -36,7 +36,7 @@ export default function Filters({
 		}
 		if (keyNameLowerCase === 'colorfamilies') {
 			pass = products.some((product) =>
-				product.colors_family.some((color) => color.color_family_id === id),
+				product.colors.some((color) => color.parent_color_id === id),
 			)
 		}
 		return pass

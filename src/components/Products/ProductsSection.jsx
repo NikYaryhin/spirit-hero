@@ -35,6 +35,7 @@ export default function ProductsSection({ isFlashSale }) {
 	const storeId = useSelector((state) => state.flashSale.storeId)
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const minimalGroups = useSelector((state) => state.products.minimalGroups)
+	console.log('minimalGroups',minimalGroups)
 	const catalogProducts = useSelector(selectCatalogProducts)
 	const myShopProducts = useSelector(selectMyShopProducts)
 	const isLoading = useSelector(selectIsLoading)
@@ -81,6 +82,7 @@ export default function ProductsSection({ isFlashSale }) {
 
 		const storeColors = storeInfo.store.color || []
 		const colorFamilies = filters.colorFamilies
+		console.log('colorFamilies',colorFamilies)
 
 		const normalizedStoreColors = storeColors.map((color) => color.toUpperCase())
 
@@ -90,6 +92,8 @@ export default function ProductsSection({ isFlashSale }) {
 				return normalizedStoreColors.includes(normalizedProductColor)
 			})
 			.map((colorFamily) => String(colorFamily.id))
+
+		console.log('matchingColorIds',matchingColorIds)
 
 		if (matchingColorIds.length > 0) {
 			setActiveFilters((prev) => ({
@@ -120,8 +124,8 @@ export default function ProductsSection({ isFlashSale }) {
 			}
 
 			if (activeFilters.colorFamilies && activeFilters.colorFamilies.length > 0) {
-				const colorIds = Array.isArray(product.colors_family)
-					? product.colors_family.map((c) => String(c.color_family_id))
+				const colorIds = Array.isArray(product.colors)
+					? product.colors.map((c) => String(c.parent_color_id))
 					: []
 				const passColor = colorIds.some((id) => activeFilters.colorFamilies.includes(id))
 
@@ -505,7 +509,7 @@ export default function ProductsSection({ isFlashSale }) {
 
 							{/* {isCatalog
 								&& visibleCatalogProducts.map((product) => {
-									
+
 									return(
 										<ProductCard
 											key={product.id}
@@ -517,7 +521,7 @@ export default function ProductsSection({ isFlashSale }) {
 
 							{!isCatalog
 								&& visibleMyShopProducts.map((product) => {
-									
+
 									return (
 									<ProductCard
 										key={product.id}

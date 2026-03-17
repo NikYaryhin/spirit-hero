@@ -5,16 +5,18 @@ import { useEffect,useState } from 'react'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
 export default function ColorsList({ colorInputHandle, colors }) {
-
+	const [colorsApi, setColorsApi] = useState([])
 	useEffect(()=>{
 		const fetchColors = async () => {
 			const colorsData = await spiritHeroApi.getColors()
+			setColorsApi(colorsData.colors)
+
 		}
 		fetchColors()
 	},[])
 	return (
 		<ul className={css['color--picker__list']}>
-			{COLORS.map(({ color, name, id }) => {
+			{colorsApi.map(({ ink_color:color, ink_color_name:name, id }) => {
 				return (
 					<li key={id}>
 						<ColorCheckbox

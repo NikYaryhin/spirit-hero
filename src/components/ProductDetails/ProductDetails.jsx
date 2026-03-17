@@ -13,10 +13,19 @@ export default function ProductDetails({
 	activeColors,
 }) {
 	const productsToShow = useMemo(() => {
-		const minimalGroupProductsId = minimalGroup.products.map((product) => product.id)
-		return products.filter((product) => minimalGroupProductsId.includes(product.id))
-	}, [products, minimalGroup])
-	const isGroupChecked =
+		const ids = new Set(minimalGroup.products.map(p => String(p.id)))
+
+
+		return products.filter(p => ids.has(String(p.id)))
+	}, [products, minimalGroup.products])
+
+	if(minimalGroup.name === "T-Shirts"){
+		console.log('ProductDetails minimalGroup',minimalGroup)
+		console.log('ProductDetails productsToShow',productsToShow)
+
+	}
+
+		const isGroupChecked =
 		productsToShow.length > 0 && productsToShow.every((product) => Boolean(product.selected))
 
 	if (productsToShow.length > 0)

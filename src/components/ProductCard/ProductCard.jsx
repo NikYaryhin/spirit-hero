@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 
 export default function ProductCard({ product, isFlashSale, inputHandle, activeColors }) {
 	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
-	const { id, product_title, product_image, selected, params, colors, colors_family } = product
+	const { id, product_title, product_image, selected, params, colors } = product
 
 	const [image, setImage] = useState(product_image || previewImage)
 
@@ -15,27 +15,24 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 
 		setImage(value)
 	}
-
 	const filteredColors = useMemo(() => {
 		if (!Array.isArray(colors)) return []
-		if (!Array.isArray(activeColors) || activeColors.length < 1) return colors
-		if (!Array.isArray(colors_family) || colors_family.length < 1) return []
+		if (!Array.isArray(activeColors) || activeColors.length === 0) {
+			setImage(colors[0]?.color_image || product_image)
+			return colors
+		}
 
-		const activeFamilyIds = new Set(activeColors.map((id) => String(id)))
-		const allowedChildColors = new Set(
-			colors_family
-				.filter((family) => activeFamilyIds.has(String(family.color_family_id)))
-				.flatMap((family) => family.child_colors || [])
-				.map((id) => String(id)),
+		const activeSet = new Set(activeColors.map((id) => String(id)))
+
+		const filtered = colors.filter((color) =>
+			activeSet.has(String(color.parent_color_id))
 		)
 
-		const filteredColor = colors.filter((color) => allowedChildColors.has(String(color.color_id)))
+		filtered.length > 0 && setImage(filtered[0]?.color_image || product_image)
 
-		filteredColor.length > 0 && setImage(filteredColor[0]?.color_image || product_image)
-
-		return filteredColor
+		return filtered
 		// return colors
-	}, [activeColors])
+	}, [colors,activeColors])
 
 	return (
 		<li className={`${css.product__item}`} key={id} id={id}>
