@@ -14,7 +14,11 @@ export default function ProductCustomiserCard({
 	activeCardId,
 	product,
 	storeId,
-	onCardClick
+	group,
+	onCardClick,
+	activeGroupId
+
+
 }) {
 	const {
 		id,
@@ -24,6 +28,11 @@ export default function ProductCustomiserCard({
 		colors,
 		active,
 	} = product
+	const {
+		id:groupId,
+	} = group
+
+
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [colorsArray, setColorsArray] = useState(
@@ -75,7 +84,9 @@ export default function ProductCustomiserCard({
 		}
 	}
 
-	const colorInputHandle = (checked, value) => {
+	const colorInputHandle = (e) => {
+		const { value, checked } = e.target
+
 		setColorsArray((prev) => {
 			let nextColors
 
@@ -114,7 +125,7 @@ export default function ProductCustomiserCard({
 	return (
 		<li
 			onClick={cardClickHandle}
-			className={`${css.customizer__card} ${activeCardId === id ? css.active : ''}`}
+			className={`${css.customizer__card} ${activeCardId === id && String(groupId)===activeGroupId ? css.active : ''}`}
 			key={id}
 			id={id}
 			data-group-id={groupKey ?? null}

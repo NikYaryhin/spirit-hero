@@ -8,6 +8,7 @@ import Icon from '../Icon'
 import Modal from '../Modal/Modal'
 import InkModal from '../InkModal/InkModal'
 import spiritHeroApi from '@/api/spiritHeroApi'
+import ProductsSectionNew from '@components/Products/ProductsSectionNew'
 
 export default function ProductsStep() {
 	const dispatch = useDispatch()
@@ -82,7 +83,14 @@ export default function ProductsStep() {
 				</div>
 			</div>
 
-			<ProductsSection isFlashSale={isFlashSale} />
+
+
+			<ProductsSectionNew isFlashSale={isFlashSale} storeIdFromQuery={storeId} />
+
+
+{/*
+			<ProductsSection isFlashSale={isFlashSale}/>
+*/}
 
 			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
 				<InkModal storeId={storeId} onClose={() => setIsModalOpen(false)} />

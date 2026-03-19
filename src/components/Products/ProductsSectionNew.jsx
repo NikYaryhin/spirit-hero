@@ -1,0 +1,335 @@
+import { useEffect, useMemo, useState, useCallback } from 'react'
+import spiritHeroApi from '@/api/spiritHeroApi'
+import css from './ProductsSection.module.css'
+import Check from '../Icons/Check'
+import Lightning from '../Icons/Lightning'
+import Filters from '../Filters/Filters'
+import Loader from '../Loader/Loader'
+import { showToast } from '@/helpers/toastCall'
+import ProductDetailsNew from '@components/ProductDetails/ProductDetailsNew'
+
+export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
+	// --- States ---
+	const [catalogGroups, setCatalogGroups] = useState([])
+	const [myStoreGroups, setMyStoreGroups] = useState([])
+	const [filtersData, setFiltersData] = useState(null)
+
+	// Структура тепер така: { "groupId": [productId1, productId2] }
+	const [selectedData, setSelectedData] = useState({})
+
+	const [isLoading, setIsLoading] = useState(true)
+	const [fetchLoader, setFetchLoader] = useState(false)
+	const [isCatalog, setIsCatalog] = useState(true)
+	const [sortingBy, setSortingBy] = useState('')
+	const [activeFilters, setActiveFilters] = useState({
+		brands: [],
+		categories: [],
+		colorFamilies: [],
+	})
+
+	// --- Initial Data Fetch ---
+	useEffect(() => {
+		async function loadData() {
+			try {
+				setIsLoading(true)
+				const [productsRes, storeRes] = await Promise.all([
+					spiritHeroApi.getProducts(),
+					spiritHeroApi.getStore(storeIdFromQuery)
+				])
+
+				setCatalogGroups(productsRes.minimum_groups || [])
+				setFiltersData(productsRes.filters)
+				setMyStoreGroups(storeRes?.minimum_groups || [])
+
+				// Авто-фільтрація по кольорах магазину
+				if (storeRes.store?.color && productsRes.filters?.colorFamilies) {
+					const storeColors = storeRes.store.color.map(c => c.toUpperCase())
+					const matchingIds = productsRes.filters.colorFamilies
+						.filter(f => storeColors.includes(f.product_color.toUpperCase()))
+						.map(f => String(f.id))
+
+					if (matchingIds.length > 0) {
+						setActiveFilters(prev => ({ ...prev, colorFamilies: matchingIds }))
+					}
+				}
+			} catch (e) {
+				showToast('Failed to load data', 'error')
+			} finally {
+				setIsLoading(false)
+			}
+		}
+		loadData()
+	}, [storeIdFromQuery])
+
+	// --- Logic: Filtering & Sorting ---
+	const currentGroups = isCatalog ? catalogGroups : myStoreGroups
+
+/*
+	const processedGroups = useMemo(() => {
+		return currentGroups
+			.map(group => {
+				let filteredProducts = (group.products || []).filter(product => {
+					if (isFlashSale && !product.is_flash_sale_type) return false
+					if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(String(product.brand_id))) return false
+					if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(String(product.category_id))) return false
+					if (activeFilters.colorFamilies.length > 0) {
+						const productColors = product.colors?.map(c => String(c.parent_color_id)) || []
+						if (!productColors.some(id => activeFilters.colorFamilies.includes(id))) return false
+					}
+					return true
+				})
+
+				if (sortingBy === 'expensive') filteredProducts.sort((a, b) => b.params.on_demand_price - a.params.on_demand_price)
+				else if (sortingBy === 'cheap') filteredProducts.sort((a, b) => a.params.on_demand_price - b.params.on_demand_price)
+				else if (sortingBy === 'name') filteredProducts.sort((a, b) => a.product_title.localeCompare(b.product_title))
+
+				return { ...group, products: filteredProducts }
+			})
+			.filter(group => group.products.length > 0)
+			.filter(group => isCatalog ? group.is_duplicate === 0 : true)
+	}, [currentGroups, isFlashSale, activeFilters, sortingBy, isCatalog])
+*/
+	const processedGroups = useMemo(() => {
+		// 1. Створюємо реєстр товарів, які ВЖЕ є у My Store (тільки якщо ми зараз у Каталозі)
+		// Використовуємо рядок "groupId-productId" як унікальний маркер
+		const myStoreRegistry = new Set()
+		if (isCatalog) {
+			myStoreGroups.forEach(group => {
+				group.products?.forEach(product => {
+					myStoreRegistry.add(`${group.id}-${product.id}`)
+				})
+			})
+		}
+
+		return currentGroups
+			.map(group => {
+				let filteredProducts = (group.products || []).filter(product => {
+					// НОВА ПЕРЕВІРКА: якщо товар вже в My Store (та сама група + той самий продукт) — приховуємо його в каталозі
+					if (isCatalog && myStoreRegistry.has(`${group.id}-${product.id}`)) {
+						return false
+					}
+
+					// Flash Sale
+					if (isFlashSale && !product.is_flash_sale_type) return false
+
+					// Бренди
+					if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(String(product.brand_id))) return false
+
+					// Категорії
+					if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(String(product.category_id))) return false
+
+					// Кольори
+					if (activeFilters.colorFamilies.length > 0) {
+						const productColors = product.colors?.map(c => String(c.parent_color_id)) || []
+						if (!productColors.some(id => activeFilters.colorFamilies.includes(id))) return false
+					}
+
+					return true
+				})
+
+				// Сортування
+				if (sortingBy === 'expensive') filteredProducts.sort((a, b) => b.params.on_demand_price - a.params.on_demand_price)
+				else if (sortingBy === 'cheap') filteredProducts.sort((a, b) => a.params.on_demand_price - b.params.on_demand_price)
+				else if (sortingBy === 'name') filteredProducts.sort((a, b) => a.product_title.localeCompare(b.product_title))
+
+				return { ...group, products: filteredProducts }
+			})
+			.filter(group => group.products.length > 0)
+			.filter(group => isCatalog ? group.is_duplicate === 0 : true)
+	}, [currentGroups, isFlashSale, activeFilters, sortingBy, isCatalog, myStoreGroups]) // Додано myStoreGroups у залежності
+	// --- Counts ---
+/*	const totalCatalogCount = useMemo(() =>
+			catalogGroups.filter(g => g.is_duplicate === 0).reduce((acc, g) => acc + (g.products_count || 0), 0),
+		[catalogGroups])*/
+	const totalCatalogCount = useMemo(() => {
+		// Якщо хочемо бачити кількість тільки тих, що залишилися в каталозі:
+		return processedGroups.reduce((acc, g) => acc + g.products.length, 0)
+	}, [processedGroups])
+	const totalMyStoreCount = useMemo(() =>
+			myStoreGroups.reduce((acc, g) => acc + (g.products_count || 0), 0),
+		[myStoreGroups])
+
+	const totalSelectedCount = useMemo(() =>
+			Object.values(selectedData).reduce((acc, ids) => acc + ids.length, 0),
+		[selectedData])
+
+	// --- Handlers ---
+	const toggleSelect = useCallback((productId, groupId) => {
+		setSelectedData(prev => {
+			const next = { ...prev }
+			const gId = String(groupId)
+			const pId = Number(productId)
+
+			if (!next[gId]) {
+				next[gId] = [pId]
+			} else {
+				next[gId] = next[gId].includes(pId)
+					? next[gId].filter(id => id !== pId)
+					: [...next[gId], pId]
+				if (next[gId].length === 0) delete next[gId]
+			}
+			return next
+		})
+	}, [])
+
+	const handleSelectAll = () => {
+		const allVisibleProductsCount = processedGroups.reduce((acc, g) => acc + g.products.length, 0)
+
+		if (totalSelectedCount === allVisibleProductsCount && allVisibleProductsCount > 0) {
+			setSelectedData({})
+		} else {
+			const nextSelection = {}
+			processedGroups.forEach(group => {
+				nextSelection[String(group.id)] = group.products.map(p => p.id)
+			})
+			setSelectedData(nextSelection)
+		}
+	}
+
+	const addToStoreAction = async () => {
+		setFetchLoader(true)
+		const groupsPayload = Object.entries(selectedData).map(([groupId, ids]) => ({
+			group_id: Number(groupId),
+			ids: ids
+		}))
+
+		try {
+			await spiritHeroApi.addToMyStoreProductsList({
+				store_id: Number(storeIdFromQuery),
+				groups: groupsPayload
+			})
+			const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
+			setMyStoreGroups(storeRes?.minimum_groups || [])
+			setSelectedData({})
+			showToast(`Items added to your store`)
+		} catch (e) {
+			showToast('Error adding products', 'error')
+		} finally {
+			setFetchLoader(false)
+		}
+	}
+
+	const deleteFromStoreAction = async () => {
+		setFetchLoader(true)
+		// Для видалення зазвичай бекенд приймає просто плоский масив ID або таку ж структуру
+		const groupsPayload = Object.entries(selectedData).map(([groupId, ids]) => ({
+			group_id: Number(groupId),
+			ids: ids
+		}))
+		try {
+			await spiritHeroApi.deleteFromMyStoreProducts({
+				store_id: Number(storeIdFromQuery),
+				groups: groupsPayload
+			})
+			const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
+			setMyStoreGroups(storeRes?.minimum_groups || [])
+			setSelectedData({})
+			showToast(`Items removed`)
+		} catch (e) {
+			showToast('Error removing products', 'error')
+		} finally {
+			setFetchLoader(false)
+		}
+	}
+
+	if (isLoading) return <Loader />
+
+	return (
+		<div className={css['products__section']}>
+			<div className={css['products__catalog--pickers']}>
+				<button
+					className={isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}
+					onClick={() => { setIsCatalog(true); setSelectedData({}); }}
+				>
+					<span className={css.icon}><Check /></span>
+					Product catalog <span className={css.count}>{totalCatalogCount}</span>
+				</button>
+				<button
+					className={!isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}
+					onClick={() => { setIsCatalog(false); setSelectedData({}); }}
+				>
+					<span className={css.icon}><Check /></span>
+					My Store <span className={css.count}>{totalMyStoreCount}</span>
+				</button>
+			</div>
+
+			<div className={css['products__catalog--top']}>
+				<div className={css.sorting__wrap}>
+					<select onChange={(e) => setSortingBy(e.target.value)} className={css.sorting__select} value={sortingBy}>
+						<option value="">Recommended</option>
+						<option value="expensive">From expensive to cheap</option>
+						<option value="cheap">From cheap to expensive</option>
+						<option value="name">Name</option>
+					</select>
+				</div>
+
+				{totalSelectedCount > 0 && <h3 className={css['products__catalog--top__label']}>Selected {totalSelectedCount} products</h3>}
+
+				<div className={css['buttons__box']}>
+					<button className="light_button_1" onClick={handleSelectAll}>Select All</button>
+					{isCatalog ? (
+						<button className="contrast_button_1" onClick={addToStoreAction} disabled={totalSelectedCount === 0}>
+							<Lightning /> Add to my store
+						</button>
+					) : (
+						<button className="light_button_2" onClick={deleteFromStoreAction} disabled={totalSelectedCount === 0}>
+							Delete
+						</button>
+					)}
+				</div>
+			</div>
+
+			<div className={css.products__handle}>
+				{fetchLoader && <div className={css.local_loader}></div>}
+
+				<div className={css.products_filters}>
+					{filtersData && Object.keys(filtersData).map(key => (
+						key !== 'sizes' && (
+							<Filters
+								key={key}
+								keyName={key}
+								filterName={key}
+								category={filtersData[key]}
+								setActiveFilters={setActiveFilters}
+								checkedFilters={activeFilters[key]}
+								products={currentGroups.flatMap(g => g.products || [])}
+								open={key === 'colorFamilies'}
+							/>
+						)
+					))}
+				</div>
+
+				<div className={css.products__groups__list}>
+					{processedGroups.map(group => {
+						const groupIdStr = String(group.id);
+						return (
+							<ProductDetailsNew
+								key={groupIdStr}
+								minimalGroup={group}
+								products={group.products.map(p => ({
+									...p,
+									selected: (selectedData[groupIdStr] || []).includes(p.id)
+								}))}
+								isFlashSale={isFlashSale}
+								cardClickHandle={(e) => toggleSelect(e.currentTarget.value, group.id)}
+								onGroupCheckHandle={(checked) => {
+									setSelectedData(prev => {
+										const next = { ...prev }
+										if (checked) {
+											next[groupIdStr] = group.products.map(p => p.id)
+										} else {
+											delete next[groupIdStr]
+										}
+										return next
+									})
+								}}
+								activeColors={activeFilters.colorFamilies}
+							/>
+						)
+					})}
+					{processedGroups.length === 0 && <p className={css.no_products}>No products found.</p>}
+				</div>
+			</div>
+		</div>
+	)
+}

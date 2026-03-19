@@ -88,8 +88,7 @@ class SpiritHeroApi {
 		return data
 	}
 
-	async addToMyStoreProductsList(store_id, ids) {
-		const body = { store_id, ids }
+	async addToMyStoreProductsList(body) {
 		const { data } = await this.http.post(
 			'/api/builder/add-to-my-store-products-list',
 			body,
@@ -122,7 +121,7 @@ class SpiritHeroApi {
 	}
 
 	async deleteFromMyStoreProducts(payload) {
-		
+
 		// const body = { store_id, ids }
 		const { data } = await this.http.post(
 			'/api/builder/delete-from-my-store-products',

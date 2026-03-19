@@ -477,7 +477,7 @@ export default function ProductsSection({ isFlashSale }) {
 						<div className={css.products__groups__list}>
 							{isCatalog &&
 								visibleCatalogProducts.length > 0 &&
-								minimalGroups.map((minimalGroup) => {
+								minimalGroups.filter(value => value.is_duplicate===0).map((minimalGroup) => {
 									return (
 										<ProductDetails
 											key={minimalGroup.id || minimalGroup.name}

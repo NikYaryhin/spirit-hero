@@ -55,7 +55,7 @@ export default function Builder() {
 					console.debug('getStore', storeData)
 
 					dispatch(setStoreInfo(storeData))
-					if (storeData.products) { //TODO замінити
+					if (storeData.products?.length) { //TODO замінити
 						dispatch(setMyShopProducts(storeData.products))
 						dispatch(setInitialMyShopProducts(storeData.products))
 						dispatch(setFlashSale(storeData.store.is_flash_sale ? true : false))
@@ -67,7 +67,7 @@ export default function Builder() {
 						)
 
 					dispatch(fetchProducts())
-					dispatch(setActiveStep(changeLogoFromQuery ? 3 : 3)) // 3:2
+					dispatch(setActiveStep(changeLogoFromQuery ? 3 : 2)) // 3:2
 				} catch (error) {
 					console.error('Error fetching store info:', error)
 					alert(

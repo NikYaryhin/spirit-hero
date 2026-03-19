@@ -5,6 +5,7 @@ import { useEffect,useState } from 'react'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
 export default function ColorsList({ colorInputHandle, colors }) {
+	console.log('colors',colors)
 	const [colorsApi, setColorsApi] = useState([])
 	useEffect(()=>{
 		const fetchColors = async () => {
