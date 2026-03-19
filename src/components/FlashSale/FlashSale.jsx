@@ -509,7 +509,7 @@ const FlashSale = forwardRef((props, ref) => {
 			<details className={css['flash--sale__details--form']} name="flash--sale--details">
 				<summary>
 					<span className={css['details--form__number']}>3</span>
-					How should we sort your orders?
+					Schedule Your Flash Sale End Date
 					<Icon name={'ChevronUp'} />
 				</summary>
 

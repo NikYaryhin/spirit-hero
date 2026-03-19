@@ -25,7 +25,10 @@ export default function FundraisingStep() {
 	const storeIdFromQuery = params.get('store_id')
 
 	const isFundraisingGroup = useSelector((state) => state.products.isFundraisingGroup)
+/*
 	const minimalGroupsFromStore = useSelector((state) => state.products.minimalGroups)
+*/
+	const [minimalGroupsFromStore, setMinimalGroupsFromStore] = useState([])
 	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 	const isLoading = useSelector((state) => state.products.isLoading)
 	const initialMyShopProducts = useSelector(selectInitialMyShopProducts)
@@ -70,20 +73,22 @@ export default function FundraisingStep() {
 	const fetchStoreData = useCallback(async () => {
 		dispatch(setIsLoading(true))
 		try {
-			if (!minimalGroupsFromStore || minimalGroupsFromStore.length < 1) {
+			/*if (!minimalGroupsFromStore || minimalGroupsFromStore.length < 1) {
 				const productsResponse = await spiritHeroApi.getProducts()
 				setFallbackMinimalGroups(productsResponse?.minimum_groups || [])
-			}
+			}*/
+
 
 			const res = await spiritHeroApi.getStore(storeId)
 			console.debug('spiritHeroApi.getStore res', res)
 
-			let products = res.products.map((product) => {
-				return {
+
+			let products = res.minimum_groups.flatMap((group) =>
+				group.products.map((product) => ({
 					...product,
 					is_fundraise: isFundraisingGroup,
-				}
-			})
+				}))
+			)
 
 			const updateFundraisingStatusResponse = await spiritHeroApi.updateFundraisingStatus({
 				store_id: storeId,
@@ -102,6 +107,7 @@ export default function FundraisingStep() {
 					acc[groupKey] = [...(acc[groupKey] || []), product]
 					return acc
 				}, {}) || {}
+			console.log('sortedProducts',sortedProducts)
 
 			setInitialProductsArray(sortedProducts)
 
@@ -131,6 +137,14 @@ export default function FundraisingStep() {
 	useEffect(() => {
 		fetchStoreData()
 	}, [fetchStoreData])
+	useEffect(() => {
+		const fetchData = async () => {
+			const res = await spiritHeroApi.getStore(storeId)
+			setMinimalGroupsFromStore(res?.minimum_groups || [])
+		}
+
+		fetchData()
+	}, [])
 
 	useEffect(() => {
 		const fundraisingProductsCount =
