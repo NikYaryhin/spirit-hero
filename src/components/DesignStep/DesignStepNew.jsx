@@ -526,6 +526,7 @@ const DesignStep = forwardRef((props, ref) => {
 	useEffect(() => {
 		if (isLoading) return
 		const canvas = fabricCanvasRef.current
+		console.log('canvas',canvas)
 
 		if (!canvas || serverLabels.length === 0) return
 
@@ -535,6 +536,9 @@ const DesignStep = forwardRef((props, ref) => {
 			.filter((obj) => obj.customData?.type === 'text')
 			.map((obj) => obj.customData.serverId)
 
+		console.log('currentTexts',currentTexts)
+
+		console.log('serverLabels',serverLabels)
 		// Добавляем новые тексты
 		serverLabels.forEach((labelData, index) => {
 			const serverId = `server-label-${index}`
@@ -548,6 +552,7 @@ const DesignStep = forwardRef((props, ref) => {
 				const top = labelData.y !== undefined ? labelData.y : 50
 				const fontSize = labelData.fontSize || 54
 				const width = labelData.width !== undefined ? labelData.width : canvas.width
+				console.log('width',width)
 
 				const textbox = new Textbox(labelData.text, {
 					left,
@@ -596,6 +601,7 @@ const DesignStep = forwardRef((props, ref) => {
 					serverId: serverId,
 				}
 
+				console.log('textbox',textbox)
 				canvas.add(textbox)
 
 				textbox.customData = {
@@ -616,20 +622,13 @@ const DesignStep = forwardRef((props, ref) => {
 		const fetchStoreData = async () => {
 			try {
 				const res = await spiritHeroApi.getStore(storeId)
-				const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : [];
-				/*const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : []
-				dispatch(setMinimalGroups(storeMinimalGroups))*/
+				const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : []
+				dispatch(setMinimalGroups(storeMinimalGroups))
 
 				console.debug('spiritHeroApi.getStore DESIGN', res)
 
 				setCustomerLogos({ ...res.design })
-				setBaseDesign(res.design.map((value)=>{
-					return{
-						customerLogos:value.customerLogos,
-						labels:value.labels,
-						product_group_id:value.product_group_id
-					}
-				}))
+				setBaseDesign(res.design)
 
 				const loadedElements = []
 				const serverImageFiles = []
@@ -689,7 +688,7 @@ const DesignStep = forwardRef((props, ref) => {
 							y: logoData.y,
 							width: logoData.width,
 							height: logoData.height,
-							rotation:logoData.rotation || 0,
+							rotation:0,
 						}
 
 						serverImageFiles.push(serverFile)
@@ -714,7 +713,7 @@ const DesignStep = forwardRef((props, ref) => {
 						color: labelData.color || '#000000',
 						bold: labelData.bold || false,
 						italic: labelData.italic || false,
-						rotation: labelData.rotation || 0,
+						rotation: 0,
 					}))
 					setServerLabels(labelsData)
 				}
@@ -779,7 +778,6 @@ const DesignStep = forwardRef((props, ref) => {
 			labels: labelsData,
 		}
 	}
-
 
 	const saveDesignForCurrentProduct = async () => {
 		setIsLoading(true)
@@ -875,181 +873,132 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 	}
 
-	const syncCanvasToGroupId = (groupId) => {
-		const canvas = fabricCanvasRef.current
-		if (!canvas) return
-
-		const objects = canvas.getObjects()
-
-		const customerLogosData = []
-		const labelsData = []
-
-		objects.forEach((obj) => {
-			// Собираем данные о логотипах (изображениях)
-			if (obj.customData?.type === 'uploaded-image') {
-				customerLogosData.push({
-					image: obj.customData.fileData.base64,
-					x: Math.round(obj.left),
-					y: Math.round(obj.top),
-					width: Math.round(obj.getScaledWidth()),
-					height: Math.round(obj.getScaledHeight()),
-					rotation: Math.round(obj.angle),
-				})
-			}
-			// Собираем данные о текстах
-			if (obj.customData?.type === 'text') {
-				labelsData.push({
-					text: obj.text,
-					x: Math.round(obj.left),
-					y: Math.round(obj.top),
-					width: Math.round(obj.customData.originalWidth),
-					height: Math.round(obj.customData.originalHeight),
-					fontSize: Math.round(obj.customData.originalFontSize),
-					fontFamily: obj.fontFamily,
-					color: obj.fill,
-					bold: obj.fontWeight === 'bold' || obj.fontWeight === 700,
-					italic: obj.fontStyle === 'italic',
-					rotation: Math.round(obj.angle),
-				})
-			}
-		})
-
-		const newState = baseDesign.map((item) => {
-			if (item.product_group_id === +groupId) {
-				return {
-					...item,
-					customerLogos: customerLogosData,
-					labels: labelsData,
-				}
-			}
-			return item
-		})
-
-		setBaseDesign(newState)
-
-		return newState
-
-	}
-
 	const onCardClick = (id, groupId) => {
 		const nextActiveGroupId = String(groupId ?? '')
 		setActiveGroupId(nextActiveGroupId)
+		const currentGroupProducts = Array.isArray(productsByCategory?.[nextActiveGroupId])
+			? productsByCategory[nextActiveGroupId]
+			: []
+		const currentProduct = currentGroupProducts.find((elem) => elem.id === id)
+		const designData =  baseDesign
 
+		setCustomerLogos(designData)
 
-		if(nextActiveGroupId!==activeGroupId){
-			syncCanvasToGroupId(activeGroupId)
-			const designData = baseDesign.find((value)=>value.product_group_id === +nextActiveGroupId)
+		if (!designData) return
 
-			if (designData) {
-				setCustomerLogos(designData)
-
-				const canvas = fabricCanvasRef.current
-				if (canvas) {
-					const objectsToRemove = canvas
-						.getObjects()
-						.filter((obj) => obj.customData?.type !== 'guide-line')
-					objectsToRemove.forEach((obj) => canvas.remove(obj))
-					canvas.renderAll()
-				}
-
-				setUploaderFiles([])
-				setServerLabels([])
-
-				const loadedElements = []
-				const serverImageFiles = []
-				let zIndex = 1
-
-				if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
-					designData.customerLogos.forEach((logoData, index) => {
-						const id = uuidv4()
-						loadedElements.push({
-							id,
-							type: 'image',
-							x: logoData.x || 30,
-							y: logoData.y || 30,
-							width: logoData.width || 100,
-							height: logoData.height || 100,
-							rotation:logoData.rotation || 0,
-							zIndex: zIndex++,
-							content: { src: logoData.image },
-							isServerImage: true,
-						})
-
-						const serverFile = {
-							url: logoData.image,
-							base64: logoData.image,
-							file: { name: `Server image ${index + 1}` },
-							isServerImage: true,
-							x: logoData.x,
-							y: logoData.y,
-							width: logoData.width,
-							height: logoData.height,
-							rotation:logoData.rotation || 0,
-
-						}
-
-						serverImageFiles.push(serverFile)
-					})
-				}
-				setUploaderFiles(serverImageFiles)
-
-				if (designData.labels && Array.isArray(designData.labels)) {
-					const labelsData = designData.labels.map((labelData) => ({
-						text: labelData.text || '',
-						x: labelData.x,
-						y: labelData.y,
-						width: labelData.width,
-						height: labelData.height,
-						fontSize:
-							typeof labelData.fontSize === 'number'
-								? labelData.fontSize
-								: parseInt(labelData.fontSize) || 54,
-						fontFamily: labelData.fontFamily || 'Montserrat',
-						color: labelData.color || '#000000',
-						bold: labelData.bold || false,
-						italic: labelData.italic || false,
-						rotation: labelData.rotation || 0,
-					}))
-					setServerLabels(labelsData)
-				}
-			}else {
-				const canvas = fabricCanvasRef.current
-				if (canvas) {
-					const objectsToRemove = canvas
-						.getObjects()
-						.filter((obj) => obj.customData?.type !== 'guide-line')
-					objectsToRemove.forEach((obj) => canvas.remove(obj))
-					canvas.renderAll()
-				}
-			}
+		const canvas = fabricCanvasRef.current
+		if (canvas) {
+			const objectsToRemove = canvas
+				.getObjects()
+				.filter((obj) => obj.customData?.type !== 'guide-line')
+			objectsToRemove.forEach((obj) => canvas.remove(obj))
+			canvas.renderAll()
 		}
 
+		setUploaderFiles([])
+		setServerLabels([])
+
+		const loadedElements = []
+		const serverImageFiles = []
+		let zIndex = 1
+
+		if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
+			designData.customerLogos.forEach((logoData, index) => {
+				const id = uuidv4()
+				loadedElements.push({
+					id,
+					type: 'image',
+					x: logoData.x || 30,
+					y: logoData.y || 30,
+					width: logoData.width || 100,
+					height: logoData.height || 100,
+					rotation: 0,
+					zIndex: zIndex++,
+					content: { src: logoData.image },
+					isServerImage: true,
+				})
+
+				const serverFile = {
+					url: logoData.image,
+					base64: logoData.image,
+					file: { name: `Server image ${index + 1}` },
+					isServerImage: true,
+					x: logoData.x,
+					y: logoData.y,
+					width: logoData.width,
+					height: logoData.height,
+					rotation: logoData.rotation || 0,
+				}
+
+				serverImageFiles.push(serverFile)
+			})
+		}
+		setUploaderFiles(serverImageFiles)
+
+		if (designData.labels && Array.isArray(designData.labels)) {
+			const labelsData = designData.labels.map((labelData) => ({
+				text: labelData.text || '',
+				x: labelData.x,
+				y: labelData.y,
+				width: labelData.width,
+				height: labelData.height,
+				fontSize:
+					typeof labelData.fontSize === 'number'
+						? labelData.fontSize
+						: parseInt(labelData.fontSize) || 54,
+				fontFamily: labelData.fontFamily || 'Montserrat',
+				color: labelData.color || '#000000',
+				bold: labelData.bold || false,
+				italic: labelData.italic || false,
+				rotation: labelData.rotation || 0,
+			}))
+			setServerLabels(labelsData)
+		}
 	}
 
 	// Функция для получения параметров логотипа
 	const getLogoParameters = async () => {
 		try {
 			setIsLoading(true)
-			const  syncData = syncCanvasToGroupId(activeGroupId)
-			const designList = syncData.map((item) => ({
-				minimum_groups: [item.product_group_id],
-				design: {
-					customerLogos: item.customerLogos,
-					labels: item.labels,
-				},
+			const syncData = syncCanvasToCustomerLogos()
+
+			const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
+				quality: 0.95,
+			})
+
+			const design = {
+				elementsPositionImage: base64,
+				customerLogos: syncData.customerLogos,
+				labels: syncData.labels,
+			}
+
+			setCustomerLogos((prev) => ({
+				...prev,
+				elementsPositionImage: base64,
 			}))
 
-			const payload = {
-				store_id: storeId,
-				designList,
-			}
-			console.debug('saveDesignForGroupsPayload', payload)
+			// const payload = {
+			// 	...design,
+			// 	store_id: storeId,
+			// 	product_id: +activeCardId,
+			// }
 
-			const saveDesignForGroupsResponse = await spiritHeroApi.saveDesignForGroups(payload)
+			// const response = await spiritHeroApi.createDesign(storeId, payload)
+			// console.debug('spiritHeroApi.createDesign response', response)
+
+			const saveDesignForGroupsPayload = {
+				store_id: storeId,
+				minimum_groups: [+activeGroupId],
+				design,
+			}
+
+			console.debug('saveDesignForGroupsPayload', saveDesignForGroupsPayload)
+
+			const saveDesignForGroupsResponse = await spiritHeroApi.saveDesignForGroups(saveDesignForGroupsPayload)
 			console.debug('saveDesignForGroupsResponse response', saveDesignForGroupsResponse)
 
 			setIsModalOpen(true)
-			/*setCustomerLogos(design)*/
+			setCustomerLogos(design)
 		} catch (error) {
 			console.error('Error spiritHeroApi.saveDesignForGroups:', error)
 			return null
@@ -1060,7 +1009,7 @@ const DesignStep = forwardRef((props, ref) => {
 
 	// Экспозиция функции getLogoParameters через ref
 	useImperativeHandle(ref, () => ({
-		getLogoParameters
+		getLogoParameters,
 	}))
 
 		return (

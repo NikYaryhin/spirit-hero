@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { useDispatch } from 'react-redux'
+import { useSelector,useDispatch } from 'react-redux'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 import { setFlashSale,setCustomerApproveFlashSale } from '@/features/flashSale/flashSaleSlice'
 import Icon from '../Icon'
@@ -16,6 +15,19 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 
 	// const productsByCategory = useSelector((state) => state.products.productsByCategory)
 	const minimalGroups = useSelector((state) => state.products.minimalGroups)
+	const myShopProducts = useSelector((state) => state.products.myShopProducts)
+
+	const minimalGroupsInStore = useMemo(() => {
+		if (!Array.isArray(minimalGroups) || minimalGroups.length < 1) return []
+		if (!Array.isArray(myShopProducts) || myShopProducts.length < 1) return []
+
+		const storeProductIds = new Set(myShopProducts.map((product) => String(product?.id)))
+
+		return minimalGroups.filter((group) =>
+			Array.isArray(group?.products) &&
+			group.products.some((product) => storeProductIds.has(String(product?.id))),
+		)
+	}, [minimalGroups, myShopProducts])
 
 
 	const onConfitmButtonClick = () => {
@@ -47,7 +59,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					</h3>
 
 					<fieldset className={css.fieldset}>
-						{minimalGroups.length > 0 && minimalGroups.map((item) => (
+						{minimalGroupsInStore.length > 0 && minimalGroupsInStore.map((item) => (
 							<label className={css.label} key={item.id || item.name}>
 								<span className={css.checkbox__emulator}>
 									<Icon name={'InputChecked'} />

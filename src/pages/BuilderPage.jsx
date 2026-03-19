@@ -55,7 +55,7 @@ export default function Builder() {
 					console.debug('getStore', storeData)
 
 					dispatch(setStoreInfo(storeData))
-					if (storeData.products) {
+					if (storeData.products?.length) { //TODO замінити
 						dispatch(setMyShopProducts(storeData.products))
 						dispatch(setInitialMyShopProducts(storeData.products))
 						dispatch(setFlashSale(storeData.store.is_flash_sale ? true : false))

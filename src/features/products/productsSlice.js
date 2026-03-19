@@ -143,6 +143,7 @@ export const {
 	setCatalogProducts,
 	setInitialCatalogProducts,
 	setInitialMyShopProducts,
+	setMinimalGroups,
 	setSortingBy,
 	setActiveFilters,
 	resetFilters,

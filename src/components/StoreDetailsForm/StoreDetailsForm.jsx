@@ -24,6 +24,7 @@ export default function StoreDetailsForm({ image }) {
 
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const storeId = useSelector((state) => state.flashSale.storeId)
+	console.log('storeInfo',storeInfo)
 
 	const [isLoading, setIsLoading] = useState(false)
 	const [storeName, setStoreName] = useState(storeInfo?.store?.name || '')
@@ -108,10 +109,10 @@ export default function StoreDetailsForm({ image }) {
 			dispatch(
 				setStoreInfo({
 					...(storeInfo || {}),
-					store: res,
+					store: res.store,
 				}),
 			)
-			dispatch(nextStep())
+		dispatch(nextStep())
 		} catch (error) {
 			console.error('save/update store error', error)
 		} finally {
