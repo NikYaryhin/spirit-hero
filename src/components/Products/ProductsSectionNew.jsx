@@ -7,8 +7,12 @@ import Filters from '../Filters/Filters'
 import Loader from '../Loader/Loader'
 import { showToast } from '@/helpers/toastCall'
 import ProductDetailsNew from '@components/ProductDetails/ProductDetailsNew'
+import { useDispatch } from 'react-redux'
+import { setMinimalGroups } from '@/features/products/productsSlice'
 
 export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
+	const dispatch = useDispatch()
+
 	// --- States ---
 	const [catalogGroups, setCatalogGroups] = useState([])
 	const [myStoreGroups, setMyStoreGroups] = useState([])
@@ -40,7 +44,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 				setCatalogGroups(productsRes.minimum_groups || [])
 				setFiltersData(productsRes.filters)
 				setMyStoreGroups(storeRes?.minimum_groups || [])
-
+				dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
 				// Авто-фільтрація по кольорах магазину
 				if (storeRes.store?.color && productsRes.filters?.colorFamilies) {
 					const storeColors = storeRes.store.color.map(c => c.toUpperCase())
@@ -64,20 +68,36 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 	// --- Logic: Filtering & Sorting ---
 	const currentGroups = isCatalog ? catalogGroups : myStoreGroups
 
-/*
 	const processedGroups = useMemo(() => {
+		const myStoreRegistry = new Set()
+		if (isCatalog) {
+			myStoreGroups.forEach(group => {
+				group.products?.forEach(product => {
+					myStoreRegistry.add(`${group.id}-${product.id}`)
+				})
+			})
+		}
 		return currentGroups
 			.map(group => {
+				console.log(`Group ID[${group.id}] Product`,group.products)
+				console.log("colorFamilies",activeFilters.colorFamilies)
+
 				let filteredProducts = (group.products || []).filter(product => {
+
+					if (isCatalog && myStoreRegistry.has(`${group.id}-${product.id}`)) {
+						return false
+					}
 					if (isFlashSale && !product.is_flash_sale_type) return false
 					if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(String(product.brand_id))) return false
 					if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(String(product.category_id))) return false
 					if (activeFilters.colorFamilies.length > 0) {
 						const productColors = product.colors?.map(c => String(c.parent_color_id)) || []
-						if (!productColors.some(id => activeFilters.colorFamilies.includes(id))) return false
+						console.log("productColors",productColors);
+						if (!productColors.some(id => activeFilters.colorFamilies.includes(String(id)))) return false
 					}
 					return true
 				})
+				console.log(`Group ID[${group.id}] Filtered Product`,filteredProducts)
 
 				if (sortingBy === 'expensive') filteredProducts.sort((a, b) => b.params.on_demand_price - a.params.on_demand_price)
 				else if (sortingBy === 'cheap') filteredProducts.sort((a, b) => a.params.on_demand_price - b.params.on_demand_price)
@@ -88,63 +108,36 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			.filter(group => group.products.length > 0)
 			.filter(group => isCatalog ? group.is_duplicate === 0 : true)
 	}, [currentGroups, isFlashSale, activeFilters, sortingBy, isCatalog])
-*/
-	const processedGroups = useMemo(() => {
-		// 1. Створюємо реєстр товарів, які ВЖЕ є у My Store (тільки якщо ми зараз у Каталозі)
-		// Використовуємо рядок "groupId-productId" як унікальний маркер
-		const myStoreRegistry = new Set()
-		if (isCatalog) {
-			myStoreGroups.forEach(group => {
-				group.products?.forEach(product => {
-					myStoreRegistry.add(`${group.id}-${product.id}`)
-				})
-			})
-		}
 
-		return currentGroups
-			.map(group => {
-				let filteredProducts = (group.products || []).filter(product => {
-					// НОВА ПЕРЕВІРКА: якщо товар вже в My Store (та сама група + той самий продукт) — приховуємо його в каталозі
-					if (isCatalog && myStoreRegistry.has(`${group.id}-${product.id}`)) {
-						return false
-					}
-
-					// Flash Sale
-					if (isFlashSale && !product.is_flash_sale_type) return false
-
-					// Бренди
-					if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(String(product.brand_id))) return false
-
-					// Категорії
-					if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(String(product.category_id))) return false
-
-					// Кольори
-					if (activeFilters.colorFamilies.length > 0) {
-						const productColors = product.colors?.map(c => String(c.parent_color_id)) || []
-						if (!productColors.some(id => activeFilters.colorFamilies.includes(id))) return false
-					}
-
-					return true
-				})
-
-				// Сортування
-				if (sortingBy === 'expensive') filteredProducts.sort((a, b) => b.params.on_demand_price - a.params.on_demand_price)
-				else if (sortingBy === 'cheap') filteredProducts.sort((a, b) => a.params.on_demand_price - b.params.on_demand_price)
-				else if (sortingBy === 'name') filteredProducts.sort((a, b) => a.product_title.localeCompare(b.product_title))
-
-				return { ...group, products: filteredProducts }
-			})
-			.filter(group => group.products.length > 0)
-			.filter(group => isCatalog ? group.is_duplicate === 0 : true)
-	}, [currentGroups, isFlashSale, activeFilters, sortingBy, isCatalog, myStoreGroups]) // Додано myStoreGroups у залежності
 	// --- Counts ---
-/*	const totalCatalogCount = useMemo(() =>
+	/*const totalCatalogCount = useMemo(() =>
 			catalogGroups.filter(g => g.is_duplicate === 0).reduce((acc, g) => acc + (g.products_count || 0), 0),
 		[catalogGroups])*/
 	const totalCatalogCount = useMemo(() => {
+		const myStoreRegistry = new Set();
+
+		if (isCatalog) {
+			myStoreGroups.forEach(group => {
+				group.products?.forEach(product => {
+					myStoreRegistry.add(`${group.id}-${product.id}`);
+				});
+			});
+		}
+
+		return catalogGroups
+			.filter(g => g.is_duplicate === 0)
+			.flatMap(group =>
+				group.products?.filter(product => {
+					return !(isCatalog &&
+						myStoreRegistry.has(`${group.id}-${product.id}`));
+				}) || []
+			)
+			.length;
+	}, [catalogGroups, myStoreGroups]);
+/*	const totalCatalogCount = useMemo(() => {
 		// Якщо хочемо бачити кількість тільки тих, що залишилися в каталозі:
 		return processedGroups.reduce((acc, g) => acc + g.products.length, 0)
-	}, [processedGroups])
+	}, [processedGroups])*/
 	const totalMyStoreCount = useMemo(() =>
 			myStoreGroups.reduce((acc, g) => acc + (g.products_count || 0), 0),
 		[myStoreGroups])
@@ -200,6 +193,8 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			})
 			const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
 			setMyStoreGroups(storeRes?.minimum_groups || [])
+			dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
+
 			setSelectedData({})
 			showToast(`Items added to your store`)
 		} catch (e) {
@@ -223,6 +218,8 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			})
 			const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
 			setMyStoreGroups(storeRes?.minimum_groups || [])
+			dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
+
 			setSelectedData({})
 			showToast(`Items removed`)
 		} catch (e) {
@@ -239,14 +236,18 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			<div className={css['products__catalog--pickers']}>
 				<button
 					className={isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}
-					onClick={() => { setIsCatalog(true); setSelectedData({}); }}
+					onClick={() => { setIsCatalog(true); setSelectedData({});setActiveFilters({brands: [],
+						categories: [],
+						colorFamilies: [],}) }}
 				>
 					<span className={css.icon}><Check /></span>
 					Product catalog <span className={css.count}>{totalCatalogCount}</span>
 				</button>
 				<button
 					className={!isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}
-					onClick={() => { setIsCatalog(false); setSelectedData({}); }}
+					onClick={() => { setIsCatalog(false); setSelectedData({});setActiveFilters({brands: [],
+						categories: [],
+						colorFamilies: [],}) }}
 				>
 					<span className={css.icon}><Check /></span>
 					My Store <span className={css.count}>{totalMyStoreCount}</span>

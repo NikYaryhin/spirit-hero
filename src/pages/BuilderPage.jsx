@@ -24,6 +24,7 @@ import {
 	fetchProducts,
 } from '@/features/products/productsSlice'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
+import FundraisingStepNew from '@components/FundraisingStep/FundraisingStepNew'
 
 export default function Builder() {
 	const dispatch = useDispatch()
@@ -55,7 +56,7 @@ export default function Builder() {
 					console.debug('getStore', storeData)
 
 					dispatch(setStoreInfo(storeData))
-					if (storeData.products?.length) { //TODO замінити
+					if (storeData.products?.length) {
 						dispatch(setMyShopProducts(storeData.products))
 						dispatch(setInitialMyShopProducts(storeData.products))
 						dispatch(setFlashSale(storeData.store.is_flash_sale ? true : false))

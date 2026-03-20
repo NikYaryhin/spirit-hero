@@ -12,14 +12,16 @@ export default function FundraisingTypeModal({ setIsFundraisingModalOpen }) {
 		dispatch(setIsFundraisingGroup(true))
 		setIsFundraisingModalOpen(false)
 		dispatch(setActiveStep(4))
-		dispatch(setIsLoading(true))
+	/*	dispatch(setIsLoading(true))*/
 	}
 
 	const handleSellAtCost = () => {
 		dispatch(setIsFundraisingGroup(false))
 		setIsFundraisingModalOpen(false)
 		dispatch(setActiveStep(4))
+/*
 		dispatch(setIsLoading(true))
+*/
 	}
 
 	return (

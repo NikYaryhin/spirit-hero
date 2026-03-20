@@ -10,13 +10,15 @@ export default function NewDesignModal({ setIsNewDesignModalOpen }) {
 	const [selectedGroupId, setSelectedGroupId] = useState(null)
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const minimalGroups = useSelector((state) => state.products.minimalGroups)
-
+	const params = new URLSearchParams(window.location.search)
+	const storeIdFromQuery = params.get('store_id')
+	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 	const onContinueClick = async () => {
 		if (!selectedGroupId || isSubmitting) return
 
 		try {
 			setIsSubmitting(true)
-			const response = await spiritHeroApi.createNewMinimalGroup(selectedGroupId)
+			const response = await spiritHeroApi.createNewMinimalGroup(selectedGroupId,storeId)
 			console.debug('createNewMinimalGroup response', response)
 			const createdGroups = Array.isArray(response?.minimum_groups) ? response.minimum_groups : []
 
@@ -52,11 +54,11 @@ export default function NewDesignModal({ setIsNewDesignModalOpen }) {
 				{minimalGroups &&
 					minimalGroups.map((group) => (
 						<label className={css.label} key={group.id}>
-							<input 
-								type="radio" 
-								className='visually-hidden' 
-								name="collection" 
-								value={group.id} 
+							<input
+								type="radio"
+								className='visually-hidden'
+								name="collection"
+								value={group.id}
 								onChange={() => setSelectedGroupId(group.id)}
 								/>
 							<span className={css.checkbox__emulator}></span>
