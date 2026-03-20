@@ -81,9 +81,9 @@ class SpiritHeroApi {
 		return data
 	}
 
-	async createNewMinimalGroup(minimumGroupId) {
+	async createNewMinimalGroup(minimumGroupId,storeId) {
 		const { data } = await this.http.post(
-			`/api/builder/duplicate-minimal-group?minimum_group_id=${minimumGroupId}`
+			`/api/builder/duplicate-minimal-group?minimum_group_id=${minimumGroupId}&store_id=${storeId}`
 		)
 		return data
 	}

@@ -1,21 +1,42 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector,useDispatch } from 'react-redux'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 import { setFlashSale,setCustomerApproveFlashSale } from '@/features/flashSale/flashSaleSlice'
 import Icon from '../Icon'
 import css from './ProductStepValidationModal.module.css'
+import spiritHeroApi from '@api/spiritHeroApi'
+import { showToast } from '@/helpers/toastCall'
 
 export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
 	const [choosedCollection, setChoosedCollection] = useState([])
 	const [isApprove, setIsApprove] = useState(false)
-
+	const params = new URLSearchParams(window.location.search)
+	const storeIdFromQuery = params.get('store_id')
+	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 	const dispatch = useDispatch()
 
 	// const productsByCategory = useSelector((state) => state.products.productsByCategory)
 	const minimalGroups = useSelector((state) => state.products.minimalGroups)
 	const myShopProducts = useSelector((state) => state.products.myShopProducts)
+	const [myStoreGroups, setMyStoreGroups] = useState([])
+
+	useEffect(() => {
+		async function loadData() {
+			try {
+				const [storeRes] = await Promise.all([
+					spiritHeroApi.getStore(storeId)
+				])
+
+				setMyStoreGroups(storeRes?.minimum_groups || [])
+
+			} catch (e) {
+				showToast('Failed to load data', 'error')
+			}
+		}
+		loadData()
+	}, [storeId])
 
 	const minimalGroupsInStore = useMemo(() => {
 		if (!Array.isArray(minimalGroups) || minimalGroups.length < 1) return []
@@ -59,13 +80,13 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					</h3>
 
 					<fieldset className={css.fieldset}>
-						{minimalGroupsInStore.length > 0 && minimalGroupsInStore.map((item) => (
+						{myStoreGroups.length > 0 && myStoreGroups.map((item) => (
 							<label className={css.label} key={item.id || item.name}>
 								<span className={css.checkbox__emulator}>
 									<Icon name={'InputChecked'} />
 								</span>
-								{item.name} 
-								
+								{item.name}
+
 								<input
 									type="checkbox"
 									name="modal-select"

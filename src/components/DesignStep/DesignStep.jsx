@@ -20,7 +20,10 @@ const DesignStep = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
 	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
+/*
 	const minimalGroupsFromStore = useSelector((state) => state.products.minimalGroups)
+*/
+	const [minimalGroupsFromStore, setMinimalGroupsFromStore] = useState([]);
 
 	const [customizerType, setCustomizerType] = useState(null)
 
@@ -619,7 +622,7 @@ const DesignStep = forwardRef((props, ref) => {
 				const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : [];
 				/*const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : []
 				dispatch(setMinimalGroups(storeMinimalGroups))*/
-
+				setMinimalGroupsFromStore(storeMinimalGroups)
 				console.debug('spiritHeroApi.getStore DESIGN', res)
 
 				setCustomerLogos({ ...res.design })
@@ -725,7 +728,7 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		}
 		fetchStoreData()
-	}, [dispatch, storeId])
+	}, [dispatch, storeId,isNewDesignModalOpen])
 
 	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
@@ -914,20 +917,38 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		})
 
-		const newState = baseDesign.map((item) => {
-			if (item.product_group_id === +groupId) {
-				return {
-					...item,
+		const newState = (() => {
+			let found = false;
+
+			const updated = baseDesign.map((item) => {
+				if (item.product_group_id === +groupId) {
+					found = true;
+
+					return {
+						...item,
+						customerLogos: customerLogosData,
+						labels: labelsData,
+					};
+				}
+				return item;
+			});
+
+			// 🔥 якщо не знайшли — додаємо новий
+			if (!found) {
+				updated.push({
+					product_group_id: +groupId,
 					customerLogos: customerLogosData,
 					labels: labelsData,
-				}
+				});
 			}
-			return item
-		})
 
-		setBaseDesign(newState)
+			return updated;
+		})();
 
-		return newState
+		console.log('newState', newState);
+		setBaseDesign(newState);
+
+		return newState;
 
 	}
 
@@ -1029,7 +1050,9 @@ const DesignStep = forwardRef((props, ref) => {
 	// Функция для получения параметров логотипа
 	const getLogoParameters = async () => {
 		try {
+/*
 			setIsLoading(true)
+*/
 			const  syncData = syncCanvasToGroupId(activeGroupId)
 			const designList = syncData.map((item) => ({
 				minimum_groups: [item.product_group_id],
@@ -1054,7 +1077,9 @@ const DesignStep = forwardRef((props, ref) => {
 			console.error('Error spiritHeroApi.saveDesignForGroups:', error)
 			return null
 		} finally {
+/*
 			setIsLoading(false)
+*/
 		}
 	}
 
