@@ -12,14 +12,16 @@ import {
 	fundraisingPriceEndsValues,
 } from '@/helpers/const'
 import { showToast } from '@/helpers/toastCall'
+import { useSelector } from 'react-redux'
 
 export default function FundraisingStepNew() {
 	const params = new URLSearchParams(window.location.search)
 	const storeId = params.get('store_id')
 
+
 	// --- States ---
 	const [isLoading, setIsLoading] = useState(true)
-	const [isFundraiseView, setIsFundraiseView] = useState(false) // Перемикач вкладок
+	const [isFundraiseView, setIsFundraiseView] = useState(false)
 	const [minimalGroups, setMinimalGroups] = useState([])
 
 	// Продукти, розбиті по категоріях для двох станів
@@ -46,6 +48,7 @@ export default function FundraisingStepNew() {
 	// --- Data Fetching ---
 	const fetchStoreData = useCallback(async () => {
 		setIsLoading(true)
+
 		try {
 			const res = await spiritHeroApi.getStore(storeId)
 			if (!res) return
@@ -53,24 +56,91 @@ export default function FundraisingStepNew() {
 			const groups = res.minimum_groups || []
 			setMinimalGroups(groups)
 
-			// Розподіляємо продукти по категоріях та типах (fundraise / cost)
-			const fundraisingMap = {}
-			const costMap = {}
+			// 👉 читаємо параметр з URL
+			const params = new URLSearchParams(window.location.search)
+			const fundraisingParam = params.get('fundraising')
 
-			groups.forEach(group => {
-				const groupKey = String(group.id)
-				const products = group.products || []
+			// ============================
+			// 🔥 1. Якщо є fundraising в URL
+			// ============================
+			if (fundraisingParam !== null) {
+				const isFundraisingGroup = fundraisingParam === 'true'
 
-				const fProducts = products.filter(p => p.is_fundraise)
-				const cProducts = products.filter(p => !p.is_fundraise)
+				setIsFundraiseView(isFundraisingGroup)
 
-				if (fProducts.length > 0) fundraisingMap[groupKey] = fProducts
-				if (cProducts.length > 0) costMap[groupKey] = cProducts
-			})
+				// 👉 формуємо всі продукти
+				const products = groups.flatMap(group =>
+					(group.products || []).map(product => ({
+						...product,
+						is_fundraise: isFundraisingGroup,
+					}))
+				)
 
-			setProductsByCategory(fundraisingMap)
-			setSellAtCostProducts(costMap)
+				// 👉 оновлюємо на бекенді
+				await spiritHeroApi.updateFundraisingStatus({
+					store_id: storeId,
+					products_info: products.map(product => ({
+						id: product.id,
+						is_fundraising: isFundraisingGroup,
+					})),
+				})
+
+				// 👉 після оновлення — всі продукти одного типу
+				const map = {}
+
+				groups.forEach(group => {
+					const groupKey = String(group.id)
+					map[groupKey] = (group.products || []).map(p => ({
+						...p,
+						is_fundraise: isFundraisingGroup,
+					}))
+				})
+				console.log("map",map)
+
+
+				setProductsByCategory(isFundraisingGroup ? map : {})
+				setSellAtCostProducts(!isFundraisingGroup ? map : {})
+				if(isFundraisingGroup){
+					sessionStorage.setItem('fundraisingCount', products.length)
+				}
+
+
+
+				// 👉 видаляємо параметр з URL
+				const url = new URL(window.location.href)
+				url.searchParams.delete('fundraising')
+				window.history.replaceState({}, '', url)
+			}
+
+				// ============================
+				// ✅ 2. Якщо немає параметру — стандартна логіка
+			// ============================
+			else {
+				console.log("test 2.")
+				const fundraisingMap = {}
+				const costMap = {}
+
+				let countP = 0
+				groups.forEach(group => {
+					const groupKey = String(group.id)
+					const products = group.products || []
+
+					const fProducts = products.filter(p => p.is_fundraise)
+					const cProducts = products.filter(p => !p.is_fundraise)
+					countP+=fProducts.length
+
+					if (fProducts.length > 0) fundraisingMap[groupKey] = fProducts
+					if (cProducts.length > 0) costMap[groupKey] = cProducts
+				})
+
+				sessionStorage.setItem('fundraisingCount', countP)
+
+				setProductsByCategory(fundraisingMap)
+				setSellAtCostProducts(costMap)
+			}
+
 			setAmountProfit(!res.store?.is_percent_profit)
+
 		} catch (error) {
 			console.error(`Error loading store data:`, error)
 			showToast('Failed to load store data', 'error')
@@ -94,7 +164,7 @@ export default function FundraisingStepNew() {
 
 	// --- Actions ---
 	const updateStatusOnServer = async (productIds, isFundraising) => {
-		const products_info = productIds.map(id => ({ id, is_fundraise: isFundraising }))
+		const products_info = productIds.map(id => ({ id, is_fundraising: isFundraising }))
 		try {
 			await spiritHeroApi.updateFundraisingStatus({
 				store_id: storeId,
@@ -109,6 +179,8 @@ export default function FundraisingStepNew() {
 	const moveProducts = async (toFundraise) => {
 		if (selectedProducts.length === 0) return
 		const selectedIds = selectedProducts.map(p => p.id)
+		console.log('selectedIds',selectedIds)
+		console.log('toFundraise',toFundraise)
 
 		try {
 			await updateStatusOnServer(selectedIds, toFundraise)

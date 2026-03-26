@@ -12,7 +12,7 @@ export default function ProfitValueFieldset({
 	const [isOwnValue, setIsOwnValue] = useState(false)
 	const [ownValue, setOwnValue] = useState(1)
 
-	const [presetValue, setPresetValue] = useState(valuesArray[0])
+	const [presetValue, setPresetValue] = useState(null)
 
 	const onRadioChange = (e) => {
 		const { value } = e.target
@@ -53,7 +53,7 @@ export default function ProfitValueFieldset({
 			<div className={css.label__container}>
 				{valuesArray.map((value) => (
 					<label className={css.profit__label} key={value}>
-						{!isPercent ? '$' : '%'}
+						{!isPercent ? '$' : ''}
 						{value}
 						<input
 							onChange={onRadioChange}
@@ -64,6 +64,8 @@ export default function ProfitValueFieldset({
 							checked={+value === +presetValue}
 							disabled={isOwnValue || disabled}
 						/>
+						{isPercent ? '%' : ''}
+
 					</label>
 				))}
 			</div>

@@ -74,7 +74,7 @@ export default function FundraisingCategoryDetails({
 							<FundraisingProductCard
 								product={product}
 								key={product.id}
-								profitValue={product.percent || profitValue}
+								profitValue={profitValue === 0  ? product.percent || profitValue: profitValue}
 								amountProfit={amountProfit}
 								checked={isChildChecked}
 								categoryKey={categoryKey}

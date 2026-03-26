@@ -14,6 +14,7 @@ import Modal from '@/components/Modal/Modal'
 import FundraisingTypeModal from '../FundraisingTypeModal/FundraisingTypeModal'
 import NewDesignModal from '../NewDesignModal/NewDesignModal'
 import { setMinimalGroups } from '@/features/products/productsSlice'
+import { setActiveStep } from '@/features/navigation/navigationSlice'
 
 const DesignStep = forwardRef((props, ref) => {
 	const dispatch = useDispatch()
@@ -26,6 +27,7 @@ const DesignStep = forwardRef((props, ref) => {
 	const [minimalGroupsFromStore, setMinimalGroupsFromStore] = useState([]);
 
 	const [customizerType, setCustomizerType] = useState(null)
+	const [popup, setPopup] = useState(false)
 
 	const [isLoading, setIsLoading] = useState(true)
 	const [productsByCategory, setProductsByCategory] = useState(null)
@@ -633,6 +635,9 @@ const DesignStep = forwardRef((props, ref) => {
 						product_group_id:value.product_group_id
 					}
 				}))
+				if (res?.store?.is_fundraise_popup) {
+					setPopup(true)
+				}
 
 				const loadedElements = []
 				const serverImageFiles = []
@@ -1387,7 +1392,12 @@ const DesignStep = forwardRef((props, ref) => {
 								className={css.modal__button__next}
 								onClick={() => {
 									setIsModalOpen(false)
-									setIsFundraisingModalOpen(true)
+									if(popup){
+										dispatch(setActiveStep(4))
+									}else {
+										setIsFundraisingModalOpen(true)
+
+									}
 								}}
 							>
 								No, move to the next step

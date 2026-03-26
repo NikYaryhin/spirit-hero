@@ -23,11 +23,11 @@ const initialState = {
 
 export const fetchProducts = createAsyncThunk(
 	'products/fetchProducts',
-	async (_, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const response = await spiritHeroApi.getProducts()
+			const response = await spiritHeroApi.getProducts(params.store_id)
 			console.debug('getProducts response', response)
-			console.debug("isFlashSaleType", response.products.filter(product => product.is_flash_sale_type))			
+			console.debug("isFlashSaleType", response.products.filter(product => product.is_flash_sale_type))
 			return response
 		} catch (error) {
 			return rejectWithValue(error.message)
