@@ -3,6 +3,7 @@ import css from './NewDesignModal.module.css'
 import { useDispatch, useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import { setMinimalGroups } from '@/features/products/productsSlice'
+import Loader from '@components/Loader/Loader'
 
 export default function NewDesignModal({ setIsNewDesignModalOpen }) {
 	const dispatch = useDispatch()
@@ -38,6 +39,7 @@ export default function NewDesignModal({ setIsNewDesignModalOpen }) {
 		}
 	}
 
+	if (isSubmitting) return <Loader />
 	return (
 		<div className={css.modal__content}>
 			<h3 className={css.modal__title}>Choose a collection for your second design</h3>

@@ -17,7 +17,7 @@ export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 
 	useEffect(()=>{
 		setSteps(
-			activeStep > 2 && isFlashSale 
+			activeStep > 2 && isFlashSale
 				? [...STEPS_LIST, { name: 'Flash sale Settings', id: 5 }]
 				: STEPS_LIST
 		)
@@ -31,7 +31,7 @@ export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 			} else {
 				await onNextStep()
 			}
-			window.location.href = 'https://spirit-hero.splitdev.org/'
+			window.location.href = 'https://spirit-hero.splitdev.org/store/dashboard'
 		} catch (error) {
 			console.error('Save and exit error', error)
 		}
@@ -105,7 +105,7 @@ export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 						</button>
 					) : (
 						<button className={css.save__button} onClick={saveAndExitHandle}>
-							Save and Exit
+							Save and Submit
 						</button>
 					)}
 

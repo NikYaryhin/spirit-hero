@@ -71,8 +71,8 @@ const FlashSale = forwardRef((props, ref) => {
 					setOrdersNote(order_notes)
 					setRange((prev) => ({
 						...prev,
-						from: flash_sale_start_date || '',
-						to: flash_sale_end_date,
+						from: flash_sale_start_date.split(" ")[0] || '',
+						to: flash_sale_end_date.split(" ")[0]  || '',
 					}))
 					setShippingValue(location_type || 'free_shipping')
 					if (typeof fundraising_goal_amount === 'number') setIsFundaraisingChecked(true)
@@ -513,7 +513,7 @@ const FlashSale = forwardRef((props, ref) => {
 					<Icon name={'ChevronUp'} />
 				</summary>
 
-				<div className={css.calendar__wrap}>
+				{/*<div className={css.calendar__wrap}>
 					<div className={css.calendar}>
 						<DayPicker
 							mode="range"
@@ -525,6 +525,47 @@ const FlashSale = forwardRef((props, ref) => {
 								formatWeekdayName: (day, options) =>
 									format(day, 'EEE', { locale: options?.locale }).toUpperCase(),
 							}}
+						/>
+					</div>
+
+					<div className={css.schedule__info}>
+						<p className={css.schedule__text}>
+							<Icon name={'Clock'} />
+							First batch will end on May 28th
+						</p>
+						<p className={css.schedule__text}>
+							<Icon name={'Van'} />
+							Orders arrive between June 6th and June 17th
+						</p>
+					</div>
+				</div>*/}
+				<div className={css.calendar__wrap}>
+					<div className={css.inputs__wrap}>
+							<input
+								type="date"
+								value={range.from}
+								onChange={(e) =>
+									setRange((prev) => ({
+										...prev,
+										from: e.target.value,
+									}))
+								}
+								className={css.date__input}
+							/>
+
+
+						<span className={css.separator}>—</span>
+
+						<input
+							type="date"
+							value={range.to}
+							onChange={(e) =>
+								setRange((prev) => ({
+									...prev,
+									to: e.target.value,
+								}))
+							}
+							className={css.date__input}
 						/>
 					</div>
 

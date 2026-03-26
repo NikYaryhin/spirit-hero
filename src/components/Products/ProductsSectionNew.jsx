@@ -37,7 +37,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			try {
 				setIsLoading(true)
 				const [productsRes, storeRes] = await Promise.all([
-					spiritHeroApi.getProducts(),
+					spiritHeroApi.getProducts(storeIdFromQuery),
 					spiritHeroApi.getStore(storeIdFromQuery)
 				])
 
@@ -116,24 +116,25 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 	const totalCatalogCount = useMemo(() => {
 		const myStoreRegistry = new Set();
 
-		if (isCatalog) {
+
 			myStoreGroups.forEach(group => {
 				group.products?.forEach(product => {
 					myStoreRegistry.add(`${group.id}-${product.id}`);
 				});
 			});
-		}
 
 		return catalogGroups
 			.filter(g => g.is_duplicate === 0)
 			.flatMap(group =>
 				group.products?.filter(product => {
-					return !(isCatalog &&
+					if (isFlashSale && !product.is_flash_sale_type) return false;
+
+					return !(
 						myStoreRegistry.has(`${group.id}-${product.id}`));
 				}) || []
 			)
 			.length;
-	}, [catalogGroups, myStoreGroups]);
+	}, [catalogGroups, myStoreGroups,isFlashSale]);
 /*	const totalCatalogCount = useMemo(() => {
 		// Якщо хочемо бачити кількість тільки тих, що залишилися в каталозі:
 		return processedGroups.reduce((acc, g) => acc + g.products.length, 0)
@@ -179,23 +180,79 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		}
 	}
 
+	const sendColorsToBackend = async (data) => {
+
+		await spiritHeroApi.setColorsOfProductV2({
+			store_id: Number(storeIdFromQuery),
+			products: [data]
+		})
+		/*const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
+		setMyStoreGroups(storeRes?.minimum_groups || [])
+		dispatch(setMinimalGroups(storeRes?.minimum_groups || []))*/
+	}
+
 	const addToStoreAction = async () => {
 		setFetchLoader(true)
 		const groupsPayload = Object.entries(selectedData).map(([groupId, ids]) => ({
 			group_id: Number(groupId),
 			ids: ids
 		}))
+		const productsPayload = []
+
+		console.log('activeFilters?.colorFamilies',activeFilters?.colorFamilies)
+		Object.entries(selectedData).forEach(([groupId, productIds]) => {
+			const group = currentGroups?.find(
+				(g) => Number(g.id) === Number(groupId)
+			)
+
+			if (!group) return
+
+			productIds.forEach((productId) => {
+				const product = group.products?.find(
+					(p) => Number(p.id) === Number(productId)
+				)
+
+				if (!product) return
+
+				const colors = product.colors || []
+
+
+				const filteredColorIds = colors
+					.filter((color) => {
+						const families = activeFilters?.colorFamilies
+
+						if (!families || families.length === 0) {
+							return true
+						}
+
+						return families.includes(	String(color.parent_color_id))
+					})
+					.map((color) => Number(color.color_id))
+
+				productsPayload.push({
+					product_id: Number(productId),
+					group_id: Number(groupId),
+					color_id: filteredColorIds
+				})
+			})
+		})
+		console.log('productsPayload',productsPayload)
 
 		try {
 			await spiritHeroApi.addToMyStoreProductsList({
 				store_id: Number(storeIdFromQuery),
 				groups: groupsPayload
 			})
+			await spiritHeroApi.setColorsOfProductV2({
+				store_id: Number(storeIdFromQuery),
+				products: productsPayload
+			})
 			const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
 			setMyStoreGroups(storeRes?.minimum_groups || [])
 			dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
 
 			setSelectedData({})
+			setIsCatalog(false)
 			showToast(`Items added to your store`)
 		} catch (e) {
 			showToast('Error adding products', 'error')
@@ -220,7 +277,13 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			setMyStoreGroups(storeRes?.minimum_groups || [])
 			dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
 
+			const countNew = storeRes?.minimum_groups.reduce((acc, g) => acc + (g.products_count || 0), 0)
+
 			setSelectedData({})
+			console.log('COUNT',totalMyStoreCount)
+			if(countNew === 0){
+				setIsCatalog(true)
+			}
 			showToast(`Items removed`)
 		} catch (e) {
 			showToast('Error removing products', 'error')
@@ -295,6 +358,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 								checkedFilters={activeFilters[key]}
 								products={currentGroups.flatMap(g => g.products || [])}
 								open={key === 'colorFamilies'}
+								isCatalog={isCatalog}
 							/>
 						)
 					))}
@@ -325,6 +389,8 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 									})
 								}}
 								activeColors={activeFilters.colorFamilies}
+								isCatalog={isCatalog}
+								sendColorsToBackend={sendColorsToBackend}
 							/>
 						)
 					})}

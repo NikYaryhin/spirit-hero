@@ -47,8 +47,10 @@ export default function Builder() {
 				const storeIdFromQuery = params.get('store_id')
 				const changeLogoFromQuery = params.get('change_logo')
 
+
 				if (!storeIdFromQuery) return
 
+				dispatch(setActiveStep(changeLogoFromQuery ? 3 : 2)) // 3:2
 				dispatch(setStoreIdAction(storeIdFromQuery))
 
 				try {
@@ -67,7 +69,7 @@ export default function Builder() {
 							setPricePerColor(storeData.store?.inkColorDetail?.cost || 0),
 						)
 
-					dispatch(fetchProducts())
+					dispatch(fetchProducts({store_id:storeIdFromQuery}))
 					dispatch(setActiveStep(changeLogoFromQuery ? 3 : 2)) // 3:2
 				} catch (error) {
 					console.error('Error fetching store info:', error)
@@ -119,7 +121,7 @@ export default function Builder() {
 				{activeStep === 2 && <ProductsStep />}
 				{activeStep === 3 && <DesignStep ref={designStepRef} />}
 
-				{activeStep === 4 && <FundraisingStep />}
+				{activeStep === 4 && <FundraisingStepNew />}
 				{activeStep === 5 && <FlashSale ref={flashSaleRef} />}
 			</div>
 

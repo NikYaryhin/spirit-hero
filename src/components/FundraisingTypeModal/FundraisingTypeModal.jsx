@@ -1,28 +1,62 @@
 import css from './FundraisingTypeModal.module.css'
 import Icon from '../Icon'
-import { useDispatch } from 'react-redux'
-import { setIsFundraisingGroup } from '@/features/products/productsSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { setIsFundraisingGroup, setMinimalGroups } from '@/features/products/productsSlice'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 import { setIsLoading } from '@/features/products/productsSlice'
+import { useEffect } from 'react'
+import spiritHeroApi from '@api/spiritHeroApi'
+import { showToast } from '@/helpers/toastCall'
 
 export default function FundraisingTypeModal({ setIsFundraisingModalOpen }) {
 	const dispatch = useDispatch()
+	const storeId = useSelector((state) => state.flashSale.storeId)
 
-	const handleFundrise = () => {
+	const setQueryParam = (key, value) => {
+		const url = new URL(window.location.href)
+		url.searchParams.set(key, value)
+
+		window.history.replaceState({}, '', url)
+	}
+	const handleFundrise = async () => {
 		dispatch(setIsFundraisingGroup(true))
+		setQueryParam('fundraising', 'true')
+		await spiritHeroApi.setIsFundraisePopup(+storeId)
 		setIsFundraisingModalOpen(false)
 		dispatch(setActiveStep(4))
-	/*	dispatch(setIsLoading(true))*/
+		/*	dispatch(setIsLoading(true))*/
 	}
 
-	const handleSellAtCost = () => {
+	const handleSellAtCost = async () => {
 		dispatch(setIsFundraisingGroup(false))
+		setQueryParam('fundraising', 'false')
+		await spiritHeroApi.setIsFundraisePopup(+storeId)
 		setIsFundraisingModalOpen(false)
 		dispatch(setActiveStep(4))
-/*
-		dispatch(setIsLoading(true))
-*/
+		/*
+				dispatch(setIsLoading(true))
+		*/
 	}
+	/*useEffect(() => {
+		async function loadData() {
+			try {
+				setIsLoading(true)
+				const [ storeRes] = await Promise.all([
+					spiritHeroApi.getStore(+storeId)
+				])
+				if (storeRes?.store?.is_fundraise_popup) {
+					setIsFundraisingModalOpen(false)
+					dispatch(setActiveStep(4))
+				}
+
+			} catch (e) {
+				showToast('Failed to load data', 'error')
+			} finally {
+				setIsLoading(false)
+			}
+		}
+		loadData()
+	}, [])*/
 
 	return (
 		<>

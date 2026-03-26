@@ -36,7 +36,7 @@ export default function ProductCustomiserCard({
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [colorsArray, setColorsArray] = useState(
-		choosed_colors.length > 0 ? choosed_colors : [...colors].slice(0, 3),
+		choosed_colors.length > 0 ? choosed_colors : [],
 	)
 
 	const cardClickHandle = (event) => {
@@ -108,12 +108,20 @@ export default function ProductCustomiserCard({
 		}
 
 		try {
-			const payload = {
+			/*const payload = {
 				product_id: id,
 				choose_colors_ids: [...colorsArray].map((p) => p.id),
 			}
 
-			const response = await spiritHeroApi.setColorsOfProduct(payload)
+			const response = await spiritHeroApi.setColorsOfProduct(payload)*/
+			const response = await spiritHeroApi.setColorsOfProductV2({
+				store_id: +storeId,
+				products: [{
+					product_id: Number(id),
+					group_id: Number(groupId),
+					color_id: [...colorsArray].map((p) => p.color_id)
+				}]
+			})
 			console.debug('setColorsOfProduct response', response)
 
 			setIsModalOpen(false)

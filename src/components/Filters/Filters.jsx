@@ -10,6 +10,7 @@ export default function Filters({
 	setActiveFilters,
 	checkedFilters,
 	products,
+	isCatalog
 }) {
 	// const [hideCategory, setHideCategory] = useState(false)
 
@@ -36,7 +37,9 @@ export default function Filters({
 		}
 		if (keyNameLowerCase === 'colorfamilies') {
 			pass = products.some((product) =>
-				product.colors.some((color) => color.parent_color_id === id),
+				(!isCatalog ? product.choosed_colors : product.colors)?.some(
+					(color) => color.parent_color_id === id
+				)
 			)
 		}
 		return pass

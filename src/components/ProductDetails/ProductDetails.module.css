@@ -8,7 +8,7 @@
 		gap: 1.6rem;
 
 		padding: 16px;
-		border-bottom: 1px solid #CACACA;		
+		border-bottom: 1px solid #CACACA;
 
 		cursor: pointer;
 
@@ -65,9 +65,9 @@
 
 .products__list {
 	display: flex;
-	align-items: flex-start;
 	flex-wrap: wrap;
 	row-gap: 2.4rem;
+	align-items: stretch;
 
 	height: fit-content;
 	padding-bottom: 3.2rem;
@@ -81,7 +81,6 @@
 	li {
 		max-width: 30rem;
 		width: calc(100% / 5);
-		height: 28.2rem;
 		box-sizing: border-box;
 	}
 }

@@ -4,12 +4,12 @@ import css from './ProductCard.module.css'
 import previewImage from '@/assets/SpiritHero__Preloader.png'
 import { useSelector } from 'react-redux'
 
-export default function ProductCard({ product, isFlashSale, inputHandle, activeColors }) {
+export default function ProductCard({ product, isFlashSale, inputHandle, activeColors,isCatalog,minimalGroup,sendColorsToBackend }) {
 	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
-	const { id, product_title, product_image, selected, params, colors } = product
+	let { id, product_title, product_image, selected, params, colors,choosed_colors } = product
 
-	const [image, setImage] = useState(product_image || previewImage)
-
+	const [image, setImage] = useState(!isCatalog ? choosed_colors[0]?.color_image || product_image  : product_image)
+	const [selectedColors, setSelectedColors] = useState(choosed_colors || [])
 	const colorSwatchHandle = (event) => {
 		const { value } = event.currentTarget
 
@@ -18,7 +18,10 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 	const filteredColors = useMemo(() => {
 		if (!Array.isArray(colors)) return []
 		if (!Array.isArray(activeColors) || activeColors.length === 0) {
-			setImage(colors[0]?.color_image || product_image)
+
+			if(isCatalog ){
+				setImage(colors[0]?.color_image || product_image)
+			}
 			return colors
 		}
 
@@ -28,11 +31,52 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 			activeSet.has(String(color.parent_color_id))
 		)
 
-		filtered.length > 0 && setImage(filtered[0]?.color_image || product_image)
+
+		if(filtered.length > 0 && isCatalog ){
+			setImage(filtered[0]?.color_image || product_image)
+		}
+
 
 		return filtered
 		// return colors
 	}, [colors,activeColors])
+
+	const isColorActive = (colorId) => {
+		return selectedColors?.some((c) => String(c.id) === String(colorId))
+	}
+	const toggleColor = (color) => {
+		const isActive = selectedColors?.some((c) => String(c.id) === String(color.id))
+
+		let updated
+
+		if (isActive) {
+			updated = selectedColors.filter(
+				(c) => String(c.id) !== String(color.id)
+			)
+		} else {
+			updated = [...(selectedColors || []), color]
+		}
+
+		// 🔥 ОЦЕ ГОЛОВНЕ — одразу UI update
+		setSelectedColors(updated)
+
+		// payload
+		const groupIdStr = String(minimalGroup.id)
+
+		sendColorsToBackend({
+			product_id: +id,
+			group_id: +groupIdStr,
+			color_id: updated.map((v) => +v.color_id),
+		})
+	}
+
+	const handleColorHover = (color) => {
+		setImage(color.color_image || product_image)
+	}
+	function handleColorHoverLeave (){
+		setImage(selectedColors[0].color_image || product_image)
+	}
+
 
 	return (
 		<li className={`${css.product__item}`} key={id} id={id}>
@@ -71,7 +115,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 			</label>
 
 			<fieldset className={css.fieldset}>
-				{filteredColors &&
+				{isCatalog && filteredColors  &&
 					filteredColors.map((color) => {
 						return (
 							<label key={color.id}>
@@ -92,6 +136,33 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 						)
 					})}
 			</fieldset>
+			{!isCatalog && <div className={css.colors__bottom}>
+				{colors?.map((color) => {
+					const isActive = isColorActive(color.id)
+
+					return (
+						<div
+							key={color.id}
+							className={`${css.color__item} ${
+								isActive ? css.active : ''
+							}`}
+							onClick={() => toggleColor(color)}
+							onMouseEnter={() => handleColorHover(color)}
+							onMouseLeave={handleColorHoverLeave}
+
+
+						>
+				<span
+					className={css.color__circle}
+					style={{ backgroundColor: color.color }}
+				/>
+
+							{isActive && <span className={css.remove}>✕</span>}
+						</div>
+					)
+				})}
+			</div>}
+
 		</li>
 	)
 }

@@ -17,6 +17,7 @@ export default function FundraisingProductCard({
 	setIsFundraise,
 	pricesEnd,
 }) {
+
 	const url_params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = url_params.get('store_id')
 

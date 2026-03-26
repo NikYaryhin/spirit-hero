@@ -74,9 +74,15 @@ class SpiritHeroApi {
 		)
 		return data
 	}
+	async setIsFundraisePopup(store_id) {
+		const { data } = await this.http.post(
+			`/api/builder/set-is-fundraise-popup?store_id=${store_id}&is_fundraise_popup=1`,
+		)
+		return data
+	}
 
-	async getProducts() {
-		const { data } = await this.http.get('/api/builder/get-products')
+	async getProducts(store_id) {
+		const { data } = await this.http.get(`/api/builder/get-products?store_id=${store_id}`)
 
 		return data
 	}
@@ -97,6 +103,13 @@ class SpiritHeroApi {
 	}
 
 	async setColorsOfProduct(payload) {
+		const { data } = await this.http.post(
+			'/api/builder/product-chose-colors',
+			payload,
+		)
+		return data
+	}
+	async setColorsOfProductV2(payload) {
 		const { data } = await this.http.post(
 			'/api/builder/product-chose-colors',
 			payload,
