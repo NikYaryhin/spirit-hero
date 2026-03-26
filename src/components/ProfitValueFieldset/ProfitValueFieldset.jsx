@@ -89,7 +89,7 @@ export default function ProfitValueFieldset({
 					type="number"
 					min={0.5}
 					max={100}
-					placeholder={`${!isPercent ? '$' : '%'}_ _`} //TODO коля лох
+					placeholder={`${!isPercent ? '$' : '%'}_ _`}
 					disabled={!isOwnValue}
 				/>
 			</div>
