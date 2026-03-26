@@ -104,7 +104,7 @@ export default function StoreDetailsForm({ image }) {
 
 				dispatch(setStoreIdAction(res.store.id))
 				const url = new URL(window.location.href);
-				url.searchParams.set('store_id', storeId);
+				url.searchParams.set('store_id', res.store.id);
 
 				window.history.replaceState({}, '', url);
 				// localStorage.setItem('storeId', res.store.id)
