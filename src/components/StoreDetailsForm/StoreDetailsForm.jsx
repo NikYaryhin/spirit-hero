@@ -103,6 +103,10 @@ export default function StoreDetailsForm({ image }) {
 				console.debug('spiritHeroApi.saveStore()', res)
 
 				dispatch(setStoreIdAction(res.store.id))
+				const url = new URL(window.location.href);
+				url.searchParams.set('store_id', storeId);
+
+				window.history.replaceState({}, '', url);
 				// localStorage.setItem('storeId', res.store.id)
 			}
 

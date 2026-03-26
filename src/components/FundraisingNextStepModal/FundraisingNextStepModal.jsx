@@ -4,6 +4,7 @@ import css from './FundraisingNextStepModal.module.css'
 import { useDispatch, useSelector } from 'react-redux'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 import spiritHeroApi from '@/api/spiritHeroApi'
+import Loader from '@components/Loader/Loader'
 
 export default function FundraisingNextStepModal({ closeModal }) {
 	const dispatch = useDispatch()
@@ -11,6 +12,7 @@ export default function FundraisingNextStepModal({ closeModal }) {
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const storeId = useSelector((state) => state.flashSale.storeId)
 	const [isLoading, setisLoading] = useState(false)
+	const [isLoadingFetchStore, setIsLoadingFetchStore] = useState(false)
 	const [isCheck, setIsCheck] = useState(false)
 	const [checkData, setCheckData] = useState({
 		type_id: 1,
@@ -31,39 +33,65 @@ export default function FundraisingNextStepModal({ closeModal }) {
 	})
 
 	useEffect(() => {
-		if (storeInfo.store?.receiveFunds) {
-			const {
-				type_id,
-				payment_name,
-				first_name,
-				last_name,
-				organization_name,
-				address_1,
-				address_2,
-				city,
-				state,
-				zip_code,
-			} = storeInfo.store.receiveFunds
+		const fetchStore = async () => {
 
-			setCheckData({
-				type_id,
-				payment_name,
-				first_name,
-				last_name,
-				organization_name,
-				address_1,
-				address_2,
-				city,
-				state,
-				zip_code,
-			})
+			try {
+				setIsLoadingFetchStore(true)
+				const res = await spiritHeroApi.getStore(storeId);
+				const store = res?.store;
+
+				if (store?.receiveFunds) {
+					const {
+						type_id,
+						payment_name,
+						first_name,
+						last_name,
+						organization_name,
+						address_1,
+						address_2,
+						city,
+						state,
+						zip_code,
+					} = store.receiveFunds;
+
+					setCheckData({
+						type_id,
+						payment_name,
+						first_name,
+						last_name,
+						organization_name,
+						address_1,
+						address_2,
+						city,
+						state,
+						zip_code,
+					});
+				}
+
+				if (store?.receiveFundsAch) {
+					const { account_number, routing_number, bank_name } =
+						store.receiveFundsAch;
+
+					setAchData({
+						account_number,
+						routing_number,
+						bank_name,
+					});
+				}
+			} catch (e) {
+				console.error('getStore error', e);
+				setIsLoadingFetchStore(false)
+
+			}finally {
+				setIsLoadingFetchStore(false)
+
+			}
+		};
+
+		if (storeId) {
+			fetchStore();
 		}
-		if (storeInfo.store?.receiveFundsAch) {
-			const { account_number, routing_number, bank_name } =
-				storeInfo.store.receiveFundsAch
-			setAchData({ account_number, routing_number, bank_name })
-		}
-	}, [])
+	}, [storeId]);
 
 	const onRadioChange = () => {
 		setIsCheck(!isCheck)
@@ -95,6 +123,7 @@ export default function FundraisingNextStepModal({ closeModal }) {
 			setisLoading(false)
 		}
 	}
+	if (isLoadingFetchStore) return <Loader />
 
 	return (
 		<div className={css.modal__content}>

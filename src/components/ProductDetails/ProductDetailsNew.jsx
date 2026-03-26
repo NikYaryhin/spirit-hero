@@ -10,6 +10,8 @@ export default function ProductDetailsNew({
 																				 cardClickHandle,
 																				 onGroupCheckHandle,
 																				 activeColors,
+																						isCatalog,
+																						sendColorsToBackend
 																			 }) {
 
 	// Визначаємо, чи всі товари в цій групі вибрані
@@ -60,6 +62,9 @@ export default function ProductDetailsNew({
 							product={product}
 							isFlashSale={isFlashSale}
 							activeColors={activeColors}
+							isCatalog={isCatalog}
+							minimalGroup={minimalGroup}
+							sendColorsToBackend={sendColorsToBackend}
 							// Якщо ProductCard очікує selected окремим пропсом, можна додати:
 							// isSelected={product.selected}
 						/>

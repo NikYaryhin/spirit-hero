@@ -337,6 +337,11 @@
 			gap: 1.6rem;
 			margin-top: 1.6rem;
 
+          .inputs__wrap {
+	          display: flex;
+	          align-items: center;
+	          gap: 1rem;
+           }
 			.schedule__info {
 				display: flex;
 				flex-direction: column;

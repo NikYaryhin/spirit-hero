@@ -146,7 +146,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					<strong className={css.link__label}>
 						Required Minimum: 36 items mix/match
 					</strong>
-					<Link to="#" className={css.link} target="blank">
+					<Link to="https://spirithero.com/pages/minimums-for-group-orders" className={css.link} target="blank">
 						View minimum guide here
 					</Link>
 
@@ -214,7 +214,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						<strong className={css.link__label}>
 							Required Minimum: 36 items mix/match
 						</strong>
-						<Link to="#" className={css.link} target="blank">
+						<Link to="https://spirithero.com/pages/minimums-for-group-orders" className={css.link} target="blank">
 							View minimum guide here
 						</Link>
 					</div>
