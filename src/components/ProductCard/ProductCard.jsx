@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Icon from '../Icon'
 import css from './ProductCard.module.css'
 import previewImage from '@/assets/SpiritHero__Preloader.png'
@@ -8,8 +8,36 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
 	let { id, product_title, product_image, selected, params, colors,choosed_colors } = product
 
+
 	const [image, setImage] = useState(!isCatalog ? choosed_colors[0]?.color_image || product_image  : product_image)
 	const [selectedColors, setSelectedColors] = useState(choosed_colors || [])
+	const [showAllColors, setShowAllColors] = useState(false)
+	const sortedColors = useMemo(() => {
+		if (!Array.isArray(colors)) return []
+
+		const selectedSet = new Set(
+			(selectedColors || []).map((c) => String(c.id))
+		)
+
+		return [...colors].sort((a, b) => {
+			const aSelected = selectedSet.has(String(a.id))
+			const bSelected = selectedSet.has(String(b.id))
+
+			if (aSelected === bSelected) return 0
+			return aSelected ? -1 : 1
+		})
+	}, [colors, selectedColors])
+	const visibleColors = useMemo(() => {
+		if (showAllColors) return sortedColors
+		return sortedColors.slice(0, 5)
+	}, [sortedColors, showAllColors])
+
+	const hiddenColorsCount = (sortedColors?.length || 0) - 5
+	useEffect(() => {
+		if (choosed_colors) {
+			setSelectedColors(choosed_colors)
+		}
+	}, [choosed_colors])
 	const colorSwatchHandle = (event) => {
 		const { value } = event.currentTarget
 
@@ -136,7 +164,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 						)
 					})}
 			</fieldset>
-			{!isCatalog && <div className={css.colors__bottom}>
+			{/*{!isCatalog && <div className={css.colors__bottom}>
 				{colors?.map((color) => {
 					const isActive = isColorActive(color.id)
 
@@ -161,7 +189,45 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 						</div>
 					)
 				})}
-			</div>}
+			</div>}*/}
+			{!isCatalog && (
+				<div className={css.colors__bottom}>
+					{visibleColors.map((color) => {
+						const isActive = isColorActive(color.id)
+
+						return (
+							<div
+								key={color.id}
+								className={`${css.color__item} ${
+									isActive ? css.active : ''
+								}`}
+								onClick={() => toggleColor(color)}
+								onMouseEnter={() => handleColorHover(color)}
+								onMouseLeave={handleColorHoverLeave}
+							>
+					<span
+						className={css.color__circle}
+						style={{ backgroundColor: color.color }}
+					/>
+
+								{isActive && <span className={css.remove}>✕</span>}
+							</div>
+						)
+					})}
+
+					{/* 👉 +N кружок */}
+					{!showAllColors && hiddenColorsCount > 0 && (
+						<div
+							className={`${css.color__item} ${css.more}`}
+							onClick={() => setShowAllColors(true)}
+						>
+				<span className={css.color__circle}>
+					+{hiddenColorsCount}
+				</span>
+						</div>
+					)}
+				</div>
+			)}
 
 		</li>
 	)

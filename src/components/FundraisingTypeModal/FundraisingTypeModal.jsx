@@ -66,7 +66,7 @@ export default function FundraisingTypeModal({ setIsFundraisingModalOpen }) {
 					<h3 className={css.fundraising__modal__title}>Make money</h3>
 					<span className={css.fundraising__modal__subtitle}>Add a markup and make money</span>
 
-					<button className={css.fundraising__modal__button} onClick={handleFundrise}>Fundrise</button>
+					<button className={css.fundraising__modal__button} onClick={handleFundrise}>Fundraise</button>
 				</div>
 
 				<div className={css.point}>

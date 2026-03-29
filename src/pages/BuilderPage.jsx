@@ -70,7 +70,6 @@ export default function Builder() {
 						)
 
 					dispatch(fetchProducts({store_id:storeIdFromQuery}))
-					dispatch(setActiveStep(changeLogoFromQuery ? 3 : 2)) // 3:2
 				} catch (error) {
 					console.error('Error fetching store info:', error)
 					alert(

@@ -280,7 +280,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			const countNew = storeRes?.minimum_groups.reduce((acc, g) => acc + (g.products_count || 0), 0)
 
 			setSelectedData({})
-			console.log('COUNT',totalMyStoreCount)
+			console.log('COUNT',countNew)
 			if(countNew === 0){
 				setIsCatalog(true)
 			}

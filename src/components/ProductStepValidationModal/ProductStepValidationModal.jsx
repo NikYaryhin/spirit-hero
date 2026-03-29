@@ -7,6 +7,7 @@ import Icon from '../Icon'
 import css from './ProductStepValidationModal.module.css'
 import spiritHeroApi from '@api/spiritHeroApi'
 import { showToast } from '@/helpers/toastCall'
+import Loader from '@components/Loader/Loader'
 
 export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
@@ -16,15 +17,16 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const storeIdFromQuery = params.get('store_id')
 	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
 	const dispatch = useDispatch()
-
+	const [isLoadingGroups, setIsLoadingGroups] = useState(false)
 	// const productsByCategory = useSelector((state) => state.products.productsByCategory)
 	const minimalGroups = useSelector((state) => state.products.minimalGroups)
 	const myShopProducts = useSelector((state) => state.products.myShopProducts)
 	const [myStoreGroups, setMyStoreGroups] = useState([])
 
-	useEffect(() => {
+/*	useEffect(() => {
 		async function loadData() {
 			try {
+				setIsLoadingGroups(true)
 				const [storeRes] = await Promise.all([
 					spiritHeroApi.getStore(storeId)
 				])
@@ -33,22 +35,25 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 
 			} catch (e) {
 				showToast('Failed to load data', 'error')
+			}finally {
+				setIsLoadingGroups(false)
 			}
 		}
 		loadData()
-	}, [storeId])
+	}, [storeId])*/
 
 	const minimalGroupsInStore = useMemo(() => {
 		if (!Array.isArray(minimalGroups) || minimalGroups.length < 1) return []
-		if (!Array.isArray(myShopProducts) || myShopProducts.length < 1) return []
+	/*	if (!Array.isArray(myShopProducts) || myShopProducts.length < 1) return []
 
 		const storeProductIds = new Set(myShopProducts.map((product) => String(product?.id)))
 
 		return minimalGroups.filter((group) =>
 			Array.isArray(group?.products) &&
 			group.products.some((product) => storeProductIds.has(String(product?.id))),
-		)
-	}, [minimalGroups, myShopProducts])
+		)*/
+		return minimalGroups
+	}, [minimalGroups])
 
 
 	const onConfitmButtonClick = () => {
@@ -79,52 +84,31 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						Please select collection do you want to run a flash sale?
 					</h3>
 
-					<fieldset className={css.fieldset}>
-						{myStoreGroups.length > 0 && myStoreGroups.map((item) => (
-							<label className={css.label} key={item.id || item.name}>
-								<span className={css.checkbox__emulator}>
-									<Icon name={'InputChecked'} />
-								</span>
-								{item.name}
 
-								<input
-									type="checkbox"
-									name="modal-select"
-									value={item.name}
-									className="visually-hidden"
-									onChange={handleCollectionChange}
-									checked={choosedCollection.includes(item.name)}
-								/>
-							</label>
-						))}
-						{/* <label className={css.label}>
-							<span className={css.checkbox__emulator}>
-								<Icon name={'InputChecked'} />
-							</span>
-							Standard Collection (36-piece minimum)
-							<input
-								type="radio"
-								name="modal-select"
-								value={'standart'}
-								className="visually-hidden"
-								checked={isStendart}
-								onChange={() => setIsStendart(true)}
-							/>
-						</label>
-						<label className={css.label}>
-							<span className={css.checkbox__emulator}>
-								<Icon name={'InputChecked'} />
-							</span>
-							Pants/Bottoms (36-piece minimum)
-							<input
-								type="radio"
-								name="modal-select"
-								value={'pants/bottom'}
-								className="visually-hidden"
-								checked={!isStendart}
-								onChange={() => setIsStendart(false)}
-							/>
-						</label> */}
+					<fieldset className={css.fieldset}>
+						{isLoadingGroups ? (
+							<Loader/>
+						) : minimalGroupsInStore.length > 0 ? (
+							minimalGroupsInStore.map((item) => (
+								<label className={css.label} key={item.id || item.name}>
+				<span className={css.checkbox__emulator}>
+					<Icon name={'InputChecked'} />
+				</span>
+									{item.name}
+
+									<input
+										type="checkbox"
+										name="modal-select"
+										value={item.name}
+										className="visually-hidden"
+										onChange={handleCollectionChange}
+										checked={choosedCollection.includes(item.name)}
+									/>
+								</label>
+							))
+						) : (
+							<div className={css.empty}>No collections found</div>
+						)}
 					</fieldset>
 
 					<div className={css.text__wrap}>
