@@ -69,7 +69,7 @@ export default function Filters({
 			</summary>
 
 			<ul className={css.filters__list}>
-				{category.map(({ category, id, name, product_color_name }) => {
+				{category.map(({ category, id, name, product_color_name,product_color }) => {
 					let isPass = passCategory(id)
 
 					return (
@@ -80,7 +80,13 @@ export default function Filters({
 									<Icon name="Checked" />
 								</span>
 
-								<span className={css.category__name}>{category || name || product_color_name}</span>
+								{keyName.toLowerCase()==='colorfamilies' && <span className={css.color} style={{ backgroundColor: product_color }}></span> }
+
+
+								{keyName.toLowerCase()!=='colorfamilies' && <span className={css.category__name}>{category || name || product_color_name}</span> }
+
+
+						{/*		<span className={css.category__name}>{category || name || product_color_name}</span>*/}
 
 								<input
 									onChange={filterCheckboxHandle}

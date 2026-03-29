@@ -42,6 +42,7 @@
 
 			cursor: pointer;
 
+
 			&:has(input:checked) {
 
 				.checkbox__emulator {
@@ -67,6 +68,15 @@
 					visibility: hidden;
 				}
 			}
+.color {
+	display: inline-block;
+
+	width: 3rem;
+
+	aspect-ratio: 1/1;
+	border-radius: 50%;
+	border: 1px solid #CACACA;
+}
 		}
 	}
 }
