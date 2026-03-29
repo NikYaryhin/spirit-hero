@@ -12,6 +12,7 @@ export default function Filters({
 	products,
 	isCatalog
 }) {
+	console.log("checkedFilters",checkedFilters)
 	// const [hideCategory, setHideCategory] = useState(false)
 
 	// useEffect(() => {
@@ -59,7 +60,19 @@ export default function Filters({
 			return { ...prev, [keyName]: newFilters }
 		})
 	}
+	const handleCategoryClick = (id) => {
+		if (!checkedFilters) return
 
+		if (checkedFilters.includes(String(id))) {
+			filterCheckboxHandle({
+				currentTarget: { value: String(id), checked: false }
+			})
+		} else {
+			filterCheckboxHandle({
+				currentTarget: { value: String(id), checked: true }
+			})
+		}
+	}
 	// if(!hideCategory) return (
 	return (
 		<details className={css['products_filter-group']} open={open} key={keyName}>
@@ -68,7 +81,7 @@ export default function Filters({
 				{/* {filterName === 'colorFamilies' ? 'Colors' : filterName} <Icon name="ChevronUp" /> */}
 			</summary>
 
-			<ul className={css.filters__list}>
+			{/*<ul className={css.filters__list}>
 				{category.map(({ category, id, name, product_color_name,product_color }) => {
 					let isPass = passCategory(id)
 
@@ -86,7 +99,7 @@ export default function Filters({
 								{keyName.toLowerCase()!=='colorfamilies' && <span className={css.category__name}>{category || name || product_color_name}</span> }
 
 
-						{/*		<span className={css.category__name}>{category || name || product_color_name}</span>*/}
+								<span className={css.category__name}>{category || name || product_color_name}</span>
 
 								<input
 									onChange={filterCheckboxHandle}
@@ -96,6 +109,61 @@ export default function Filters({
 									checked={checkedFilters ? checkedFilters.includes(String(id)) : false}
 									// checked={checkedFilters.includes(String(id)) || false}
 								/>
+							</label>
+						</li>
+					)
+				})}
+			</ul>*/}
+
+			<ul className={`${css.filters__list} ${
+				keyName.toLowerCase() === 'colorfamilies' ? css.row : ''
+			}`}>
+				{category.map(({ category, id, name, product_color_name, product_color }) => {
+					let isPass = passCategory(id)
+					const isActive = checkedFilters?.includes(String(id))
+
+					return (
+						<li key={id} className={isPass ? '' : 'visually-hidden'}>
+							<label
+								className={`${css.category__label} ${
+									isActive ? css.active : ''
+								}`}
+								onClick={() => {
+									if (keyName.toLowerCase() === 'colorfamilies') {
+										handleCategoryClick(id)
+									}
+								}}
+							>
+								{/* 👉 COLORFAMILIES */}
+								{keyName.toLowerCase() === 'colorfamilies' && (
+									<>
+							<span
+								className={css.color}
+								style={{ backgroundColor: product_color }}
+							/>
+									</>
+								)}
+
+								{/* 👉 ВСІ ІНШІ */}
+								{keyName.toLowerCase() !== 'colorfamilies' && (
+									<>
+							<span className={css.checkbox__emulator}>
+								<Icon name="Checked" />
+							</span>
+
+										<span className={css.category__name}>
+								{category || name || product_color_name}
+							</span>
+
+										<input
+											onChange={filterCheckboxHandle}
+											className="visually-hidden"
+											type="checkbox"
+											value={id}
+											checked={checkedFilters ? checkedFilters.includes(String(id)) : false}
+										/>
+									</>
+								)}
 							</label>
 						</li>
 					)
