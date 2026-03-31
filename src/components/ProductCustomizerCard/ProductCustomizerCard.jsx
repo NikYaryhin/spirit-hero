@@ -96,6 +96,7 @@ export default function ProductCustomiserCard({
 
 			if (checked) {
 				let selectedColor = colors.find(({ color }) => color === value)
+				setLocalImage(selectedColor?.color_image)
 				nextColors = [...prev, selectedColor]
 			} else {
 				nextColors = prev.filter(({ color }) => color !== value)

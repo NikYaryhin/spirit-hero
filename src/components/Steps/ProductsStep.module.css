@@ -20,7 +20,7 @@
 		display: flex;
 		gap: 1rem;
 
-		max-width: 61rem;
+		max-width: 51rem;
 		padding: 1rem;
 		border: 1px solid #FBB041;
 		box-sizing: border-box;
@@ -47,6 +47,7 @@
 		.info--checkbox__wrapper {
 			display: flex;
 			gap: 0.8rem;
+			justify-content: flex-end;
 
 			font-size: 1.6rem;
 			line-height: 1.25;

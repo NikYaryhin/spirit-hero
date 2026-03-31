@@ -62,7 +62,7 @@ export const COLORS = [
 // ]
 
 export const fundraisingFixedAmounValues = [1, 3, 5]
-export const fundraisingPercentageValues = [2, 5, 8]
+export const fundraisingPercentageValues = [10, 15, 20]
 export const fundraisingPriceEndsValues = ['.00', '.50', '.95', '.99']
 
 export const googleFontApiKey = 'AIzaSyAUZpjSA_4-DyFGMDrRVpdw3tOa2Qpo7iU'

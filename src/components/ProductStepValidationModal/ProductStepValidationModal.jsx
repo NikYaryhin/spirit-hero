@@ -79,9 +79,9 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 			{isFlashSale ? (
 				<>
 					<h3 className={css.title}>
-						Great! You have added flash sale collections to your store!
+						Great choice! Flash sales give you the best pricing and a simple, streamlined ordering experience.
 						<br />
-						Please select collection do you want to run a flash sale?
+						To get started, please confirm your flash sale details below:
 					</h3>
 
 
@@ -110,35 +110,42 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 							<div className={css.empty}>No collections found</div>
 						)}
 					</fieldset>
+					<strong className={css.link__label}>
+						Minimum Requirement: 36 items (mix & match allowed)
+					</strong>
+					<Link to="https://spirithero.com/pages/minimums-for-group-orders" className={css.link} target="blank">
+						View Minimum Guide
+					</Link>
 
 					<div className={css.text__wrap}>
-						If the minimums aren't met, you can either:
+						If minimums are not met, you have two options:
 						<p className={css.text}>
-							<span>1. Extend the store to sell more items.</span>
+							<span>1. Extend your store to allow more time for orders</span>
 							<span>
-								2. Purchase the remaining items to meet the minimum for each
-								group.
+								2. Purchase the remaining quantity to reach the minimum.
 							</span>
-						</p>
-						<p className={css.text}>
-							<span>Orders will not be canceled or refunded.</span>
-							<span>Flash sale pricing is based on the # of ink colors.</span>
-							<span>$1 will be added for each additional ink color</span>
 						</p>
 					</div>
 
-					<strong className={css.link__label}>
-						Required Minimum: 36 items mix/match
-					</strong>
-					<Link to="https://spirithero.com/pages/minimums-for-group-orders" className={css.link} target="blank">
-						View minimum guide here
-					</Link>
+					<div className={css.text__wrap}>
+						Important Notes:
+						<p className={css.text}>
+							<span>1. Orders are custom-made and cannot be canceled or refunded</span>
+							<span>
+								2. Flash sale pricing is based on the number of ink colors.
+							</span>
+							<span>
+								3. $1 will be added for each additional ink color
+							</span>
+						</p>
+					</div>
+
 
 					<label className={css.checkbox__label}>
 						<span className={css.checkbox__emulator}>
 							<Icon name={'InputChecked'} />
 						</span>
-						I agree with the minimum order requirements for each product group
+						I agree to the minimum order requirements for each product group
 						<input
 							type="checkbox"
 							name="modal-approve"

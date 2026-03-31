@@ -118,7 +118,7 @@ const FlashSale = forwardRef((props, ref) => {
 			flash_sale_end_date: range.to || '',
 			on_demand_ordering: isOnDemandChecked,
 			fundraising_progress_bar: isFundaraisingChecked,
-			fundraising_goal_amount: 12.99,
+			fundraising_goal_amount: shippingData.fundraising_goal_amount,
 			order_notes: ordersNote.filter((item) => item.value.trim() !== ''),
 		}
 

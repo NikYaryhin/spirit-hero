@@ -232,7 +232,7 @@ h1, h2, h3, h4, h5, h6, p {
 
 .validation--modal {
   position: relative;
-  width: 70rem !important;
+  width: 75rem !important;
   padding: 4rem !important;
 
   button[aria-label="Close"] {

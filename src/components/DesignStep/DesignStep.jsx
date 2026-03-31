@@ -1055,9 +1055,7 @@ const DesignStep = forwardRef((props, ref) => {
 	// Функция для получения параметров логотипа
 	const getLogoParameters = async () => {
 		try {
-/*
 			setIsLoading(true)
-*/
 			const  syncData = syncCanvasToGroupId(activeGroupId)
 			const designList = syncData.map((item) => ({
 				minimum_groups: [item.product_group_id],
@@ -1082,9 +1080,7 @@ const DesignStep = forwardRef((props, ref) => {
 			console.error('Error spiritHeroApi.saveDesignForGroups:', error)
 			return null
 		} finally {
-/*
 			setIsLoading(false)
-*/
 		}
 	}
 
@@ -1092,6 +1088,7 @@ const DesignStep = forwardRef((props, ref) => {
 	useImperativeHandle(ref, () => ({
 		getLogoParameters
 	}))
+
 
 		return (
 			<>
