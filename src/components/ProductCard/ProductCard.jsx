@@ -9,7 +9,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 	let { id, product_title, product_image, selected, params, colors,choosed_colors } = product
 
 
-	const [image, setImage] = useState(!isCatalog ? choosed_colors[0]?.color_image || product_image  : product_image)
+	const [image, setImage] = useState(!isCatalog ? choosed_colors[0]?.color_image_logo || choosed_colors[0]?.color_image || product_image  : product_image)
 	const [selectedColors, setSelectedColors] = useState(choosed_colors || [])
 	const [showAllColors, setShowAllColors] = useState(false)
 	const sortedColors = useMemo(() => {
@@ -48,7 +48,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 		if (!Array.isArray(activeColors) || activeColors.length === 0) {
 
 			if(isCatalog ){
-				setImage(colors[0]?.color_image || product_image)
+				setImage(colors[0]?.color_image_logo || colors[0]?.color_image || product_image)
 			}
 			return colors
 		}
@@ -61,7 +61,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 
 
 		if(filtered.length > 0 && isCatalog ){
-			setImage(filtered[0]?.color_image || product_image)
+			setImage(filtered[0]?.color_image_logo || filtered[0]?.color_image || product_image)
 		}
 
 
@@ -99,10 +99,10 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 	}
 
 	const handleColorHover = (color) => {
-		setImage(color.color_image || product_image)
+		setImage(color.color_image_logo || color.color_image || product_image)
 	}
 	function handleColorHoverLeave (){
-		setImage(selectedColors[0].color_image || product_image)
+		setImage(selectedColors[0].color_image_logo || selectedColors[0].color_image || product_image)
 	}
 
 

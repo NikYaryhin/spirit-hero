@@ -1349,6 +1349,7 @@ const DesignStep = forwardRef((props, ref) => {
 												<ProductCustomizerCard
 													key={product.id}
 													groupKey={key}
+													image={image}
 													setImage={setImage}
 													activeCardId={activeCardId}
 													setActiveCardId={setActiveCardId}

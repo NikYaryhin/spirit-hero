@@ -8,6 +8,7 @@ import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
 
 export default function ProductCustomiserCard({
 	groupKey,
+	image,
 	setImage,
 	setActiveCardId,
 	setProductsByCategory,
@@ -38,14 +39,17 @@ export default function ProductCustomiserCard({
 	const [colorsArray, setColorsArray] = useState(
 		choosed_colors.length > 0 ? choosed_colors : [],
 	)
-
+	const [localImage, setLocalImage] = useState(
+		choosed_colors[0]?.color_image || product_image
+	)
 	const cardClickHandle = (event) => {
 		if (active) return
 
 		const groupIdFromDataset = event?.currentTarget?.dataset?.groupId
 		onCardClick(id, groupIdFromDataset)
 		setActiveCardId(id)
-		setImage(product_image)
+		setImage(colorsArray[0]?.color_image || product_image)
+		setLocalImage(colorsArray[0]?.color_image || product_image)
 	}
 
 	const closeButtonHandle = async () => {
@@ -139,7 +143,7 @@ export default function ProductCustomiserCard({
 			data-group-id={groupKey ?? null}
 		>
 			<div className={css.image__box}>
-				<img src={product_image} alt={product_title} loading="lazy" />
+				<img src={localImage} alt={product_title} loading="lazy" />
 			</div>
 
 			<div className={css.info}>
@@ -153,7 +157,10 @@ export default function ProductCustomiserCard({
 								style={{ backgroundColor: color }}
 							></span>
 							<input
-								onChange={(e) => setImage(e.target.value)}
+								onChange={(e) => {
+									setImage(e.target.value)
+									setLocalImage(e.target.value)
+								}}
 								type="radio"
 								name={id}
 								className="visually-hidden"
