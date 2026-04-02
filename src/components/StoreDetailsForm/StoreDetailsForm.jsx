@@ -153,7 +153,7 @@ export default function StoreDetailsForm({ image }) {
 					<h3>1. Store details</h3>
 
 					<label className={css['text--label']}>
-						<span className={css['input--label']}>Add Name</span>
+						<span className={css['input--label']}>Store Name</span>
 						<input
 							onChange={(event) => {
 								setStoreName(event.currentTarget.value)
@@ -167,7 +167,7 @@ export default function StoreDetailsForm({ image }) {
 					</label>
 
 					<label className={css['text--label']}>
-						<span className={css['input--label']}>Add Website URL</span>
+						<span className={css['input--label']}>Website URL</span>
 						<input
 							onChange={(event) => {
 								setStoreURL(slugify(event.currentTarget.value))
