@@ -1,16 +1,12 @@
 .products_filter-group {
-	padding: 0.4rem 1.6rem;
+	padding: 1rem 1.6rem;
 	border-radius: 1.2rem;
-
 	background-color: #FCFCFC;
+	overflow: visible;
+	position: relative;
 
-	&:not([open]) {
-		summary svg {
-			rotate: 180deg;
-		}
-	}
 
-	summary {
+	.summary {
 		display: flex;
 		align-items: center;
 
@@ -24,7 +20,12 @@
 
 		list-style: none;
 		cursor: pointer;
+.rotated {
+	transform: rotate(180deg);
+	transition: transform 0.2s ease;
+}
 	}
+
 
 	.filters__list {
 		display: flex;
@@ -35,13 +36,11 @@
 			display: flex;
 			align-items: center;
 			gap: 0.4rem;
-
 			font-size: 1.4rem;
 			line-height: 1.57;
 			color: #605767;
-
 			cursor: pointer;
-
+			overflow: visible;
 
 			&:has(input:checked) {
 
@@ -84,5 +83,70 @@
 .filters__list.row {
 	flex-direction: row;
 	flex-wrap: wrap;
+}
+
+.tooltip {
+	position: absolute;
+	bottom: 130%;
+	left: 50%;
+	transform: translateX(-50%) scale(0.95);
+
+	background: #111;
+	color: #fff;
+	font-size: 12px;
+	padding: 4px 8px;
+	border-radius: 6px;
+	white-space: nowrap;
+
+	opacity: 0;
+	pointer-events: none;
+	transition: 0.2s ease;
+
+	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+	z-index: 9999;
+}
+
+.tooltip::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+
+	border-width: 5px;
+	border-style: solid;
+	border-color: #111 transparent transparent transparent;
+	z-index: 9999;
+}
+
+.tooltipWrapper:hover .tooltip {
+	opacity: 1;
+	transform: translateX(-50%) scale(1);
+}
+.tooltipWrapper {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+.filters__list,
+.filters__list.row,
+.filters__list li {
+	overflow: visible;
+}
+.wrapper {
+	max-height: 0;
+	overflow: hidden;
+	opacity: 0;
+	transform: translateY(-5px);
+	transition: all 0.25s ease;
+}
+
+.open {
+	max-height: 500px;
+	opacity: 1;
+	transform: translateY(0);
+	overflow: visible;
+
 }
 }

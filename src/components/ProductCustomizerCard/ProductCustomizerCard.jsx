@@ -103,6 +103,7 @@ export default function ProductCustomiserCard({
 			} else {
 				nextColors = prev.filter(({ color }) => color !== value)
 				setLocalImage(colorsArray[0]?.color_image || product_image)
+				console.log('TEST CLICK')
 				setImage(colorsArray[0]?.color_image || product_image)
 			}
 
@@ -163,6 +164,7 @@ export default function ProductCustomiserCard({
 							></span>
 							<input
 								onChange={(e) => {
+									e.stopPropagation()
 									setImage(e.target.value)
 									setLocalImage(e.target.value)
 								}}
@@ -170,6 +172,7 @@ export default function ProductCustomiserCard({
 								name={id}
 								className="visually-hidden"
 								value={color_image}
+								checked={localImage === color_image && String(groupId)===activeGroupId}
 							/>
 						</label>
 					))}
@@ -198,7 +201,10 @@ export default function ProductCustomiserCard({
 			</button>
 
 			<button
-				onClick={() => setIsModalOpen(!isModalOpen)}
+				onClick={(e) => {
+					e.stopPropagation()
+					setIsModalOpen(!isModalOpen)
+				}}
 				className={css.colors__button}
 			>
 				<Icon name={'Plus'} className={css.plus__icon} />
@@ -209,7 +215,7 @@ export default function ProductCustomiserCard({
 				isOpen={isModalOpen}
 				onClose={onModalClose}
 				className="side"
-				closeLabel={'Save'}
+				closeLabel={'✕'}
 			>
 				<h3 className={css.modal__title}>Select Colours</h3>
 				<span className={css.modal__subtitle}>
@@ -220,7 +226,7 @@ export default function ProductCustomiserCard({
 					{colors &&
 						colors.map((item) => {
 							return (
-								<li key={item.color} className={css.color__item}>
+								<li key={item.color} className={css.color__item} onClick={(e) => e.stopPropagation()}>
 									<ColorCheckbox
 										onInputHandle={colorInputHandle}
 										color={item.color}

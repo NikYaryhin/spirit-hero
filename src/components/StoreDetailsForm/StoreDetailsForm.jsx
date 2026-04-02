@@ -179,7 +179,7 @@ export default function StoreDetailsForm({ image }) {
 						/>
 					</label>
 
-					<div className={css['social--media__inputs--box']}>
+					{/*<div className={css['social--media__inputs--box']}>
 						<label className={css['text--label']}>
 							<span className={css['input--label']}>
 								Add Social Media <em>(optional)</em>
@@ -207,7 +207,7 @@ export default function StoreDetailsForm({ image }) {
 								placeholder="https://x.com"
 							/>
 						</label>
-					</div>
+					</div>*/}
 				</fieldset>
 
 				<fieldset>

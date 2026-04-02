@@ -210,7 +210,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 						style={{ backgroundColor: color.color }}
 					/>
 
-								{isActive && <span className={css.remove}>✕</span>}
+								{isActive && <span className={css.remove}>✓</span>}
 							</div>
 						)
 					})}

@@ -47,8 +47,12 @@
 		flex-direction: column;
 		justify-content: space-between;
 
-		width: 42%;
+		width: 52%;
 
+	    .product_title{
+			font-size: 1.6rem;
+			line-height: 1.57;
+		}
 		.title {
 			font-size: 1.4rem;
 			line-height: 1.57;
@@ -106,7 +110,7 @@
 			background-color: #4E008E;
 
 			transition: color 0.2s ease;
-	
+
 			@media (hover: hover) {
 				&:hover {
 					color: #FBB041;

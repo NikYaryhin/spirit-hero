@@ -16,6 +16,8 @@ const FlashSale = forwardRef((props, ref) => {
 
 	const [ordersFiles, setOrdersFiles] = useState([])
 	const [range, setRange] = useState({ from: '', to: '' })
+	const [range2, setRange2] = useState({ from: ''})
+	const [isNeedByDate, setIsNeedByDate] = useState(false);
 	const [shippingValue, setShippingValue] = useState('free_shipping')
 	const [shippingData, setShippingData] = useState({
 		first_name: '',
@@ -148,6 +150,7 @@ const FlashSale = forwardRef((props, ref) => {
 
 	const onNodeDeleteClick = (e) => {
 		e.preventDefault()
+		console.log('onNodeDeleteClick')
 		const id = e.currentTarget.dataset.id
 		setOrdersNote((prev) => prev.filter((note) => note.id !== id))
 	}
@@ -165,7 +168,37 @@ const FlashSale = forwardRef((props, ref) => {
 			})
 		})
 	}
+	const formatDate = (date) => {
+		const d = new Date(date);
 
+		const day = d.getDate();
+		const month = d.toLocaleString('en-US', { month: 'long' });
+
+		const getSuffix = (n) => {
+			if (n >= 11 && n <= 13) return 'th';
+			switch (n % 10) {
+				case 1: return 'st';
+				case 2: return 'nd';
+				case 3: return 'rd';
+				default: return 'th';
+			}
+		};
+
+		return `${month} ${day}${getSuffix(day)}`;
+	};
+	const getDeliveryRange = (date) => {
+		if (!date) return '';
+
+		const base = new Date(date);
+
+		const start = new Date(base);
+		start.setDate(start.getDate() + 14); // +2 тижні
+
+		const end = new Date(base);
+		end.setDate(end.getDate() + 21); // +3 тижні
+
+		return `${formatDate(start)} – ${formatDate(end)}`;
+	};
 	return (
 		<section className={css['flash--sale__section']}>
 			<div className={css['flash--sale__head']}>
@@ -430,90 +463,91 @@ const FlashSale = forwardRef((props, ref) => {
 				</form>
 			</details>
 
-			<details className={css['flash--sale__details--form']} name="flash--sale--details">
-				<summary>
-					<span className={css['details--form__number']}>2</span>
-					How should we sort your orders?
-					<Icon name={'ChevronUp'} />
-				</summary>
+			{shippingValue === 'ship_home' ? (
+				<>
+				{/*	<details className={css['flash--sale__details--form']} name="flash--sale--details">
+						<summary>
+							<span className={css['details--form__number']}>2</span>
+							How should we sort your orders?
+							<Icon name={'ChevronUp'} />
+						</summary>
 
-				<form className={css.form}>
-					<fieldset className={css.form__uploaders}>
-						<legend>We will sort, labeled and bag your orders accordingly</legend>
+						<form className={css.form}>
+							<fieldset className={css.form__uploaders}>
+								<legend>We will sort, labeled and bag your orders accordingly</legend>
 
-						<div className={css.uploaders__box}>
-							<label className={css.uploader}>
-								Choose file and Upload
-								<input
-									id="orders-file-upload"
-									type="file"
-									className="visually-hidden"
-									onChange={handleFilesChange}
-									multiple
-								/>
-							</label>
-							<label className={css.uploader}>
-								Download Sample CSV
-								<input
-									id="download-sample-csv"
-									type="file"
-									className="visually-hidden"
-									onChange={handleFilesChange}
-									multiple
-								/>
-							</label>
-						</div>
+								<div className={css.uploaders__box}>
+									<label className={css.uploader}>
+										Choose file and Upload
+										<input
+											id="orders-file-upload"
+											type="file"
+											className="visually-hidden"
+											onChange={handleFilesChange}
+											multiple
+										/>
+									</label>
+									<label className={css.uploader}>
+										Download Sample CSV
+										<input
+											id="download-sample-csv"
+											type="file"
+											className="visually-hidden"
+											onChange={handleFilesChange}
+											multiple
+										/>
+									</label>
+								</div>
 
-						{ordersFiles && (
-							<ul className={css.files__list}>
-								{ordersFiles.map((item) => (
-									<li key={item.id} className={css.file__item}>
-										<Icon name={'Burger'} />
-										{item.file.name}
-										<button onClick={(e) => onDeleteFileClick(e)} id={item.id}>
-											<Icon name={'Minus'} />
-										</button>
-									</li>
-								))}
-							</ul>
-						)}
+								{ordersFiles && (
+									<ul className={css.files__list}>
+										{ordersFiles.map((item) => (
+											<li key={item.id} className={css.file__item}>
+												<Icon name={'Burger'} />
+												{item.file.name}
+												<button onClick={(e) => onDeleteFileClick(e)} id={item.id}>
+													<Icon name={'Minus'} />
+												</button>
+											</li>
+										))}
+									</ul>
+								)}
 
-						{ordersNote.length > 0 && (
-							<ul className={css.files__list}>
-								{ordersNote.map((item) => (
-									<li key={item.id} className={css.file__item}>
-										<label>
-											<Icon name={'Burger'} />
-											<input
-												type="text"
-												id={item.id}
-												value={item.value}
-												name="node--input"
-												onChange={onNoteInputChange}
-											/>
-											<button onClick={(e) => onNodeDeleteClick(e)} data-id={item.id}>
-												<Icon name={'Minus'} />
-											</button>
-										</label>
-									</li>
-								))}
-							</ul>
-						)}
-						<button className={css.add_more_button} onClick={(e) => onAddMoreClick(e)}>
-							+<span className={css.accent}>Add more</span>
-						</button>
-					</fieldset>
-				</form>
-			</details>
+								{ordersNote.length > 0 && (
+									<ul className={css.files__list}>
+										{ordersNote.map((item) => (
+											<li key={item.id} className={css.file__item}>
+												<label>
+													<Icon name={'Burger'} />
+													<input
+														type="text"
+														id={item.id}
+														value={item.value}
+														name="node--input"
+														onChange={onNoteInputChange}
+													/>
+													<button onClick={(e) => onNodeDeleteClick(e)} data-id={item.id}>
+														<Icon name={'Minus'} />
+													</button>
+												</label>
+											</li>
+										))}
+									</ul>
+								)}
+								<button className={css.add_more_button} onClick={(e) => onAddMoreClick(e)}>
+									+<span className={css.accent}>Add more</span>
+								</button>
+							</fieldset>
+						</form>
+					</details>*/}
 
-			<details className={css['flash--sale__details--form']} name="flash--sale--details">
-				<summary>
-					<span className={css['details--form__number']}>3</span>
-					Schedule Your Flash Sale End Date
-					<Icon name={'ChevronUp'} />
-				</summary>
-
-				{/*<div className={css.calendar__wrap}>
+					<details className={css['flash--sale__details--form']} name="flash--sale--details">
+						<summary>
+							<span className={css['details--form__number']}>2</span>
+							Schedule Your Flash Sale End Date
+							<Icon name={'ChevronUp'} />
+						</summary>
+						{/*<div className={css.calendar__wrap}>
 					<div className={css.calendar}>
 						<DayPicker
 							mode="range"
@@ -539,33 +573,262 @@ const FlashSale = forwardRef((props, ref) => {
 						</p>
 					</div>
 				</div>*/}
-				<div className={css.calendar__wrap}>
-					<div className={css.inputs__wrap}>
+						<div className={css.calendar__wrap}>
+							<div className={css.inputs__wrap}>
+								<input
+									type="date"
+									value={range.from}
+									onChange={(e) =>
+										setRange((prev) => ({
+											...prev,
+											from: e.target.value,
+										}))
+									}
+									className={css.date__input}
+								/>
+
+
+								<span className={css.separator}>—</span>
+
+								<input
+									type="date"
+									value={range.to}
+									onChange={(e) =>
+										setRange((prev) => ({
+											...prev,
+											to: e.target.value,
+										}))
+									}
+									className={css.date__input}
+								/>
+							</div>
+
+							<div className={css.schedule__info}>
+								<p className={css.schedule__text}>
+									<Icon name={'Van'} />
+									Orders arrive between {getDeliveryRange(range.to)}
+								</p>
+							</div>
+						</div>
+
+						<label className={css.checkbox}>
+						<span className={css.checkbox__emulator}>
+							<svg
+								width="18"
+								height="13"
+								viewBox="0 0 18 13"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M1 7.1875L5.86957 12L17 1"
+									stroke="#4E008E"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</svg>
+						</span>
+							Need-by date
 							<input
-								type="date"
-								value={range.from}
-								onChange={(e) =>
-									setRange((prev) => ({
-										...prev,
-										from: e.target.value,
-									}))
-								}
-								className={css.date__input}
+								id="organize-orders-checkbox"
+								type="checkbox"
+								className="visually-hidden"
+								checked={isNeedByDate}
+								onChange={(e) => setIsNeedByDate(e.target.checked)}
 							/>
+						</label>
 
+						{isNeedByDate && (
+							<div className={css.calendar__wrap}>
+								<div className={css.inputs__wrap}>
+									<input
+										type="date"
+										value={range2.from}
+										onChange={(e) =>
+											setRange2((prev) => ({
+												...prev,
+												from: e.target.value,
+											}))
+										}
+										className={css.date__input}
+									/>
+								</div>
+							</div>
+						)}
+					</details>
 
-						<span className={css.separator}>—</span>
+					<details className={css['flash--sale__details--form']} name="flash--sale--details">
+						<summary>
+							<span className={css['details--form__number']}>3</span>
+							Switch to On Demand Ordering After Flash Sale
+							<Icon name={'ChevronUp'} />
+						</summary>
+						<div className={css.details__content}>
+							<div className={css.checkbox__wrap}>
+								No
+								<label className={css.checkbox__label}>
+									<span className={css.checkbox__emulator}></span>
+									<input
+										type="checkbox"
+										className="visually-hidden"
+										checked={isOnDemandChecked}
+										onChange={() => setIsOnDemandChecked(!isOnDemandChecked)}
+									/>
+								</label>
+								Yes
+							</div>
 
-						<input
-							type="date"
-							value={range.to}
-							onChange={(e) =>
-								setRange((prev) => ({
-									...prev,
-									to: e.target.value,
-								}))
-							}
-							className={css.date__input}
+							<span className={css['on--demand__label']}>On Demand is:</span>
+							<ul className={css['on--demand__list']}>
+								<li> Traditional e-commerce order </li>
+								<li> No minimums </li>
+								<li> Shipped directly to each home </li>
+								<li> Higher pricing </li>
+								<li> Free shipping for orders of $75 or more </li>
+								<li> $8.95 shipping for orders below $75 </li>
+							</ul>
+						</div>
+					</details>
+
+					<details className={css['flash--sale__details--form']} name="flash--sale--details">
+						<summary>
+							<span className={css['details--form__number']}>4</span>
+							Do you want to add a fundraising progress bar to you store?
+							<Icon name={'ChevronUp'} />
+						</summary>
+
+						<div className={`${css.details__content} ${css.form__inputs}`}>
+							<div className={css.checkbox__wrap}>
+								No
+								<label className={css.checkbox__label}>
+									<span className={css.checkbox__emulator}></span>
+									<input
+										type="checkbox"
+										className="visually-hidden"
+										checked={isFundaraisingChecked}
+										onChange={() => setIsFundaraisingChecked(!isFundaraisingChecked)}
+									/>
+								</label>
+								Yes
+							</div>
+
+							<label className={`${css['text--label']} width-33`}>
+								<span className={css['input--label']}>Fundraising goal amount</span>
+								<input
+									id="goal-amount"
+									value={shippingData.fundraising_goal_amount}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											fundraising_goal_amount: e.target.value,
+										}))
+									}}
+									min={0}
+									type="number"
+									placeholder="Enter the dollar amount "
+									disabled={!isFundaraisingChecked}
+									required={!isFundaraisingChecked}
+								/>
+								<span className={css['input--label']}>This amount will be displayed on you store</span>
+							</label>
+						</div>
+					</details>
+				</>
+			) : (
+				<>
+					<details className={css['flash--sale__details--form']} name="flash--sale--details">
+					<summary>
+						<span className={css['details--form__number']}>2</span>
+						How should we sort your orders?
+						<Icon name={'ChevronUp'} />
+					</summary>
+
+					<form className={css.form}>
+						<fieldset className={css.form__uploaders}>
+							<legend>We will sort, labeled and bag your orders accordingly</legend>
+
+							<div className={css.uploaders__box}>
+								<label className={css.uploader}>
+									Choose file and Upload
+									<input
+										id="orders-file-upload"
+										type="file"
+										className="visually-hidden"
+										onChange={handleFilesChange}
+										multiple
+									/>
+								</label>
+								<a
+									href="./src/assets/sample_csv.csv"
+									download
+									className={css.uploader}
+								>
+									Download Sample CSV
+								</a>
+							</div>
+
+							{ordersFiles && (
+								<ul className={css.files__list}>
+									{ordersFiles.map((item) => (
+										<li key={item.id} className={css.file__item}>
+											<Icon name={'Burger'} />
+											{item.file.name}
+											<button onClick={(e) => onDeleteFileClick(e)} id={item.id}>
+												<Icon name={'Minus'} />
+											</button>
+										</li>
+									))}
+								</ul>
+							)}
+
+							{ordersNote.length > 0 && (
+								<ul className={css.files__list}>
+									{ordersNote.map((item) => (
+										<li key={item.id} className={css.file__item}>
+											<label>
+												<Icon name={'Burger'} />
+												<input
+													type="text"
+													id={item.id}
+													value={item.value}
+													name="node--input"
+													onChange={onNoteInputChange}
+												/>
+												<button   type="button" onClick={(e) => onNodeDeleteClick(e)} data-id={item.id}>
+													<Icon name={'Minus'} />
+												</button>
+											</label>
+
+										</li>
+									))}
+								</ul>
+							)}
+							<button className={css.add_more_button} onClick={(e) => onAddMoreClick(e)}>
+								+<span className={css.accent}>Add more</span>
+							</button>
+						</fieldset>
+					</form>
+				</details>
+
+					<details className={css['flash--sale__details--form']} name="flash--sale--details">
+						<summary>
+							<span className={css['details--form__number']}>3</span>
+							Schedule Your Flash Sale End Date
+							<Icon name={'ChevronUp'} />
+						</summary>
+						{/*<div className={css.calendar__wrap}>
+					<div className={css.calendar}>
+						<DayPicker
+							mode="range"
+							navLayout="around"
+							selected={range}
+							onSelect={setRange}
+							numberOfMonths={1}
+							formatters={{
+								formatWeekdayName: (day, options) =>
+									format(day, 'EEE', { locale: options?.locale }).toUpperCase(),
+							}}
 						/>
 					</div>
 
@@ -579,85 +842,171 @@ const FlashSale = forwardRef((props, ref) => {
 							Orders arrive between June 6th and June 17th
 						</p>
 					</div>
-				</div>
-			</details>
+				</div>*/}
+						<div className={css.calendar__wrap}>
+							<div className={css.inputs__wrap}>
+								<input
+									type="date"
+									value={range.from}
+									onChange={(e) =>
+										setRange((prev) => ({
+											...prev,
+											from: e.target.value,
+										}))
+									}
+									className={css.date__input}
+								/>
 
-			<details className={css['flash--sale__details--form']} name="flash--sale--details">
-				<summary>
-					<span className={css['details--form__number']}>4</span>
-					Switch to On Demand Ordering After Flash Sale
-					<Icon name={'ChevronUp'} />
-				</summary>
-				<div className={css.details__content}>
-					<div className={css.checkbox__wrap}>
-						No
-						<label className={css.checkbox__label}>
-							<span className={css.checkbox__emulator}></span>
+
+								<span className={css.separator}>—</span>
+
+								<input
+									type="date"
+									value={range.to}
+									onChange={(e) =>
+										setRange((prev) => ({
+											...prev,
+											to: e.target.value,
+										}))
+									}
+									className={css.date__input}
+								/>
+							</div>
+
+							<div className={css.schedule__info}>
+								<p className={css.schedule__text}>
+									<Icon name={'Van'} />
+									Orders arrive between {getDeliveryRange(range.to)}
+								</p>
+							</div>
+						</div>
+
+						<label className={css.checkbox}>
+						<span className={css.checkbox__emulator}>
+							<svg
+								width="18"
+								height="13"
+								viewBox="0 0 18 13"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M1 7.1875L5.86957 12L17 1"
+									stroke="#4E008E"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</svg>
+						</span>
+							Need-by date
 							<input
+								id="organize-orders-checkbox"
 								type="checkbox"
 								className="visually-hidden"
-								checked={isOnDemandChecked}
-								onChange={() => setIsOnDemandChecked(!isOnDemandChecked)}
+								checked={isNeedByDate}
+								onChange={(e) => setIsNeedByDate(e.target.checked)}
 							/>
 						</label>
-						Yes
-					</div>
 
-					<span className={css['on--demand__label']}>On Demand is:</span>
-					<ul className={css['on--demand__list']}>
-						<li> Traditional e-commerce order </li>
-						<li> No minimums </li>
-						<li> Shipped directly to each home </li>
-						<li> Higher pricing </li>
-						<li> Free shipping for orders of $75 or more </li>
-						<li> $8.95 shipping for orders below $75 </li>
-					</ul>
-				</div>
-			</details>
+						{isNeedByDate && (
+							<div className={css.calendar__wrap}>
+								<div className={css.inputs__wrap}>
+									<input
+										type="date"
+										value={range2.from}
+										onChange={(e) =>
+											setRange2((prev) => ({
+												...prev,
+												from: e.target.value,
+											}))
+										}
+										className={css.date__input}
+									/>
+								</div>
+							</div>
+						)}
+					</details>
 
-			<details className={css['flash--sale__details--form']} name="flash--sale--details">
-				<summary>
-					<span className={css['details--form__number']}>5</span>
-					Do you want to add a fundraising progress bar to you store?
-					<Icon name={'ChevronUp'} />
-				</summary>
+					<details className={css['flash--sale__details--form']} name="flash--sale--details">
+						<summary>
+							<span className={css['details--form__number']}>4</span>
+							Switch to On Demand Ordering After Flash Sale
+							<Icon name={'ChevronUp'} />
+						</summary>
+						<div className={css.details__content}>
+							<div className={css.checkbox__wrap}>
+								No
+								<label className={css.checkbox__label}>
+									<span className={css.checkbox__emulator}></span>
+									<input
+										type="checkbox"
+										className="visually-hidden"
+										checked={isOnDemandChecked}
+										onChange={() => setIsOnDemandChecked(!isOnDemandChecked)}
+									/>
+								</label>
+								Yes
+							</div>
 
-				<div className={`${css.details__content} ${css.form__inputs}`}>
-					<div className={css.checkbox__wrap}>
-						No
-						<label className={css.checkbox__label}>
-							<span className={css.checkbox__emulator}></span>
-							<input
-								type="checkbox"
-								className="visually-hidden"
-								checked={isFundaraisingChecked}
-								onChange={() => setIsFundaraisingChecked(!isFundaraisingChecked)}
-							/>
-						</label>
-						Yes
-					</div>
+							<span className={css['on--demand__label']}>On Demand is:</span>
+							<ul className={css['on--demand__list']}>
+								<li> Traditional e-commerce order </li>
+								<li> No minimums </li>
+								<li> Shipped directly to each home </li>
+								<li> Higher pricing </li>
+								<li> Free shipping for orders of $75 or more </li>
+								<li> $8.95 shipping for orders below $75 </li>
+							</ul>
+						</div>
+					</details>
 
-					<label className={`${css['text--label']} width-33`}>
-						<span className={css['input--label']}>Fundraising goal amount</span>
-						<input
-							id="goal-amount"
-							value={shippingData.fundraising_goal_amount}
-							onChange={(e) => {
-								setShippingData((prev) => ({
-									...prev,
-									fundraising_goal_amount: e.target.value,
-								}))
-							}}
-							min={0}
-							type="number"
-							placeholder="Enter the dollar amount "
-							disabled={!isFundaraisingChecked}
-							required={!isFundaraisingChecked}
-						/>
-						<span className={css['input--label']}>This amount will be displayed on you store</span>
-					</label>
-				</div>
-			</details>
+					<details className={css['flash--sale__details--form']} name="flash--sale--details">
+						<summary>
+							<span className={css['details--form__number']}>5</span>
+							Do you want to add a fundraising progress bar to you store?
+							<Icon name={'ChevronUp'} />
+						</summary>
+
+						<div className={`${css.details__content} ${css.form__inputs}`}>
+							<div className={css.checkbox__wrap}>
+								No
+								<label className={css.checkbox__label}>
+									<span className={css.checkbox__emulator}></span>
+									<input
+										type="checkbox"
+										className="visually-hidden"
+										checked={isFundaraisingChecked}
+										onChange={() => setIsFundaraisingChecked(!isFundaraisingChecked)}
+									/>
+								</label>
+								Yes
+							</div>
+
+							<label className={`${css['text--label']} width-33`}>
+								<span className={css['input--label']}>Fundraising goal amount</span>
+								<input
+									id="goal-amount"
+									value={shippingData.fundraising_goal_amount}
+									onChange={(e) => {
+										setShippingData((prev) => ({
+											...prev,
+											fundraising_goal_amount: e.target.value,
+										}))
+									}}
+									min={0}
+									type="number"
+									placeholder="Enter the dollar amount "
+									disabled={!isFundaraisingChecked}
+									required={!isFundaraisingChecked}
+								/>
+								<span className={css['input--label']}>This amount will be displayed on you store</span>
+							</label>
+						</div>
+					</details></>
+			)}
+
+
 
 			{/* <button className={css['flash--sale__head--button']} onClick={onSaveClick}>
 				Save

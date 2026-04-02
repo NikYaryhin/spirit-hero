@@ -358,6 +358,39 @@
 				line-height: 1.57;
 			}
 		}
+        .checkbox {
+
+	         display: flex;
+			 align-items: center;
+	         gap: 0.8rem;
+	         font-size: 1.4rem;
+	         line-height: 1.57;
+	         cursor: pointer;
+		margin-top:10px;
+
+&:has(input:checked) {
+.checkbox__emulator {
+	background-color: #FCFCFC;
+
+svg {
+	visibility: visible;
+}
+}
+}
+
+.checkbox__emulator {
+	display: inline-block;
+	width: 1.6rem;
+	height: 1.6rem;
+
+	border: 1px solid #9B9AA5;
+	border-radius: 0.2rem;
+
+svg {
+	visibility: hidden;
+}
+}
+}
 
 		.details__content {
 			margin-top: 1.6rem;

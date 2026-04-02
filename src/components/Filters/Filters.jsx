@@ -6,7 +6,6 @@ export default function Filters({
 	keyName,
 	filterName,
 	category,
-	open,
 	setActiveFilters,
 	checkedFilters,
 	products,
@@ -22,6 +21,7 @@ export default function Filters({
 
 	// 	setHideCategory(passCategories.every(pass => pass === false))
 	// }, [])
+	const [open, setOpen] = useState(false)
 
 	const passCategory = (id) => {
 		const keyNameLowerCase = keyName.toLowerCase()
@@ -75,11 +75,11 @@ export default function Filters({
 	}
 	// if(!hideCategory) return (
 	return (
-		<details className={css['products_filter-group']} open={open} key={keyName}>
-			<summary>
-				{filterName.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()} <Icon name="ChevronUp" />
+		<div className={css['products_filter-group']} key={keyName}>
+			<div className={css.summary} 	onClick={() => setOpen((prev) => !prev)}>
+				{filterName.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()} <Icon name="ChevronUp" className={open ? css.rotated : ''}/>
 				{/* {filterName === 'colorFamilies' ? 'Colors' : filterName} <Icon name="ChevronUp" /> */}
-			</summary>
+			</div>
 
 			{/*<ul className={css.filters__list}>
 				{category.map(({ category, id, name, product_color_name,product_color }) => {
@@ -114,61 +114,71 @@ export default function Filters({
 					)
 				})}
 			</ul>*/}
+			{/*{open && (
 
-			<ul className={`${css.filters__list} ${
-				keyName.toLowerCase() === 'colorfamilies' ? css.row : ''
-			}`}>
-				{category.map(({ category, id, name, product_color_name, product_color }) => {
-					let isPass = passCategory(id)
-					const isActive = checkedFilters?.includes(String(id))
+			)}*/}
+			<div className={`${css.wrapper} ${open ? css.open : ''}`}>
+				<ul className={`${css.filters__list} ${
+					keyName.toLowerCase() === 'colorfamilies' ? css.row : ''
+				}`}>
+					{category.map(({ category, id, name, product_color_name, product_color }) => {
+						let isPass = passCategory(id)
+						const isActive = checkedFilters?.includes(String(id))
 
-					return (
-						<li key={id} className={isPass ? '' : 'visually-hidden'}>
-							<label
-								className={`${css.category__label} ${
-									isActive ? css.active : ''
-								}`}
-								onClick={() => {
-									if (keyName.toLowerCase() === 'colorfamilies') {
-										handleCategoryClick(id)
-									}
-								}}
-							>
-								{/* 👉 COLORFAMILIES */}
-								{keyName.toLowerCase() === 'colorfamilies' && (
-									<>
-							<span
-								className={css.color}
-								style={{ backgroundColor: product_color }}
-							/>
-									</>
-								)}
+						return (
+							<li key={id} className={isPass ? '' : 'visually-hidden'}>
+								<label
+									className={`${css.category__label} ${
+										isActive ? css.active : ''
+									}`}
+									onClick={() => {
+										if (keyName.toLowerCase() === 'colorfamilies') {
+											handleCategoryClick(id)
+										}
+									}}
+								>
+									{/* 👉 COLORFAMILIES */}
+									{keyName.toLowerCase() === 'colorfamilies' && (
+										<>
 
-								{/* 👉 ВСІ ІНШІ */}
-								{keyName.toLowerCase() !== 'colorfamilies' && (
-									<>
+										<span className={css.tooltipWrapper}>
+		<span
+			className={css.color}
+			style={{ backgroundColor: product_color }}
+		/>
+		<span className={css.tooltip}>{product_color_name}</span>
+	</span>
+										</>
+									)}
+
+									{/* 👉 ВСІ ІНШІ */}
+									{keyName.toLowerCase() !== 'colorfamilies' && (
+										<>
 							<span className={css.checkbox__emulator}>
 								<Icon name="Checked" />
 							</span>
 
-										<span className={css.category__name}>
+											<span className={css.category__name}>
 								{category || name || product_color_name}
 							</span>
 
-										<input
-											onChange={filterCheckboxHandle}
-											className="visually-hidden"
-											type="checkbox"
-											value={id}
-											checked={checkedFilters ? checkedFilters.includes(String(id)) : false}
-										/>
-									</>
-								)}
-							</label>
-						</li>
-					)
-				})}
-			</ul>
-		</details>
+											<input
+												onChange={filterCheckboxHandle}
+												className="visually-hidden"
+												type="checkbox"
+												value={id}
+												checked={checkedFilters ? checkedFilters.includes(String(id)) : false}
+											/>
+										</>
+									)}
+								</label>
+							</li>
+						)
+					})}
+				</ul>
+			</div>
+
+
+		</div>
 	)
 }

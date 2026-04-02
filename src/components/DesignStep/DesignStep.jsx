@@ -662,7 +662,8 @@ const DesignStep = forwardRef((props, ref) => {
 				if (firstProduct) {
 					setActiveCardId(firstProduct.id)
 					setActiveGroupId(firstGroupKey)
-					setImage(firstProduct.product_image)
+					setImage(firstProduct.choosed_colors[0]?.color_image || product_image)
+
 				}
 				console.log('DASIGN GROUP::',res.design.find((value)=>value.product_group_id === +firstGroupKey))
 
@@ -1062,6 +1063,7 @@ const DesignStep = forwardRef((props, ref) => {
 				design: {
 					customerLogos: item.customerLogos,
 					labels: item.labels,
+					designGroup:"test"
 				},
 			}))
 

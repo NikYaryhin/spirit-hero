@@ -40,7 +40,7 @@ export default function LogoPicker({ setCustomerImage }) {
 			</div>
 
 			<label className={css['logo--picker__button']}>
-				<span>Your logo</span>
+				<span>Upload</span>
 				<Upload />
 				<input
 					onChange={onInputChange}

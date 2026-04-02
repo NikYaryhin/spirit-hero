@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import { setMinimalGroups } from '@/features/products/productsSlice'
 import Loader from '@components/Loader/Loader'
+import { setActiveStep } from '@/features/navigation/navigationSlice'
 
 export default function NewDesignModal({ setIsNewDesignModalOpen }) {
 	const dispatch = useDispatch()
@@ -32,6 +33,7 @@ export default function NewDesignModal({ setIsNewDesignModalOpen }) {
 			}
 
 			setIsNewDesignModalOpen(false)
+			dispatch(setActiveStep(2))
 		} catch (error) {
 			console.error('createNewMinimalGroup error', error)
 		} finally {
