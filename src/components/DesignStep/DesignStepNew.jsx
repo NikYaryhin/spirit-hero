@@ -9,20 +9,26 @@ import TextHandle from '../TextHandle/TextHandle'
 import { v4 as uuidv4 } from 'uuid'
 import { useDispatch, useSelector } from 'react-redux'
 import domtoimage from 'dom-to-image-more'
-import { Canvas, FabricImage, Control, util, Textbox, Line } from 'fabric'
+import { Canvas, FabricImage, Control, util, Textbox, Line, Rect } from 'fabric'
 import Modal from '@/components/Modal/Modal'
 import FundraisingTypeModal from '../FundraisingTypeModal/FundraisingTypeModal'
 import NewDesignModal from '../NewDesignModal/NewDesignModal'
 import { setMinimalGroups } from '@/features/products/productsSlice'
+import { setActiveStep } from '@/features/navigation/navigationSlice'
 
-const DesignStep = forwardRef((props, ref) => {
+const DesignStepNew = forwardRef((props, ref) => {
 	const dispatch = useDispatch()
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
 	const storeId = useSelector((state) => state.flashSale.storeId) || storeIdFromQuery
-	const minimalGroupsFromStore = useSelector((state) => state.products.minimalGroups)
+	/*
+		const minimalGroupsFromStore = useSelector((state) => state.products.minimalGroups)
+	*/
+	const [minimalGroupsFromStore, setMinimalGroupsFromStore] = useState([]);
+	const [activeSide, setActiveSide] = useState('front')
 
 	const [customizerType, setCustomizerType] = useState(null)
+	const [popup, setPopup] = useState(false)
 
 	const [isLoading, setIsLoading] = useState(true)
 	const [productsByCategory, setProductsByCategory] = useState(null)
@@ -36,6 +42,9 @@ const DesignStep = forwardRef((props, ref) => {
 	})
 
 	const [image, setImage] = useState(null)
+	const [imageBack, setImageBack] = useState(null)
+
+	const [area, setArea] = useState(null)
 
 	const [uploaderFiles, setUploaderFiles] = useState([])
 	const [serverLabels, setServerLabels] = useState([])
@@ -51,7 +60,10 @@ const DesignStep = forwardRef((props, ref) => {
 	const imageBoxRef = useRef(null)
 	const canvasRef = useRef(null)
 	const fabricCanvasRef = useRef(null)
+	const currentAreaRef = useRef(null)
 
+	const verticalGuideRef = useRef(null);
+	const horizontalGuideRef = useRef(null);
 	const minimalGroups = useMemo(
 		() => (Array.isArray(minimalGroupsFromStore) ? minimalGroupsFromStore : []),
 		[minimalGroupsFromStore],
@@ -140,7 +152,7 @@ const DesignStep = forwardRef((props, ref) => {
 	}
 
 	// Инициализация fabric canvas
-	useEffect(() => {
+	/*useEffect(() => {
 		// Ждём, пока данные загрузятся и компонент отрендерится
 		if (isLoading) return
 		if (!canvasRef.current || !containerRef.current) return
@@ -203,6 +215,7 @@ const DesignStep = forwardRef((props, ref) => {
 			obj.customData.originalWidth = newWidth
 			obj.customData.originalHeight = newHeight
 		}
+
 
 		const handleObjectModified = (e) => {
 			const obj = e.target
@@ -352,7 +365,560 @@ const DesignStep = forwardRef((props, ref) => {
 			fabricCanvas.dispose()
 			fabricCanvasRef.current = null
 		}
+	}, [isLoading])*/
+	/*useEffect( () => {
+		console.log('canvasRef.current',canvasRef.current)
+		if (isLoading) return
+		if (!canvasRef.current) return
+
+
+		// =========================
+		// 🎯 CANVAS (600x600)
+		// =========================
+		const fabricCanvas = new Canvas(canvasRef.current, {
+			width: 600,
+			height: 600,
+			backgroundColor: 'transparent',
+			selection: true,
+			preserveObjectStacking: true,
+		})
+
+		fabricCanvasRef.current = fabricCanvas
+
+		// =========================
+		// 🖼 BACKGROUND IMAGE
+		// =========================
+		console.log('image', image);
+		const fixedImage = image.startsWith('//')
+			? `https:${image}`
+			: image
+		console.log('fixedImage', fixedImage);
+		const loadImage = async () => {
+			try {
+				const res = await fetch(fixedImage)
+				const blob = await res.blob()
+				const url = URL.createObjectURL(blob)
+
+				const img = new Image()
+				img.onload = () => {
+					const fabricImg = new FabricImage(img)
+
+
+					const scale = Math.min(600 / img.width, 600 / img.height)
+
+					const scaledWidth = img.width * scale
+					const scaledHeight = img.height * scale
+
+					fabricImg.set({
+						scaleX: scale,
+						scaleY: scale,
+						left: (600 - scaledWidth) / 2,
+						top: (600 - scaledHeight) / 2,
+						originX: 'left',
+						originY: 'top',
+						selectable: false,
+						evented: false,
+					})
+
+
+					fabricCanvas.backgroundImage = fabricImg
+					fabricCanvas.requestRenderAll()
+				}
+
+				img.src = url
+			} catch (e) {
+				console.error('FAILED LOAD', e)
+			}
+		}
+
+		loadImage()
+
+		// =========================
+		// 📦 AREA (з бекенду)
+		// =========================
+		let areaRect = null
+		const currentArea = area ?? {
+			x: (600-200) / 2,
+			y: (600-200) / 2,
+			w: 200,
+			h: 200,
+		}
+		currentAreaRef.current = currentArea
+		if (currentArea) {
+			areaRect = new Rect({
+				left: currentArea.x,
+				top: currentArea.y,
+				width: currentArea.w,
+				height: currentArea.h,
+				fill: 'rgba(78, 0, 142, 0.05)',
+				stroke: '#4E008E',
+				strokeWidth: 2,
+				selectable: false,
+				evented: false,
+			})
+
+			areaRect.customData = { type: 'area' }
+			fabricCanvas.add(areaRect)
+		}
+
+
+		// =========================
+		// 📏 GUIDE LINES (центр area)
+		// =========================
+		const areaCenterX = currentArea.x + currentArea.w / 2
+		const areaCenterY = currentArea.y + currentArea.h / 2
+
+		const verticalGuideLine = new Line(
+			[areaCenterX, currentArea.y, areaCenterX, currentArea.y + currentArea.h],
+			{
+				stroke: '#4E008E',
+				strokeWidth: 1,
+				strokeDashArray: [5, 5],
+				selectable: false,
+				evented: false,
+				visible: false,
+				opacity: 0.7,
+			},
+		)
+
+		const horizontalGuideLine = new Line(
+			[currentArea.x, areaCenterY, currentArea.x + currentArea.w, areaCenterY],
+			{
+				stroke: '#4E008E',
+				strokeWidth: 1,
+				strokeDashArray: [5, 5],
+				selectable: false,
+				evented: false,
+				visible: false,
+				opacity: 0.7,
+			},
+		)
+
+		verticalGuideLine.customData = { type: 'guide-line' }
+		horizontalGuideLine.customData = { type: 'guide-line' }
+
+		fabricCanvas.add(verticalGuideLine, horizontalGuideLine)
+
+		// =========================
+		// 🎯 HANDLERS
+		// =========================
+
+		const handleTextScaling = (e) => {
+			const obj = e.target
+			if (!obj || obj.customData?.type !== 'text') return
+
+			const scaleX = obj.scaleX
+			obj.customData.originalFontSize = Math.round(obj.fontSize * scaleX)
+			obj.customData.originalWidth = obj.width * scaleX
+			obj.customData.originalHeight = obj.height * scaleX
+		}
+
+		const handleObjectModified = (e) => {
+			const obj = e.target
+
+			if (obj.customData?.type === 'uploaded-image') {
+				const url = obj.customData.url
+
+				setUploaderFiles((prev) =>
+					prev.map((file) =>
+						file.url === url
+							? {
+								...file,
+								x: obj.left,
+								y: obj.top,
+								width: obj.getScaledWidth(),
+								height: obj.getScaledHeight(),
+								rotation: obj.angle,
+							}
+							: file
+					)
+				)
+			}
+
+			syncCanvasToCustomerLogos()
+		}
+
+		const handleSelection = (e) => {
+			const selected = e.selected?.[0] || e.target
+
+			if (selected?.customData?.type === 'text') {
+				setCustomizerType('text')
+				setSelectedTextObject(selected)
+			} else {
+				setCustomizerType('image')
+				setSelectedTextObject(null)
+			}
+		}
+
+		const handleSelectionCleared = () => {
+			setSelectedTextObject(null)
+		}
+
+		const handleRotating = (e) => {
+			const obj = e.target
+			if (!obj) return
+
+			const snapAngle = 15
+			const snapThreshold = 3
+
+			let angle = obj.angle % 360
+			if (angle < 0) angle += 360
+
+			const snap = Math.round(angle / snapAngle) * snapAngle
+
+			if (Math.abs(angle - snap) <= snapThreshold) {
+				obj.set('angle', snap)
+			}
+		}
+
+		const handleMoving = (e) => {
+			const obj = e.target
+			if (!obj || obj.customData?.type === 'guide-line') return
+
+
+			const snapThreshold = 10
+			const objCenter = obj.getCenterPoint()
+
+			const centerX = 300
+			const centerY = 300
+			const areaCenterX = currentArea.x + currentArea.w / 2
+			const areaCenterY = currentArea.y + currentArea.h / 2
+			const distanceX = Math.abs(objCenter.x - areaCenterX)
+			const distanceY = Math.abs(objCenter.y - areaCenterY)
+
+			verticalGuideLine.set({ visible: distanceX <= snapThreshold })
+			horizontalGuideLine.set({ visible: distanceY <= snapThreshold })
+
+			obj.setCoords()
+		}
+
+		const handleMovingEnd = () => {
+			verticalGuideLine.set({ visible: false })
+			horizontalGuideLine.set({ visible: false })
+			fabricCanvas.renderAll()
+		}
+
+		// =========================
+		// 📡 EVENTS
+		// =========================
+		fabricCanvas.on('object:scaling', handleTextScaling)
+		fabricCanvas.on('object:rotating', handleRotating)
+		fabricCanvas.on('object:moving', handleMoving)
+		fabricCanvas.on('object:modified', handleObjectModified)
+		fabricCanvas.on('mouse:up', handleMovingEnd)
+		fabricCanvas.on('selection:created', handleSelection)
+		fabricCanvas.on('selection:cleared', handleSelectionCleared)
+
+		// =========================
+		// 🧹 CLEANUP
+		// =========================
+		return () => {
+			fabricCanvas.off('object:scaling', handleTextScaling)
+			fabricCanvas.off('object:rotating', handleRotating)
+			fabricCanvas.off('object:moving', handleMoving)
+			fabricCanvas.off('object:modified', handleObjectModified)
+			fabricCanvas.off('mouse:up', handleMovingEnd)
+			fabricCanvas.off('selection:created', handleSelection)
+			fabricCanvas.off('selection:cleared', handleSelectionCleared)
+
+			fabricCanvas.dispose()
+			fabricCanvasRef.current = null
+		}
+	}, [isLoading, image, area])*/
+
+	useEffect( () => {
+		console.log('canvasRef.current',canvasRef.current)
+		if (isLoading) return
+		if (!canvasRef.current) return
+
+
+		// =========================
+		// 🎯 CANVAS (600x600)
+		// =========================
+		const fabricCanvas = new Canvas(canvasRef.current, {
+			width: 600,
+			height: 600,
+			backgroundColor: 'transparent',
+			selection:  false,
+			preserveObjectStacking: true,
+		})
+
+
+		fabricCanvasRef.current = fabricCanvas
+
+		// =========================
+		// 🎯 HANDLERS
+		// =========================
+
+		const handleTextScaling = (e) => {
+			const obj = e.target
+			if (!obj || obj.customData?.type !== 'text') return
+
+			const scaleX = obj.scaleX
+			obj.customData.originalFontSize = Math.round(obj.fontSize * scaleX)
+			obj.customData.originalWidth = obj.width * scaleX
+			obj.customData.originalHeight = obj.height * scaleX
+		}
+
+		const handleObjectModified = (e) => {
+			const obj = e.target
+
+			if (obj.customData?.type === 'uploaded-image') {
+				const url = obj.customData.url
+
+				setUploaderFiles((prev) =>
+					prev.map((file) =>
+						file.url === url
+							? {
+								...file,
+								x: obj.left,
+								y: obj.top,
+								width: obj.getScaledWidth(),
+								height: obj.getScaledHeight(),
+								rotation: obj.angle,
+							}
+							: file
+					)
+				)
+			}
+
+			//syncCanvasToCustomerLogos()
+		}
+
+		const handleSelection = (e) => {
+			console.log('selected',e)
+			const selected = e.selected?.[0] || e.target
+
+
+			if (selected?.customData?.type === 'text') {
+				setCustomizerType('text')
+				setSelectedTextObject(selected)
+			} else {
+				setCustomizerType('image')
+				setSelectedTextObject(null)
+			}
+		}
+
+		const handleSelectionCleared = () => {
+			console.log('handleSelectionCleared')
+			setSelectedTextObject(null)
+		}
+
+		const handleRotating = (e) => {
+			const obj = e.target
+			if (!obj) return
+
+			const snapAngle = 15
+			const snapThreshold = 3
+
+			let angle = obj.angle % 360
+			if (angle < 0) angle += 360
+
+			const snap = Math.round(angle / snapAngle) * snapAngle
+
+			if (Math.abs(angle - snap) <= snapThreshold) {
+				obj.set('angle', snap)
+			}
+		}
+
+		const handleMoving = (e) => {
+			const obj = e.target
+			const vLine = verticalGuideRef.current;
+			const hLine = horizontalGuideRef.current;
+			const currentArea = currentAreaRef.current;
+
+
+			if (!obj || obj.customData?.type === 'guide-line') return
+
+
+			const snapThreshold = 10
+			const objCenter = obj.getCenterPoint()
+
+			const areaCenterX = currentArea.x + currentArea.w / 2
+			const areaCenterY = currentArea.y + currentArea.h / 2
+			/*const distanceX = Math.abs(objCenter.x - areaCenterX)
+			const distanceY = Math.abs(objCenter.y - areaCenterY)*/
+			const distanceX = Math.abs(objCenter.x - currentArea.x); // Порівнюємо з 300
+			const distanceY = Math.abs(objCenter.y - currentArea.y);
+			vLine.set({ visible: distanceX <= snapThreshold })
+			hLine.set({ visible: distanceY <= snapThreshold })
+
+			obj.setCoords()
+		}
+
+		const handleMovingEnd = () => {
+			if (verticalGuideRef.current) verticalGuideRef.current.set({ visible: false });
+			if (horizontalGuideRef.current) horizontalGuideRef.current.set({ visible: false });
+			fabricCanvasRef.current?.renderAll();
+			fabricCanvas.renderAll()
+		}
+
+		// =========================
+		// 📡 EVENTS
+		// =========================
+		fabricCanvas.on('object:scaling', handleTextScaling)
+		fabricCanvas.on('object:rotating', handleRotating)
+		fabricCanvas.on('object:moving', handleMoving)
+		fabricCanvas.on('object:modified', handleObjectModified)
+		fabricCanvas.on('mouse:up', handleMovingEnd)
+		fabricCanvas.on('selection:created', handleSelection)
+		fabricCanvas.on('selection:updated', handleSelection)
+
+		fabricCanvas.on('selection:cleared', handleSelectionCleared)
+
+		// =========================
+		// 🧹 CLEANUP
+		// =========================
+		return () => {
+			fabricCanvas.off('object:scaling', handleTextScaling)
+			fabricCanvas.off('object:rotating', handleRotating)
+			fabricCanvas.off('object:moving', handleMoving)
+			fabricCanvas.off('object:modified', handleObjectModified)
+			fabricCanvas.off('mouse:up', handleMovingEnd)
+			fabricCanvas.off('selection:created', handleSelection)
+			fabricCanvas.off('selection:updated', handleSelection)
+			fabricCanvas.off('selection:cleared', handleSelectionCleared)
+
+			fabricCanvas.dispose()
+			fabricCanvasRef.current = null
+		}
 	}, [isLoading])
+
+	useEffect(() => {
+		const canvas = fabricCanvasRef.current;
+		console.log('imageBack',imageBack);
+		console.log('image',image);
+		console.log('activeSide',activeSide);
+
+
+		let im;
+		if(activeSide==='back'){
+			im=imageBack || image
+		}else {
+			im=image
+		}
+		console.log('im',im);
+		if (!canvas || !im) return;
+
+		const updateBackground = async () => {
+			const fixedImage = im.startsWith('//') ? `https:${im}` : im;
+
+			try {
+				const res = await fetch(fixedImage);
+				const blob = await res.blob();
+				const url = URL.createObjectURL(blob);
+
+				const img = new Image();
+				img.onload = () => {
+					const fabricImg = new FabricImage(img);
+
+					const scale = Math.min(600 / img.width, 600 / img.height)
+
+					const scaledWidth = img.width * scale
+					const scaledHeight = img.height * scale
+
+					fabricImg.set({
+						scaleX: scale,
+						scaleY: scale,
+						left: (600 - scaledWidth) / 2,
+						top: (600 - scaledHeight) / 2,
+						originX: 'left',
+						originY: 'top',
+						selectable: false,
+						evented: false,
+					})
+
+
+					canvas.backgroundImage = fabricImg
+					canvas.requestRenderAll()
+				};
+				img.src = url;
+			} catch (e) {
+				console.error('FAILED LOAD BG', e);
+			}
+		};
+
+		updateBackground();
+	}, [image,activeSide]);
+
+	useEffect(() => {
+		console.log('canvas area')
+		const canvas = fabricCanvasRef.current;
+		if (!canvas) return;
+
+		console.log('canvas area',canvas)
+		// Видаляємо стару рамку та гайди перед малюванням нових
+		const existingObjects = canvas.getObjects().filter(obj =>
+			obj.customData?.type === 'area' || obj.customData?.type === 'guide-line'
+		);
+		canvas.remove(...existingObjects);
+
+		const currentArea = area
+
+		currentAreaRef.current = currentArea;
+		const areaRect = new Rect({
+			left: Math.round(currentArea.x),
+			top: Math.round(currentArea.y),
+			width: Math.round(currentArea.w),
+			height: Math.round(currentArea.h),
+			fill: 'rgba(255,255,255,0.05)',
+			strokeWidth: 2,
+			stroke: '#4E008E',
+			strokeDashArray: [5, 5],
+			selectable: true,
+			evented: false,
+			customData: { type: 'area' },
+		});
+
+
+		console.log(areaRect)
+		// =========================
+		// 📏 GUIDE LINES (центр area)
+		// =========================
+		const centerX = currentArea.x;
+		const centerY = currentArea.y;
+
+		const left = centerX - (currentArea.w / 2);   // 300 - 100 = 200
+		const right = centerX + (currentArea.w / 2);  // 300 + 100 = 400
+		const top = centerY - (currentArea.h / 2);    // 300 - 100 = 200
+		const bottom = centerY + (currentArea.h / 2);
+
+		const verticalGuideLine = new Line(
+			[centerX, top, centerX, bottom], 			{
+				stroke: '#4E008E',
+				strokeWidth: 1,
+				strokeDashArray: [5, 5],
+				selectable: false,
+				evented: false,
+				visible: false,
+				opacity: 1,
+			},
+		)
+
+		const horizontalGuideLine = new Line(
+			[left, centerY, right, centerY],
+			{
+				stroke: '#4E008E',
+				strokeWidth: 1,
+				strokeDashArray: [5, 5],
+				selectable: false,
+				evented: false,
+				visible: false,
+				opacity: 1,
+			},
+		)
+		verticalGuideRef.current = verticalGuideLine;
+		horizontalGuideRef.current = horizontalGuideLine;
+		verticalGuideLine.customData = { type: 'guide-line' }
+		horizontalGuideLine.customData = { type: 'guide-line' }
+
+		canvas.add( verticalGuideLine);
+		canvas.add( horizontalGuideLine);
+		canvas.add( areaRect);
+		// Важливо: перемістити системні елементи назад, щоб вони не перекривали текст
+		canvas.requestRenderAll();
+
+	}, [area]);
 
 	// Удаление выделенного элемента при нажатии Delete или Backspace
 	useEffect(() => {
@@ -425,6 +991,15 @@ const DesignStep = forwardRef((props, ref) => {
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
+		const area = currentAreaRef.current
+		if (!area) return
+
+		const areaBox = {
+			left: area.x,
+			top: area.y,
+			width: area.w,
+			height: area.h,
+		}
 
 		// Получаем текущие URL изображений на canvas
 		const currentObjects = canvas.getObjects()
@@ -445,6 +1020,7 @@ const DesignStep = forwardRef((props, ref) => {
 
 		// Добавляем новые изображения
 		uploaderFiles.forEach(async (fileData) => {
+			console.log("fileData",fileData)
 			if (currentUrls.includes(fileData.url)) return
 
 			try {
@@ -452,26 +1028,26 @@ const DesignStep = forwardRef((props, ref) => {
 				imgElement.src = fileData.url
 
 				imgElement.onload = () => {
-					// Используем размеры с сервера для расчёта scale, если они есть
-					let scaleX, scaleY
-					if (fileData.width !== undefined && fileData.height !== undefined) {
-						scaleX = fileData.width / imgElement.width
-						scaleY = fileData.height / imgElement.height
-					} else {
-						scaleX = 100 / imgElement.width
-						scaleY = 100 / imgElement.height
-					}
+					const scale = Math.min(
+						areaBox.width / imgElement.width,
+						areaBox.height / imgElement.height
+					)
 
-					// Используем координаты с сервера, если они есть, иначе центрируем
-					// Важно: используем !== undefined, чтобы 0 не считалось falsy
-					const left = fileData.x !== undefined ? fileData.x : canvas.width / 2
-					const top = fileData.y !== undefined ? fileData.y : canvas.height / 2
+
+					const left = fileData.x !== undefined ? fileData.x : areaBox.left
+					const top = fileData.y !== undefined ? fileData.y : areaBox.top
+
+					const finalWidth = imgElement.width * scale
+					const finalHeight = imgElement.height * scale
+
+					console.log('Final width:', finalWidth)
+					console.log('Final height:', finalHeight)
 
 					const fabricImg = new FabricImage(imgElement, {
 						left,
 						top,
-						scaleX,
-						scaleY,
+						scaleX: scale,
+						scaleY: scale,
 						angle: fileData.rotation || 0,
 						cornerStyle: 'circle',
 						cornerColor: '#4E008E',
@@ -483,6 +1059,15 @@ const DesignStep = forwardRef((props, ref) => {
 						lockUniScaling: true,
 					})
 
+					fabricImg.set({
+						clipPath: new Rect({
+							left: areaBox.left,
+							top: areaBox.top,
+							width: areaBox.width,
+							height: areaBox.height,
+							absolutePositioned: true,
+						}),
+					})
 					fabricImg.setControlsVisibility({
 						ml: false,
 						mr: false,
@@ -501,12 +1086,26 @@ const DesignStep = forwardRef((props, ref) => {
 						render: renderDeleteIcon,
 						cornerSize: 16,
 					})
+					let id
+					if(!fileData.id){
+						id=uuidv4()
+					}
+					else {
+						id=fileData.id
+					}
 
 					// Добавляем кастомные данные для идентификации
 					fabricImg.customData = {
 						type: 'uploaded-image',
 						url: fileData.url,
 						fileData: fileData,
+
+						orgObj:{
+							id:id,
+							w:imgElement.width,
+							h:imgElement.height
+						}
+
 					}
 
 					canvas.add(fabricImg)
@@ -526,9 +1125,18 @@ const DesignStep = forwardRef((props, ref) => {
 	useEffect(() => {
 		if (isLoading) return
 		const canvas = fabricCanvasRef.current
-		console.log('canvas',canvas)
 
 		if (!canvas || serverLabels.length === 0) return
+
+		const area = currentAreaRef.current
+		if (!area) return
+
+		const areaBox = {
+			left: area.x,
+			top: area.y,
+			width: area.w,
+			height: area.h,
+		}
 
 		const currentObjects = canvas.getObjects()
 		// Получаем текущие тексты на canvas (по уникальному признаку)
@@ -536,9 +1144,6 @@ const DesignStep = forwardRef((props, ref) => {
 			.filter((obj) => obj.customData?.type === 'text')
 			.map((obj) => obj.customData.serverId)
 
-		console.log('currentTexts',currentTexts)
-
-		console.log('serverLabels',serverLabels)
 		// Добавляем новые тексты
 		serverLabels.forEach((labelData, index) => {
 			const serverId = `server-label-${index}`
@@ -552,7 +1157,6 @@ const DesignStep = forwardRef((props, ref) => {
 				const top = labelData.y !== undefined ? labelData.y : 50
 				const fontSize = labelData.fontSize || 54
 				const width = labelData.width !== undefined ? labelData.width : canvas.width
-				console.log('width',width)
 
 				const textbox = new Textbox(labelData.text, {
 					left,
@@ -582,6 +1186,15 @@ const DesignStep = forwardRef((props, ref) => {
 					mt: false,
 					mb: false,
 				})
+				textbox.set({
+					clipPath: new Rect({
+						left: areaBox.left,
+						top: areaBox.top,
+						width: areaBox.width,
+						height: areaBox.height,
+						absolutePositioned: true,
+					}),
+				})
 
 				// Добавляем кнопку удаления
 				textbox.controls.deleteControl = new Control({
@@ -594,14 +1207,18 @@ const DesignStep = forwardRef((props, ref) => {
 					render: renderDeleteIcon,
 					cornerSize: 16,
 				})
-
+				let id
+				if(!labelData.id){
+					id=uuidv4()
+				}else {
+					id=labelData.id
+				}
 				// Добавляем кастомные данные для идентификации
 				textbox.customData = {
 					type: 'text',
 					serverId: serverId,
 				}
 
-				console.log('textbox',textbox)
 				canvas.add(textbox)
 
 				textbox.customData = {
@@ -609,6 +1226,9 @@ const DesignStep = forwardRef((props, ref) => {
 					originalFontSize: fontSize,
 					originalWidth: width,
 					originalHeight: labelData.height,
+					orgObj:{
+						id:id
+					}
 				}
 			} catch (error) {
 				console.error('❌ Ошибка при добавлении текста на canvas:', error)
@@ -622,13 +1242,67 @@ const DesignStep = forwardRef((props, ref) => {
 		const fetchStoreData = async () => {
 			try {
 				const res = await spiritHeroApi.getStore(storeId)
-				const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : []
-				dispatch(setMinimalGroups(storeMinimalGroups))
+/*
+				const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : [];
+*/
+				const defaultLogoArea = {
+					logo_area: {
+						x: 200,
+						y: 200,
+						width: 200,
+						height: 200,
+					}
+				}
 
+				const storeMinimalGroups = Array.isArray(res?.minimum_groups)
+					? res.minimum_groups.map(group => ({
+						...group,
+						products: (group.products || []).map(product => {
+							const hasValidArea =
+								Array.isArray(product.logo_area) &&
+								product.logo_area.length > 0 &&
+								product.logo_area[0]?.logo_area
+
+
+							return {
+								...product,
+								logo_area: hasValidArea
+									? product.logo_area
+									: [defaultLogoArea],
+							}
+						})
+					}))
+					: []
+				/*const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : []
+				dispatch(setMinimalGroups(storeMinimalGroups))*/
+				setMinimalGroupsFromStore(storeMinimalGroups)
 				console.debug('spiritHeroApi.getStore DESIGN', res)
 
 				setCustomerLogos({ ...res.design })
-				setBaseDesign(res.design)
+				setBaseDesign(
+					res.design.map((value) => {
+						const logosWithImg = value.customerLogos.map((logo) => {
+							const found = value?.customerLogosImgList.find(
+								(imgItem) => imgItem.id === logo.id
+							);
+
+							return {
+								...logo,
+								image: found ? found.img : null,
+							};
+						});
+
+						return {
+							customerLogos: logosWithImg,
+							labels: value.labels,
+							product_group_id: value.product_group_id,
+							product_id: value.product_id,
+						};
+					})
+				);
+				if (res?.store?.is_fundraise_popup) {
+					setPopup(true)
+				}
 
 				const loadedElements = []
 				const serverImageFiles = []
@@ -653,70 +1327,114 @@ const DesignStep = forwardRef((props, ref) => {
 				if (firstProduct) {
 					setActiveCardId(firstProduct.id)
 					setActiveGroupId(firstGroupKey)
-					setImage(firstProduct.product_image)
-				}
-				console.log('DASIGN GROUP::',res.design.find((value)=>value.product_group_id === +firstGroupKey))
+					setImage(firstProduct.choosed_colors[0]?.color_image || product_image)
+					setImageBack(firstProduct.choosed_colors[0]?.color_image_back)
 
-				// const designData =  res.design
-				const activeProduct = firstProduct
-				const designData = res.design.find((value)=>value.product_group_id === +firstGroupKey)
-				console.log('designData::',designData)
+					console.log('firstProduct.id',firstProduct.id)
+					const group = storeMinimalGroups.find(g => g.id === +firstGroupKey)
 
-				if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
-					console.log('customerLogos')
-					designData.customerLogos.forEach((logoData, index) => {
-						const id = uuidv4()
-						loadedElements.push({
-							id,
-							type: 'image',
-							x: logoData.x || 30,
-							y: logoData.y || 30,
-							width: logoData.width || 100,
-							height: logoData.height || 100,
-							rotation: 0,
-							zIndex: zIndex++,
-							content: { src: logoData.image },
-							isServerImage: true,
+					const product = group?.products?.find(p => p.id === +firstProduct.id)
+
+					const areaFromConfig = product?.logo_area?.[0]?.logo_area
+
+					if (areaFromConfig) {
+						setArea({
+							x: areaFromConfig.x,
+							y: areaFromConfig.y,
+							w: areaFromConfig.width,
+							h: areaFromConfig.height,
 						})
+					}
+				/*	if(+firstProduct.id ===148){
+						setArea({
+							x: (600) / 2,
+							y: (600) / 2,
+							w: 200,
+							h: 200,
+						})
+					}else {
+						setArea({
+							x: (400) / 2,
+							y: (400) / 2,
+							w: 200,
+							h: 200,
+						})
+					}*/
 
-						const serverFile = {
-							url: logoData.image,
-							base64: logoData.image,
-							file: { name: `Server image ${index + 1}` },
-							isServerImage: true,
-							x: logoData.x,
-							y: logoData.y,
-							width: logoData.width,
-							height: logoData.height,
-							rotation:0,
-						}
-
-						serverImageFiles.push(serverFile)
-					})
 				}
-				setUploaderFiles(serverImageFiles)
 
-				if (designData.labels && Array.isArray(designData.labels)) {
-					console.log('labels')
+				const designData = res.design.find((value)=>value.product_group_id === +firstGroupKey && value.product_id === firstProduct.id )
+				console.log('designData::',designData)
+				if(designData){
+					const imgMap = new Map(
+						designData.customerLogosImgList.map((item) => [item.id, item.img])
+					);
+					if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
+						console.log('customerLogos')
+						designData.customerLogos.forEach((logoData, index) => {
+							const imageLogo = logoData.image || imgMap.get(logoData.id);
 
-					const labelsData = designData.labels.map((labelData) => ({
-						text: labelData.text || '',
-						x: labelData.x,
-						y: labelData.y,
-						width: labelData.width,
-						height: labelData.height,
-						fontSize:
-							typeof labelData.fontSize === 'number'
-								? labelData.fontSize
-								: parseInt(labelData.fontSize) || 54,
-						fontFamily: labelData.fontFamily || 'Montserrat',
-						color: labelData.color || '#000000',
-						bold: labelData.bold || false,
-						italic: labelData.italic || false,
-						rotation: 0,
-					}))
-					setServerLabels(labelsData)
+							if (!imageLogo) return;
+							const id = uuidv4()
+							loadedElements.push({
+								id,
+								type: 'image',
+								x: logoData.x || 30,
+								y: logoData.y || 30,
+								width: logoData.width || 100,
+								height: logoData.height || 100,
+								rotation: 0,
+								zIndex: zIndex++,
+								content: { src: logoData.image },
+								isServerImage: true,
+							})
+
+							const serverFile = {
+								url: imageLogo,
+								base64:imageLogo,
+								file: { name: `Server image ${index + 1}` },
+								isServerImage: true,
+								x: logoData.x,
+								y: logoData.y,
+								width: logoData.width,
+								height: logoData.height,
+								rotation:logoData.rotation || 0,
+								id
+							}
+
+							serverImageFiles.push(serverFile)
+						})
+					}
+					setUploaderFiles(serverImageFiles)
+
+					if (designData.labels && Array.isArray(designData.labels)) {
+						console.log('labels')
+
+						const labelsData = designData.labels.map((labelData) => {
+							const id = uuidv4();
+
+							return {
+								id,
+							text: labelData.text || '',
+							x: labelData.x,
+							y: labelData.y,
+							width: labelData.width,
+							height: labelData.height,
+							fontSize:
+								typeof labelData.fontSize === 'number'
+									? labelData.fontSize
+									: parseInt(labelData.fontSize) || 54,
+							fontFamily: labelData.fontFamily || 'Montserrat',
+							color: labelData.color || '#000000',
+							bold: labelData.bold || false,
+							italic: labelData.italic || false,
+							rotation: labelData.rotation || 0,
+						}})
+						setServerLabels(labelsData)
+					}
+
 				}
+
 			} catch (error) {
 				console.error(`spiritHeroApi.getStore error`, error)
 			} finally {
@@ -724,7 +1442,7 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		}
 		fetchStoreData()
-	}, [dispatch, storeId])
+	}, [dispatch, storeId,isNewDesignModalOpen])
 
 	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
@@ -873,132 +1591,533 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 	}
 
-	const onCardClick = (id, groupId) => {
-		const nextActiveGroupId = String(groupId ?? '')
-		setActiveGroupId(nextActiveGroupId)
-		const currentGroupProducts = Array.isArray(productsByCategory?.[nextActiveGroupId])
-			? productsByCategory[nextActiveGroupId]
-			: []
-		const currentProduct = currentGroupProducts.find((elem) => elem.id === id)
-		const designData =  baseDesign
 
-		setCustomerLogos(designData)
+	/*const mapLogosForProduct = (objects, productId,groupId) => {
+		let area
 
-		if (!designData) return
+		const group = minimalGroups.find(g => g.id === +groupId)
 
-		const canvas = fabricCanvasRef.current
-		if (canvas) {
-			const objectsToRemove = canvas
-				.getObjects()
-				.filter((obj) => obj.customData?.type !== 'guide-line')
-			objectsToRemove.forEach((obj) => canvas.remove(obj))
-			canvas.renderAll()
+		const product = group?.products?.find(p => p.id === +productId)
+
+		const areaFromConfig = product?.logo_area?.[0]?.logo_area
+
+		if (areaFromConfig) {
+			area = {
+				x: areaFromConfig.x,
+				y: areaFromConfig.y,
+				w: areaFromConfig.width,
+				h: areaFromConfig.height,
+			}
 		}
 
-		setUploaderFiles([])
-		setServerLabels([])
+		return objects
+			.filter(obj => obj.customData?.type === 'uploaded-image')
+			.map(obj => ({
+				image: obj.customData.fileData.base64,
+				x: Math.round(area.x),
+				y: Math.round(area.y),
+				width: undefined,
+				height: undefined,
+				rotation: 0,
+				uId:obj.customData.orgObj.id,
+			}))
+	}*/
 
-		const loadedElements = []
-		const serverImageFiles = []
-		let zIndex = 1
+	const mapLogosForProduct = (objects, productId,groupId, type) => {
+		let area
 
-		if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
-			designData.customerLogos.forEach((logoData, index) => {
-				const id = uuidv4()
-				loadedElements.push({
-					id,
-					type: 'image',
-					x: logoData.x || 30,
-					y: logoData.y || 30,
-					width: logoData.width || 100,
-					height: logoData.height || 100,
-					rotation: 0,
-					zIndex: zIndex++,
-					content: { src: logoData.image },
-					isServerImage: true,
-				})
+		const group = minimalGroups.find(g => g.id === +groupId)
 
-				const serverFile = {
-					url: logoData.image,
-					base64: logoData.image,
-					file: { name: `Server image ${index + 1}` },
-					isServerImage: true,
-					x: logoData.x,
-					y: logoData.y,
-					width: logoData.width,
-					height: logoData.height,
-					rotation: logoData.rotation || 0,
+		const product = group?.products?.find(p => p.id === +productId)
+
+		const areaFromConfig = product?.logo_area?.[0]?.logo_area
+
+		if (areaFromConfig) {
+			area = {
+				x: areaFromConfig.x,
+				y: areaFromConfig.y,
+				w: areaFromConfig.width,
+				h: areaFromConfig.height,
+			}
+		}
+		// helper: перевірка чи обʼєкт в межах area
+		const isExceedingArea = (obj, area) => {
+			const rect = obj.getBoundingRect();
+
+			const objLeft = rect.left;
+			const objTop = rect.top;
+			const objRight = rect.left + rect.width;
+			const objBottom = rect.top + rect.height;
+
+			const areaLeft = area.x - area.w / 2;
+			const areaTop = area.y - area.h / 2;
+			const areaRight = area.x + area.w / 2;
+			const areaBottom = area.y + area.h / 2;
+
+			// Повертає true, якщо ХОЧА Б ОДИН край об'єкта вийшов за межі квадрата
+			return (
+				objLeft < areaLeft ||    // Виліз зліва
+				objTop < areaTop ||      // Виліз зверху
+				objRight > areaRight ||  // Виліз справа
+				objBottom > areaBottom   // Виліз знизу
+			);
+		};
+
+		return objects
+			.filter(obj => obj.customData?.type === 'uploaded-image')
+			.map(obj => {
+				const base = {
+					image: obj.customData.fileData.base64,
+					uId: obj.customData.orgObj.id,
 				}
 
-				serverImageFiles.push(serverFile)
+				console.log(isExceedingArea(obj,area))
+				// 🔥 APPLY ALL логіка
+				if (type === 'Apply All' && !isExceedingArea(obj,area)) {
+					return {
+						...base,
+						x: Math.round(obj.left),
+						y: Math.round(obj.top),
+						width: Math.round(obj.getScaledWidth()),
+						height: Math.round(obj.getScaledHeight()),
+						rotation: Math.round(obj.angle),
+					}
+				}
+
+				// ❌ fallback (центр)
+				return {
+					...base,
+					x: Math.round(area.x),
+					y: Math.round(area.y),
+					width: undefined,
+					height: undefined,
+					rotation: 0,
+				}
+			})
+	}
+
+	const calculateOptimalFontSize = (
+		text,
+		targetWidth,
+		initialFontSize,
+		fontFamily,
+		fontWeight,
+		fontStyle,
+		canvas
+	) => {
+		const ctx = canvas.getContext()
+
+		ctx.font = `${fontStyle} ${fontWeight} ${initialFontSize}px ${fontFamily}`
+
+		const actualWidth = ctx.measureText(text).width
+		const safeWidth = targetWidth * 0.95
+
+		let size = initialFontSize * (safeWidth / actualWidth)
+
+		return Math.max(16, Math.min(size, 200))
+	}
+
+	const mapLabelsForProduct = (labelsData, productId, canvas,groupId,type) => {
+		let area
+
+		const group = minimalGroups.find(g => g.id === +groupId)
+
+		const product = group?.products?.find(p => p.id === +productId)
+
+		const areaFromConfig = product?.logo_area?.[0]?.logo_area
+
+		if (areaFromConfig) {
+			area = {
+				x: areaFromConfig.x,
+				y: areaFromConfig.y,
+				w: areaFromConfig.width,
+				h: areaFromConfig.height,
+			}
+		}
+		const isExceedingArea = (obj, area) => {
+			const rect = obj.getBoundingRect();
+
+			const objLeft = rect.left;
+			const objTop = rect.top;
+			const objRight = rect.left + rect.width;
+			const objBottom = rect.top + rect.height;
+
+			const areaLeft = area.x - area.w / 2;
+			const areaTop = area.y - area.h / 2;
+			const areaRight = area.x + area.w / 2;
+			const areaBottom = area.y + area.h / 2;
+
+			// Повертає true, якщо ХОЧА Б ОДИН край об'єкта вийшов за межі квадрата
+			return (
+				objLeft < areaLeft ||    // Виліз зліва
+				objTop < areaTop ||      // Виліз зверху
+				objRight > areaRight ||  // Виліз справа
+				objBottom > areaBottom   // Виліз знизу
+			);
+		};
+
+		return labelsData.filter(obj => obj.customData?.type === 'text').map(label => {
+			const base = {
+				uId: label.customData.orgObj.id,
+			}
+
+			// 🔥 APPLY ALL логіка
+			if (type === 'Apply All' && !isExceedingArea(label,area)) {
+				return {
+					...base,
+					text: label.text,
+					x: Math.round(label.left),
+					y: Math.round(label.top),
+					width: Math.round(label.customData.originalWidth),
+					height: Math.round(label.customData.originalHeight),
+					fontSize: Math.round(label.customData.originalFontSize),
+					fontFamily: label.fontFamily,
+					color: label.fill,
+					bold: label.fontWeight === 'bold' || label.fontWeight === 700,
+					italic: label.fontStyle === 'italic',
+					rotation: Math.round(label.angle),
+				}
+			}
+			const optimalFontSize = calculateOptimalFontSize(
+				label.text,
+				area.w,
+				40,
+				label.fontFamily,
+				label.bold ? 'bold' : 'normal',
+				label.italic ? 'italic' : 'normal',
+				canvas
+			)
+
+			return {
+				text: label.text,
+				x: Math.round(area.x),
+				y: Math.round(area.y),
+				width: area.w,
+				height: area.h,
+				fontSize: Math.round(optimalFontSize),
+				fontFamily: label.fontFamily,
+				color: label.color,
+				bold: label.bold,
+				italic: label.italic,
+				rotation: 0,
+				uId:label.customData.orgObj.id,
+			}
+		})
+	}
+
+	const syncCanvasToGroupId = (groupId,productId,type='d') => {
+		const canvas = fabricCanvasRef.current
+		if (!canvas) return
+
+		const objects = canvas.getObjects()
+
+		const customerLogosData = []
+		const labelsData = []
+
+		objects.forEach((obj) => {
+			// Собираем данные о логотипах (изображениях)
+			console.log(obj.customData)
+			if (obj.customData?.type === 'uploaded-image') {
+				customerLogosData.push({
+					image: obj.customData.fileData.base64,
+					x: Math.round(obj.left),
+					y: Math.round(obj.top),
+					width: Math.round(obj.getScaledWidth()),
+					height: Math.round(obj.getScaledHeight()),
+					rotation: Math.round(obj.angle),
+					uId:obj.customData.orgObj.id,
+
+				})
+			}
+			// Собираем данные о текстах
+			if (obj.customData?.type === 'text') {
+				labelsData.push({
+					uId:obj.customData.orgObj.id,
+					text: obj.text,
+					x: Math.round(obj.left),
+					y: Math.round(obj.top),
+					width: Math.round(obj.customData.originalWidth),
+					height: Math.round(obj.customData.originalHeight),
+					fontSize: Math.round(obj.customData.originalFontSize),
+					fontFamily: obj.fontFamily,
+					color: obj.fill,
+					bold: obj.fontWeight === 'bold' || obj.fontWeight === 700,
+					italic: obj.fontStyle === 'italic',
+					rotation: Math.round(obj.angle),
+				})
+			}
+		})
+
+		const newState = (() => {
+			let found = false;
+
+			const updated = baseDesign.map((item) => {
+				if (item.product_group_id === +groupId && item.product_id === +productId) {
+					found = true;
+
+					return {
+						...item,
+						customerLogos: customerLogosData,
+						labels: labelsData,
+					};
+				}
+				return item;
+			});
+
+			// 🔥 якщо не знайшли — додаємо новий
+			if (!found) {
+				updated.push({
+					product_group_id: +groupId,
+					product_id: +productId,
+					customerLogos: customerLogosData,
+					labels: labelsData,
+				});
+			}
+
+			return updated;
+		})();
+
+		const allLogoIds = customerLogosData.map(l => l.uId)
+		const allLabelIds = labelsData.map(l => l.uId)
+
+		const minimalGroup = minimalGroups.find(g => g.id === +groupId)
+
+		if (minimalGroup) {
+			minimalGroup.products.forEach((product) => {
+
+				let item = newState.find(
+					i =>
+						i.product_group_id === +groupId &&
+						i.product_id === product.id
+				)
+
+				const newCustomerLogos = mapLogosForProduct(objects, product.id,groupId,type)
+				const newLabels = mapLabelsForProduct(objects, product.id, canvas,groupId,type)
+
+				const newLogosById = Object.fromEntries(
+					newCustomerLogos.map(l => [l.uId, l])
+				)
+
+				const newLabelsById = Object.fromEntries(
+					newLabels.map(l => [l.uId, l])
+				)
+
+				if (!item) {
+					newState.push({
+						product_group_id: +groupId,
+						product_id: product.id,
+						customerLogos: newCustomerLogos,
+						labels: newLabels,
+					})
+					return
+				}
+
+				// --- LOGOS SYNC ---
+				const existingLogosById = Object.fromEntries(
+					(item.customerLogos || []).map(l => [l.uId, l])
+				)
+
+
+				Object.keys(existingLogosById).forEach((uId) => {
+					if (!allLogoIds.includes(uId)) {
+						delete existingLogosById[uId]
+					}
+				})
+
+				allLogoIds.forEach((uId) => {
+					if (type === 'Apply All' || !existingLogosById[uId]) {{
+						existingLogosById[uId] = newLogosById[uId]
+					}
+					}
+				})
+
+				item.customerLogos = Object.values(existingLogosById)
+
+				// --- LABELS SYNC ---
+				const existingLabelsById = Object.fromEntries(
+					(item.labels || []).map(l => [l.uId, l])
+				)
+
+				Object.keys(existingLabelsById).forEach((uId) => {
+					if (!allLabelIds.includes(uId)) {
+						delete existingLabelsById[uId]
+					}
+				})
+
+				allLabelIds.forEach((uId) => {
+					if (type === 'Apply All' || !existingLabelsById[uId]) {
+						existingLabelsById[uId] = newLabelsById[uId]
+					}
+				})
+
+				item.labels = Object.values(existingLabelsById)
 			})
 		}
-		setUploaderFiles(serverImageFiles)
+		console.log('newState', newState);
 
-		if (designData.labels && Array.isArray(designData.labels)) {
-			const labelsData = designData.labels.map((labelData) => ({
-				text: labelData.text || '',
-				x: labelData.x,
-				y: labelData.y,
-				width: labelData.width,
-				height: labelData.height,
-				fontSize:
-					typeof labelData.fontSize === 'number'
-						? labelData.fontSize
-						: parseInt(labelData.fontSize) || 54,
-				fontFamily: labelData.fontFamily || 'Montserrat',
-				color: labelData.color || '#000000',
-				bold: labelData.bold || false,
-				italic: labelData.italic || false,
-				rotation: labelData.rotation || 0,
-			}))
-			setServerLabels(labelsData)
+		setBaseDesign(newState);
+
+		return newState;
+
+	}
+
+	const onCardClick = (id, groupId) => {
+		const nextActiveGroupId = String(groupId ?? '')
+		const nextActiveProductId = String(id ?? '')
+
+		setActiveGroupId(nextActiveGroupId)
+		setActiveCardId(nextActiveProductId)
+
+		if(nextActiveProductId===activeCardId && nextActiveGroupId === activeGroupId){
+      return 0;
 		}
+		else {
+			const baseDesignNew = syncCanvasToGroupId(activeGroupId,activeCardId)
+			const designData = baseDesignNew.find((value)=>value.product_group_id === +nextActiveGroupId && value.product_id === +nextActiveProductId)
+
+			if (designData) {
+				setCustomerLogos(designData)
+
+				const canvas = fabricCanvasRef.current
+				if (canvas) {
+					const objectsToRemove = canvas
+						.getObjects()
+					objectsToRemove.forEach((obj) => canvas.remove(obj))
+					canvas.renderAll()
+				}
+				const group = minimalGroups.find(g => g.id === +nextActiveGroupId)
+				const product = group?.products?.find(p => p.id === +nextActiveProductId)
+
+				const areaFromConfig = product?.logo_area?.[0]?.logo_area
+				console.log('areaFromConfig',areaFromConfig)
+
+				if (areaFromConfig) {
+					setArea({
+						x: areaFromConfig.x,
+						y: areaFromConfig.y,
+						w: areaFromConfig.width,
+						h: areaFromConfig.height,
+					})
+				}
+
+				setUploaderFiles([])
+				setServerLabels([])
+
+				const loadedElements = []
+				const serverImageFiles = []
+				let zIndex = 1
+
+				if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
+					designData.customerLogos.forEach((logoData, index) => {
+						loadedElements.push({
+							id:logoData?.uId,
+							type: 'image',
+							x: logoData.x || 30,
+							y: logoData.y || 30,
+							width: logoData.width || 100,
+							height: logoData.height || 100,
+							rotation:logoData.rotation || 0,
+							zIndex: zIndex++,
+							content: { src: logoData.image },
+							isServerImage: true,
+						})
+
+						const serverFile = {
+							id:logoData.uId,
+							url: logoData.image,
+							base64: logoData.image,
+							file: { name: `Server image ${index + 1}` },
+							isServerImage: true,
+							x: logoData.x,
+							y: logoData.y,
+							width: logoData.width,
+							height: logoData.height,
+							rotation:logoData.rotation || 0,
+
+						}
+
+						serverImageFiles.push(serverFile)
+					})
+				}
+				setUploaderFiles(serverImageFiles)
+
+				if (designData.labels && Array.isArray(designData.labels)) {
+					const labelsData = designData.labels.map((labelData) => ({
+						id:labelData?.uId,
+						text: labelData.text || '',
+						x: labelData.x,
+						y: labelData.y,
+						width: labelData.width,
+						height: labelData.height,
+						fontSize:
+							typeof labelData.fontSize === 'number'
+								? labelData.fontSize
+								: parseInt(labelData.fontSize) || 54,
+						fontFamily: labelData.fontFamily || 'Montserrat',
+						color: labelData.color || '#000000',
+						bold: labelData.bold || false,
+						italic: labelData.italic || false,
+						rotation: labelData.rotation || 0,
+					}))
+					setServerLabels(labelsData)
+				}
+			}
+			else {
+				const canvas = fabricCanvasRef.current
+				if (canvas) {
+					const objectsToRemove = canvas
+						.getObjects()
+					objectsToRemove.forEach((obj) => canvas.remove(obj))
+					canvas.renderAll()
+				}
+
+				const group = minimalGroups.find(g => g.id === +nextActiveGroupId)
+
+				const product = group?.products?.find(p => p.id === +nextActiveProductId)
+
+				const areaFromConfig = product?.logo_area?.[0]?.logo_area
+
+				if (areaFromConfig) {
+					setArea({
+						x: areaFromConfig.x,
+						y: areaFromConfig.y,
+						w: areaFromConfig.width,
+						h: areaFromConfig.height,
+					})
+				}
+			}
+		}
+
 	}
 
 	// Функция для получения параметров логотипа
 	const getLogoParameters = async () => {
 		try {
 			setIsLoading(true)
-			const syncData = syncCanvasToCustomerLogos()
-
-			const base64 = await domtoimage.toJpeg(imageBoxRef.current, {
-				quality: 0.95,
-			})
-
-			const design = {
-				elementsPositionImage: base64,
-				customerLogos: syncData.customerLogos,
-				labels: syncData.labels,
-			}
-
-			setCustomerLogos((prev) => ({
-				...prev,
-				elementsPositionImage: base64,
+			const  syncData = syncCanvasToGroupId(activeGroupId,activeCardId)
+			console.log('syncData',syncData)
+			console.log('minimalGroups',minimalGroups)
+     /*			const designList = syncData.map((item) => ({
+				minimum_groups: [item.product_group_id],
+				design: {
+					customerLogos: item.customerLogos,
+					labels: item.labels,
+				},
 			}))
 
-			// const payload = {
-			// 	...design,
-			// 	store_id: storeId,
-			// 	product_id: +activeCardId,
-			// }
-
-			// const response = await spiritHeroApi.createDesign(storeId, payload)
-			// console.debug('spiritHeroApi.createDesign response', response)
-
-			const saveDesignForGroupsPayload = {
+			const payload = {
 				store_id: storeId,
-				minimum_groups: [+activeGroupId],
-				design,
+				designList,
 			}
 
-			console.debug('saveDesignForGroupsPayload', saveDesignForGroupsPayload)
+			console.debug('saveDesignForGroupsPayload', payload)
 
-			const saveDesignForGroupsResponse = await spiritHeroApi.saveDesignForGroups(saveDesignForGroupsPayload)
+			const saveDesignForGroupsResponse = await spiritHeroApi.saveDesignForGroups(payload)
 			console.debug('saveDesignForGroupsResponse response', saveDesignForGroupsResponse)
 
+			setIsModalOpen(true)*/
+			/*setCustomerLogos(design)*/
 			setIsModalOpen(true)
-			setCustomerLogos(design)
 		} catch (error) {
 			console.error('Error spiritHeroApi.saveDesignForGroups:', error)
 			return null
@@ -1009,254 +2128,335 @@ const DesignStep = forwardRef((props, ref) => {
 
 	// Экспозиция функции getLogoParameters через ref
 	useImperativeHandle(ref, () => ({
-		getLogoParameters,
+		getLogoParameters
 	}))
 
-		return (
-			<>
-				{isLoading && <Loader />}
-				<div className={css.design_section}>
-					<div className={css.image__box} ref={imageBoxRef}>
-						<img src={image} alt="Customizer image" />
+	function downloadCanvas() {
+		const canvas = fabricCanvasRef.current
+		if (!canvas) return
+		const dataUrl = canvas.toDataURL({
+			format: 'png',
+			multiplier: 3
+		})
 
-						<div ref={containerRef} className={`${css.custom__elements}`}>
-							<canvas ref={canvasRef} />
-						</div>
-					</div>
+		const link = document.createElement('a')
+		link.href = dataUrl
+		link.download = 'image.png'
 
-					<div className={css.settings__box}>
+		document.body.appendChild(link)
+		link.click()
+		document.body.removeChild(link)
+	}
+
+	const handleSelectOnCanvas = (fileData) => {
+		console.log('fileData',fileData)
+		const canvas = fabricCanvasRef.current;
+		if (!canvas) return;
+
+		const targetObj = canvas.getObjects().find(obj =>
+			obj.customData?.orgObj?.id === fileData.id || obj.customData?.uId === fileData.id
+		);
+
+
+		if (targetObj) {
+			canvas.setActiveObject(targetObj);
+			canvas.requestRenderAll();
+
+		} else {
+			console.warn("Об'єкт не знайдено на канвасі");
+		}
+	};
+	const toggleSide = () => {
+		setActiveSide(prev => prev === 'front' ? 'back' : 'front')
+	}
+	return (
+		<>
+			{isLoading && <Loader />}
+			<div className={css.design_section}>
+				<div className={css.image__box}>
+					<canvas ref={canvasRef} />
+					<button className={css.applyAllBtn} onClick={() => {
+						console.debug('Apply All')
+						syncCanvasToGroupId(activeGroupId,activeCardId,'Apply All')
+					}}>
+						Apply All
+					</button>
+					{imageBack && (
 						<button
-							onClick={() => {
-								console.debug('CLICK')
+							className={css.applyBackSide}
+							onClick={(e) => {
+								e.stopPropagation()
+								toggleSide()
 							}}
-							className={`${css.button} contrast_button_1`}
-							disabled
 						>
-							<Icon name={'Palette'} />
-							Request a custom design
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<g clip-path="url(#clip0_6765_117954)">
+									<path d="M8.25 14.25H2.25V8.25" stroke="#4E008E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+									<path d="M21 17.2496C20.9999 15.4696 20.472 13.7296 19.4831 12.2497C18.4942 10.7697 17.0886 9.61622 15.4441 8.93506C13.7996 8.25391 11.9901 8.07568 10.2443 8.42291C8.49853 8.77015 6.89492 9.62724 5.63625 10.8858L2.25 14.2496" stroke="#4E008E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+								</g>
+								<defs>
+									<clipPath id="clip0_6765_117954">
+										<rect width="24" height="24" fill="white"/>
+									</clipPath>
+								</defs>
+							</svg>
+							{activeSide === 'front' ? 'Back Side' : 'Front Side'}
 						</button>
+					)}
+				</div>
 
-						<h1 className={css.title}>Create your design</h1>
 
-						<span className={css.subtitle}>
+				<div className={css.settings__box}>
+					<button
+						onClick={() => {
+							console.debug('CLICK')
+						}}
+						className={`${css.button} contrast_button_1`}
+						disabled
+					>
+						<Icon name={'Palette'} />
+						Request a custom design
+					</button>
+
+					<h1 className={css.title}>Create your design</h1>
+
+					<span className={css.subtitle}>
 							Choose options from ready solutions to the custom ones
 						</span>
 
-						<div className={css.customizer}>
-							<fieldset className={css.customizer__pickers}>
-								<label>
-									<Icon name={'Frame'} />
-									Add Image
-									<input
-										onChange={(event) => setCustomizerType(event.currentTarget.value)}
-										value="image"
-										type="radio"
-										name="customizer--option"
-										className="visually-hidden"
-									/>
-								</label>
+					<div className={css.customizer}>
+						<fieldset className={css.customizer__pickers}>
+							<label>
+								<Icon name={'Frame'} />
+								Add Image
+								<input
+									onChange={(event) => setCustomizerType(event.currentTarget.value)}
+									value="image"
+									type="radio"
+									name="customizer--option"
+									className="visually-hidden"
+								/>
+							</label>
 
-								<label>
-									<Icon name={'Letters'} />
-									Add Text
-									<input
-										onChange={(event) => setCustomizerType(event.currentTarget.value)}
-										value="text"
-										type="radio"
-										name="customizer--option"
-										className="visually-hidden"
-									/>
-								</label>
+							<label>
+								<Icon name={'Letters'} />
+								Add Text
+								<input
+									onChange={(event) => setCustomizerType(event.currentTarget.value)}
+									value="text"
+									type="radio"
+									name="customizer--option"
+									className="visually-hidden"
+								/>
+							</label>
 
-								<label>
-									<Icon name={'Edits'} />
-									Templates
-									<input
-										onChange={(event) => setCustomizerType(event.currentTarget.value)}
-										value="template"
-										type="radio"
-										name="customizer--option"
-										className="visually-hidden"
-										disabled
-									/>
-								</label>
-							</fieldset>
+							<label>
+								<Icon name={'Edits'} />
+								Templates
+								<input
+									onChange={(event) => setCustomizerType(event.currentTarget.value)}
+									value="template"
+									type="radio"
+									name="customizer--option"
+									className="visually-hidden"
+									disabled
+								/>
+							</label>
+						</fieldset>
 
-							<div className={css.customizer__tools}>
-								{customizerType === 'image' && (
-									<ImageUploader
-										files={uploaderFiles}
-										setFiles={setUploaderFiles}
-										dragOver={uploaderDragOver}
-										setDragOver={setUploaderDragOver}
-									/>
-								)}
+						<div className={css.customizer__tools}>
+							{customizerType === 'image' && (
+								<ImageUploader
+									files={uploaderFiles}
+									setFiles={setUploaderFiles}
+									dragOver={uploaderDragOver}
+									setDragOver={setUploaderDragOver}
+									handleSelectOnCanvas={handleSelectOnCanvas}
+								/>
+							)}
 
-								{customizerType === 'text' && (
-									<TextHandle
-										selectedText={
-											selectedTextObject
-												? {
-														text: selectedTextObject.text,
-														font: selectedTextObject.fontFamily,
-														size: Math.round(selectedTextObject.fontSize),
-														bold:
-															selectedTextObject.fontWeight === 'bold' ||
-															selectedTextObject.fontWeight === 700,
-														italic: selectedTextObject.fontStyle === 'italic',
-														color: selectedTextObject.fill,
-													}
-												: null
+							{customizerType === 'text' && (
+								<TextHandle
+									selectedText={
+										selectedTextObject
+											? {
+												text: selectedTextObject.text,
+												font: selectedTextObject.fontFamily,
+												size: Math.round(selectedTextObject.fontSize),
+												bold:
+													selectedTextObject.fontWeight === 'bold' ||
+													selectedTextObject.fontWeight === 700,
+												italic: selectedTextObject.fontStyle === 'italic',
+												color: selectedTextObject.fill,
+											}
+											: null
+									}
+
+									onUpdate={(text, options) => {
+										if (!selectedTextObject) return
+
+										const canvas = fabricCanvasRef.current
+										if (!canvas) return
+
+										selectedTextObject.set({
+											text,
+											fontFamily: options.font,
+											fontWeight: options.bold ? 'bold' : 'normal',
+											fontStyle: options.italic ? 'italic' : 'normal',
+											fill: options.color,
+											textAlign: 'center',
+										})
+
+										canvas.renderAll()
+									}}
+
+									onAdd={(text, options) => {
+										const canvas = fabricCanvasRef.current
+										if (!canvas) return
+
+										const area = currentAreaRef.current
+										if (!area) return
+
+										const areaBox = {
+											left: area.x,
+											top: area.y,
+											width: area.w,
+											height: area.h,
 										}
-										onUpdate={(text, options) => {
-											if (!selectedTextObject) return
 
-											const canvas = fabricCanvasRef.current
-											if (!canvas) return
+										// =========================
+										// 🎯 FONT SIZE FIT TO AREA
+										// =========================
+										const calculateOptimalFontSize = (
+											text,
+											targetWidth,
+											initialFontSize,
+											fontFamily,
+											fontWeight,
+											fontStyle,
+										) => {
+											const ctx = canvas.getContext()
 
-											// Обновляем текст
-											selectedTextObject.set({
-												text: text,
-												fontFamily: options.font,
-												fontWeight: options.bold ? 'bold' : 'normal',
-												fontStyle: options.italic ? 'italic' : 'normal',
-												fill: options.color,
-												textAlign: 'center',
-											})
+											ctx.font = `${fontStyle} ${fontWeight} ${initialFontSize}px ${fontFamily}`
 
-											canvas.renderAll()
-										}}
-										onAdd={(text, options) => {
-											const canvas = fabricCanvasRef.current
-											if (!canvas) {
-												console.error('Canvas не готов для добавления текста')
-												return
-											}
+											const actualWidth = ctx.measureText(text).width
+											const safeWidth = targetWidth * 0.95
 
-											// Функция для подбора оптимального размера шрифта
-											const calculateOptimalFontSize = (
-												text,
-												targetWidth,
-												initialFontSize,
-												fontFamily,
-												fontWeight,
-												fontStyle,
-											) => {
-												// Создаём canvas context для измерения текста
-												const ctx = canvas.getContext()
+											let size = initialFontSize * (safeWidth / actualWidth)
+											console.log('SIZE',size)
 
-												// Устанавливаем стиль шрифта
-												const fontStyle2 = `${fontStyle} ${fontWeight} ${initialFontSize}px ${fontFamily}`
-												ctx.font = fontStyle2
+											return Math.max(16, Math.min(size, 200))
+										}
 
-												// Измеряем реальную ширину текста
-												const metrics = ctx.measureText(text)
-												const actualWidth = metrics.width
+										const optimalFontSize = calculateOptimalFontSize(
+											text,
+											areaBox.width,
+											options.size,
+											options.font,
+											options.bold ? 'bold' : 'normal',
+											options.italic ? 'italic' : 'normal',
+										)
 
-												// Добавляем небольшой отступ (5%) для безопасности
-												const safeTargetWidth = targetWidth * 0.95
+										// =========================
+										// 🧱 CREATE TEXTBOX
+										// =========================
+										const textbox = new Textbox(text, {
+											left: areaBox.left ,
+											top: areaBox.top,
 
-												// Вычисляем коэффициент масштабирования
-												const widthRatio = safeTargetWidth / actualWidth
-												let fontSize = initialFontSize * widthRatio
+											originX: 'center',
+											originY: 'center',
 
-												// Ограничиваем размер шрифта разумными пределами
-												fontSize = Math.max(fontSize, 16) // Минимум 16px
-												fontSize = Math.min(fontSize, 200) // Максимум 200px
+											width: areaBox.width,
 
-												return fontSize
-											}
+											fontFamily: options.font,
+											fontSize: optimalFontSize,
+											fontWeight: options.bold ? 'bold' : 'normal',
+											fontStyle: options.italic ? 'italic' : 'normal',
+											fill: options.color,
+											textAlign: 'center',
 
-											// Вычисляем оптимальный размер шрифта
-											const optimalFontSize = calculateOptimalFontSize(
-												text,
-												canvas.width,
-												options.size,
-												options.font,
-												options.bold ? 'bold' : 'normal',
-												options.italic ? 'italic' : 'normal',
-											)
+											lockScalingFlip: true,
+											lockUniScaling: false,
 
-											// Создаём текстовый объект с оптимальным размером шрифта
-											const textbox = new Textbox(text, {
-												left: 0, // Будет центрирован после создания
-												top: 0,
-												width: canvas.width, // Ширина равна ширине canvas
-												fontFamily: options.font,
-												fontSize: optimalFontSize,
-												fontWeight: options.bold ? 'bold' : 'normal',
-												fontStyle: options.italic ? 'italic' : 'normal',
-												fill: options.color,
-												textAlign: 'center',
-												// Настройки для пропорционального изменения
-												lockScalingFlip: true,
-												// Разрешаем изменение только по ширине для пропорционального масштабирования
-												lockUniScaling: false,
-												// Стили контролов
-												cornerStyle: 'circle',
-												cornerColor: '#4E008E',
-												cornerStrokeColor: '#ffffff',
-												borderColor: '#4E008E',
-												borderScaleFactor: 2,
-												transparentCorners: false,
-											})
+											cornerStyle: 'circle',
+											cornerColor: '#4E008E',
+											cornerStrokeColor: '#ffffff',
+											borderColor: '#4E008E',
+											borderScaleFactor: 2,
+											transparentCorners: false,
+										})
 
-											// Центрируем текст на канвасе
-											textbox.set({
-												left: canvas.width / 2,
-												top: canvas.height / 2,
-											})
+										// =========================
+										// 🚫 CLIP TO AREA (VERY IMPORTANT)
+										// =========================
+										textbox.set({
+											clipPath: new Rect({
+												left: areaBox.left,
+												top: areaBox.top,
+												width: areaBox.width,
+												height: areaBox.height,
+												absolutePositioned: true,
+											}),
+										})
 
-											// Скрываем контролы масштабирования по вертикали и горизонтали
-											// Оставляем только угловые для пропорционального изменения
-											textbox.setControlsVisibility({
-												mt: false,
-												mb: false,
-												ml: false,
-												mr: false,
-											})
+										// =========================
+										// 🔧 CONTROLS
+										// =========================
+										textbox.setControlsVisibility({
+											mt: false,
+											mb: false,
+											ml: false,
+											mr: false,
+										})
 
-											// Добавляем кнопку удаления
-											textbox.controls.deleteControl = new Control({
-												x: 0.5,
-												y: -0.5,
-												offsetY: -16,
-												offsetX: 16,
-												cursorStyle: 'pointer',
-												mouseUpHandler: deleteObject,
-												render: renderDeleteIcon,
-												cornerSize: 24,
-											})
+										textbox.controls.deleteControl = new Control({
+											x: 0.5,
+											y: -0.5,
+											offsetY: -16,
+											offsetX: 16,
+											cursorStyle: 'pointer',
+											mouseUpHandler: deleteObject,
+											render: renderDeleteIcon,
+											cornerSize: 24,
+										})
 
-											// Добавляем кастомные данные
-											textbox.customData = {
-												type: 'text',
-												originalFontSize: optimalFontSize,
-												originalWidth: canvas.width,
-											}
+										// =========================
+										// 📦 META
+										// =========================
 
-											// Добавляем на canvas
-											canvas.add(textbox)
+										textbox.customData = {
+											type: 'text',
+											originalFontSize: optimalFontSize,
+											originalWidth: areaBox.width,
+											orgObj:{
+												id:uuidv4(),
+											},
+										}
 
-											canvas.setActiveObject(textbox)
-											canvas.renderAll()
-										}}
-									/>
-								)}
-							</div>
+										// =========================
+										// ➕ ADD
+										// =========================
+										canvas.add(textbox)
+										canvas.setActiveObject(textbox)
+										canvas.renderAll()
+									}}
+								/>
+							)}
 						</div>
+					</div>
 
-						<div className={css['products--list__by--category']}>
-							{minimalGroups
-								.filter((group) => Array.isArray(group?.products) && group.products.length > 0)
-								.map((group) => {
-									const key = String(group.id)
-									const groupProducts = Array.isArray(productsByCategory?.[key])
-										? productsByCategory[key]
-										: group.products
+					<div className={css['products--list__by--category']}>
+						{minimalGroups
+							.filter((group) => Array.isArray(group?.products) && group.products.length > 0)
+							.map((group) => {
+								const key = String(group.id)
+								const groupProducts = Array.isArray(productsByCategory?.[key])
+									? productsByCategory[key]
+									: group.products
 
-									if (!Array.isArray(groupProducts) || groupProducts.length < 1) return null
-									return (
+								if (!Array.isArray(groupProducts) || groupProducts.length < 1) return null
+								return (
 									<details key={key} open>
 										<summary>
 											<Icon name={'ChevronUp'} />
@@ -1268,6 +2468,7 @@ const DesignStep = forwardRef((props, ref) => {
 												<ProductCustomizerCard
 													key={product.id}
 													groupKey={key}
+													image={image}
 													setImage={setImage}
 													activeCardId={activeCardId}
 													setActiveCardId={setActiveCardId}
@@ -1279,66 +2480,73 @@ const DesignStep = forwardRef((props, ref) => {
 													saveDesignForCurrentProduct={saveDesignForCurrentProduct}
 													saveDesignForEachProduct={saveDesignForEachProducts}
 													onCardClick={onCardClick}
+													activeSide={activeSide}
+													setImageBack={setImageBack}
 												/>
 											))}
 										</ul>
 									</details>
 								)})}
-						</div>
 					</div>
-
-					<Modal
-						isOpen={isModalOpen}
-						onClose={() => setIsModalOpen(false)}
-						className={`${css.modal} validation--modal`}
-					>
-						<div className={css.modal__content}>
-							<Icon name={'Download'} className={css.modal__icon} />
-							<h2 className={css.modal__title}>
-								Your logo is saved!
-								<br />
-								Do you want to create another?
-							</h2>
-
-							<button className={css.modal__button__continue}
-								onClick={() => {
-									setIsModalOpen(false)
-									setIsNewDesignModalOpen(true)
-								}}>
-								Yes, create another logo
-							</button>
-							<button
-								className={css.modal__button__next}
-								onClick={() => {
-									setIsModalOpen(false)
-									setIsFundraisingModalOpen(true)
-								}}
-							>
-								No, move to the next step
-							</button>
-						</div>
-					</Modal>
-
-					<Modal
-						isOpen={isFundraisingModalOpen}
-						onClose={() => setIsFundraisingModalOpen(false)}
-						className={`${css.fundraising__modal} validation--modal`}
-					>
-						<FundraisingTypeModal setIsFundraisingModalOpen={setIsFundraisingModalOpen} />
-					</Modal>
-
-					<Modal
-						isOpen={isNewDesignModalOpen}
-						onClose={() => setIsNewDesignModalOpen(false)}
-						className={`${css.design__modal} validation--modal`}
-					>
-						<NewDesignModal setIsNewDesignModalOpen={setIsNewDesignModalOpen} />
-					</Modal>
 				</div>
-			</>
-		)
+
+				<Modal
+					isOpen={isModalOpen}
+					onClose={() => setIsModalOpen(false)}
+					className={`${css.modal} validation--modal`}
+				>
+					<div className={css.modal__content}>
+						<Icon name={'Download'} className={css.modal__icon} />
+						<h2 className={css.modal__title}>
+							Your logo is saved!
+							<br />
+							Do you want to create another?
+						</h2>
+
+						<button className={css.modal__button__continue}
+										onClick={() => {
+											setIsModalOpen(false)
+											setIsNewDesignModalOpen(true)
+										}}>
+							Yes, create another logo
+						</button>
+						<button
+							className={css.modal__button__next}
+							onClick={() => {
+								setIsModalOpen(false)
+								if(popup){
+									dispatch(setActiveStep(4))
+								}else {
+									setIsFundraisingModalOpen(true)
+
+								}
+							}}
+						>
+							No, move to the next step
+						</button>
+					</div>
+				</Modal>
+
+				<Modal
+					isOpen={isFundraisingModalOpen}
+					onClose={() => setIsFundraisingModalOpen(false)}
+					className={`${css.fundraising__modal} validation--modal`}
+				>
+					<FundraisingTypeModal setIsFundraisingModalOpen={setIsFundraisingModalOpen} />
+				</Modal>
+
+				<Modal
+					isOpen={isNewDesignModalOpen}
+					onClose={() => setIsNewDesignModalOpen(false)}
+					className={`${css.design__modal} validation--modal`}
+				>
+					<NewDesignModal setIsNewDesignModalOpen={setIsNewDesignModalOpen} />
+				</Modal>
+			</div>
+		</>
+	)
 })
 
-DesignStep.displayName = 'DesignStep'
+DesignStepNew.displayName = 'DesignStepNew'
 
-export default DesignStep
+export default DesignStepNew

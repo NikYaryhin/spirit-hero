@@ -3,6 +3,7 @@ import styles from './TextHandle.module.css'
 import FontPicker from '@/components/FontPicker/FontPicker'
 
 export default function TextHandle({ onAdd, onUpdate, selectedText }) {
+	console.log('selectedTextObject',selectedText)
 	const [text, setText] = useState('')
 	const [font, setFont] = useState('Cookie')
 	const [bold, setBold] = useState(false)
@@ -20,6 +21,13 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 			setItalic(selectedText.italic || false)
 			setColor(selectedText.color || '#000')
 			setSize(selectedText.size || 54)
+		}else {
+			setText( '')
+			setFont('Cookie')
+			setBold( false)
+			setItalic( false)
+			setColor( '#000')
+			setSize( 54)
 		}
 	}, [selectedText])
 

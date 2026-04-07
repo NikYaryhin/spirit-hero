@@ -7,8 +7,51 @@
 	.image__box, .settings__box {
 		width: 50%;
 	}
+    .image__box {
+	   display: flex;
+	   align-items: center;
+	   justify-content: center;
+	   position: relative;
+    }
+.applyAllBtn {
+	position: absolute;
+	top: 10px;
+	right: 10px;
 
-	.image__box {
+	padding: 6px 12px;
+	background: #4E008E;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+
+	z-index: 5;
+}
+.applyBackSide {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+
+	display: flex;
+	align-items: center;
+	gap: 6px;
+
+	padding: 6px 12px;
+	background: transparent;
+	color: #4E008E;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+
+	z-index: 5;
+}
+
+    .image__box canvas {
+	   width: 600px;
+	   height: 600px;
+    }
+
+	/*.image__box {
 		position: relative;
 
 		&:hover .custom__elements::before {
@@ -67,7 +110,7 @@
 			}
 		}
 
-		/* Ensure Moveable controls are visible above canvas */
+		!* Ensure Moveable controls are visible above canvas *!
 		:global(.moveable) {
 			z-index: 1000 !important;
 			pointer-events: auto !important;
@@ -86,7 +129,7 @@
 			object-position: center;
 			object-fit: contain;
 		}
-	}
+	}*/
 
 	.settings__box {
 		display: flex;

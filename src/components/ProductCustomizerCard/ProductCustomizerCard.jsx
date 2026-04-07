@@ -17,8 +17,9 @@ export default function ProductCustomiserCard({
 	storeId,
 	group,
 	onCardClick,
-	activeGroupId
-
+	activeGroupId,
+																								activeSide,
+																								setImageBack
 
 }) {
 	const {
@@ -47,8 +48,8 @@ export default function ProductCustomiserCard({
 
 		const groupIdFromDataset = event?.currentTarget?.dataset?.groupId
 		onCardClick(id, groupIdFromDataset)
-		setActiveCardId(id)
 		setImage(colorsArray[0]?.color_image || product_image)
+		setImageBack(colorsArray[0]?.color_image_back)
 		setLocalImage(colorsArray[0]?.color_image || product_image)
 	}
 
@@ -98,13 +99,14 @@ export default function ProductCustomiserCard({
 				let selectedColor = colors.find(({ color }) => color === value)
 				setLocalImage(selectedColor?.color_image)
 				setImage(selectedColor?.color_image)
-
+				setImageBack(selectedColor?.color_image_back)
 				nextColors = [...prev, selectedColor]
 			} else {
 				nextColors = prev.filter(({ color }) => color !== value)
 				setLocalImage(colorsArray[0]?.color_image || product_image)
-				console.log('TEST CLICK')
 				setImage(colorsArray[0]?.color_image || product_image)
+				setImageBack(colorsArray[0]?.color_image_back)
+
 			}
 
 			return nextColors
@@ -143,7 +145,7 @@ export default function ProductCustomiserCard({
 	return (
 		<li
 			onClick={cardClickHandle}
-			className={`${css.customizer__card} ${activeCardId === id && String(groupId)===activeGroupId ? css.active : ''}`}
+			className={`${css.customizer__card} ${activeCardId === String(id) && String(groupId)===activeGroupId ? css.active : ''}`}
 			key={id}
 			id={id}
 			data-group-id={groupKey ?? null}
@@ -156,7 +158,7 @@ export default function ProductCustomiserCard({
 				<span className={css.product_title}>{product_title}</span>
 
 				<fieldset className={css.color__swatchers}>
-					{colorsArray.map(({ color, color_image }) => (
+					{colorsArray.map(({ color, color_image,color_image_back }) => (
 						<label key={color}>
 							<span
 								className={css.checkbox_emulator}
@@ -167,6 +169,8 @@ export default function ProductCustomiserCard({
 									e.stopPropagation()
 									setImage(e.target.value)
 									setLocalImage(e.target.value)
+									setImageBack(color_image_back)
+
 								}}
 								type="radio"
 								name={id}

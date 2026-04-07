@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import css from './ImageUploader.module.css'
 import Icon from '../Icon'
+import { v4 as uuidv4 } from 'uuid'
 
 export default function ImageUploader({
 	multiple = true,
@@ -9,6 +10,7 @@ export default function ImageUploader({
 	setFiles,
 	dragOver = false,
 	setDragOver,
+																				handleSelectOnCanvas
 }) {
 	const inputRef = useRef(null)
 
@@ -25,6 +27,7 @@ export default function ImageUploader({
 				imageFiles.map(async (file) => ({
 					file,
 					url: URL.createObjectURL(file),
+					id:uuidv4(),
 					base64: await new Promise((resolve) => {
 						const reader = new FileReader()
 						reader.onload = () => resolve(reader.result)
@@ -119,7 +122,7 @@ export default function ImageUploader({
 				{/* {files.length === 0 && (
 				)} */}
 
-				{/* {files.length > 0 && (
+				 {files.length > 0 && (
 					<>
 						<div className={css.previews}>
 							{files.map((p, i) => {
@@ -129,11 +132,15 @@ export default function ImageUploader({
 								className={css.preview}
 								key={p.url + i}
 								title={fileName}
+								onClick={() => handleSelectOnCanvas(p)}
 							>
 								<button
 									className={css.removeBtn}
 									type="button"
-									onClick={() => removeAt(i)}
+									onClick={(e) => {
+										e.stopPropagation();
+										removeAt(i);
+									}}
 									aria-label={`Remove ${fileName}`}
 									title={`Remove ${fileName}`}
 								>
@@ -148,21 +155,9 @@ export default function ImageUploader({
 						)
 					})}
 
-							<label
-								className={`${css.smallUpload} ${!agreed ? css.disabled : ''}`}
-								title="Add another one file"
-							>
-								<input
-									type="file"
-									accept="image/*"
-									multiple={multiple}
-									onChange={onInputChange}
-								/>
-								<Icon name="Plus" />
-							</label>
 						</div>
 					</>
-				)} */}
+				)}
 			</div>
 
 			<label className={css.agree}>

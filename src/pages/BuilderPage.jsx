@@ -25,6 +25,7 @@ import {
 } from '@/features/products/productsSlice'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 import FundraisingStepNew from '@components/FundraisingStep/FundraisingStepNew'
+import DesignStepNew from '@components/DesignStep/DesignStepNew'
 
 export default function Builder() {
 	const dispatch = useDispatch()
@@ -118,7 +119,7 @@ export default function Builder() {
 			<div className="content--wrapper">
 				{activeStep === 1 && <Details />}
 				{activeStep === 2 && <ProductsStep />}
-				{activeStep === 3 && <DesignStep ref={designStepRef} />}
+				{activeStep === 3 && <DesignStepNew ref={designStepRef} />}
 
 				{activeStep === 4 && <FundraisingStepNew />}
 				{activeStep === 5 && <FlashSale ref={flashSaleRef} />}
