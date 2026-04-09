@@ -9,18 +9,41 @@ import { showToast } from '@/helpers/toastCall'
 import ProductDetailsNew from '@components/ProductDetails/ProductDetailsNew'
 import { useDispatch } from 'react-redux'
 import { setMinimalGroups } from '@/features/products/productsSlice'
+import Modal from '@components/Modal/Modal'
+import ProductStepValidationModal from '@components/ProductStepValidationModal/ProductStepValidationModal'
+import FundraisingNextStepModal from '@components/FundraisingNextStepModal/FundraisingNextStepModal'
+import cssModal from '../ProductStepValidationModal/ProductStepValidationModal.module.css'
+import Icon from '@components/Icon'
 
 export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 	const dispatch = useDispatch()
+	const [isModalOpen, setIsModalOpen] = useState(false)
 
 	// --- States ---
 	const [catalogGroups, setCatalogGroups] = useState([])
 	const [myStoreGroups, setMyStoreGroups] = useState([])
 	const [filtersData, setFiltersData] = useState(null)
-
+	const [selectedDuplicates, setSelectedDuplicates] = useState({})
 	// Структура тепер така: { "groupId": [productId1, productId2] }
 	const [selectedData, setSelectedData] = useState({})
+	const [selectedCollections, setSelectedCollections] = useState({})
+	const handleCheckboxChange = (groupId, collectionId) => {
+		setSelectedCollections((prev) => {
+			const current = prev[groupId] || []
 
+			if (current.includes(collectionId)) {
+				return {
+					...prev,
+					[groupId]: current.filter((id) => id !== collectionId)
+				}
+			}
+
+			return {
+				...prev,
+				[groupId]: [...current, collectionId]
+			}
+		})
+	}
 	const [isLoading, setIsLoading] = useState(true)
 	const [fetchLoader, setFetchLoader] = useState(false)
 	const [isCatalog, setIsCatalog] = useState(true)
@@ -192,6 +215,54 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 	}
 
 	const addToStoreAction = async () => {
+
+		const duplicatedGroups = {}
+
+		Object.entries(selectedData).forEach(([groupId, productIds]) => {
+			const existingGroup = catalogGroups?.find(
+				(g) => Number(g.id) === Number(groupId)
+			)
+
+			if (!existingGroup) return
+
+			const normalize = (str) =>
+				str?.toLowerCase().replace(/\s+/g, ' ').trim()
+
+			const normalizedExisting = normalize(existingGroup.name)
+
+			// 🔥 беремо ВСІ includes (включаючи exact)
+			const matches = myStoreGroups.filter((value) =>
+				normalize(value.name).includes(normalizedExisting)
+			)
+
+			// 🔥 якщо тільки 1 і він exact → скіпаємо
+			if (
+				matches.length === 1 &&
+				normalize(matches[0].name) === normalizedExisting
+			) {
+				return
+			}
+
+			// 🔥 якщо є хоч щось (2+ або 1 але не exact)
+			if (matches.length > 0) {
+				duplicatedGroups[groupId] = {
+					groupName: existingGroup.name,
+					productIds,
+					matches: matches.map((item) => ({
+						id: item.id,
+						name: item.name
+					}))
+				}
+			}
+		})
+
+		console.log("duplicatedGroups", duplicatedGroups)
+
+		if (Object.keys(duplicatedGroups).length > 0) {
+			setSelectedDuplicates(duplicatedGroups)
+			setIsModalOpen(true)
+			return
+		}
 		setFetchLoader(true)
 		const groupsPayload = Object.entries(selectedData).map(([groupId, ids]) => ({
 			group_id: Number(groupId),
@@ -259,6 +330,30 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		} finally {
 			setFetchLoader(false)
 		}
+	}
+	const buildUpdatedSelectedData = (selectedData, selectedCollections) => {
+		const result = {}
+
+		Object.entries(selectedData).forEach(([groupId, productIds]) => {
+			const targetGroupIds = selectedCollections[groupId]
+
+			// якщо юзер нічого не вибрав → залишаємо як є
+			if (!targetGroupIds || targetGroupIds.length === 0) {
+				result[groupId] = productIds
+				return
+			}
+
+			// 🔥 розкидаємо продукти по вибраних групах
+			targetGroupIds.forEach((targetGroupId) => {
+				if (!result[targetGroupId]) {
+					result[targetGroupId] = []
+				}
+
+				result[targetGroupId].push(...productIds)
+			})
+		})
+
+		return result
 	}
 
 	const deleteFromStoreAction = async () => {
@@ -397,6 +492,171 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 					{processedGroups.length === 0 && <p className={css.no_products}>No products found.</p>}
 				</div>
 			</div>
+			<Modal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				className={'validation--modal'}
+			>
+				<div className={cssModal.modal__content}>
+					<h3 className={cssModal.title}>
+						Which collections should we add products to?
+					</h3>
+
+					{Object.entries(selectedDuplicates).map(([groupId, groupData]) => (
+						<div key={groupId} className={cssModal.group__block}>
+							<p className={cssModal.group__title}>
+								{groupData.productIds
+									.map((productId) => {
+										const product = catalogGroups
+											.flatMap((g) => g.products || [])
+											.find((p) => Number(p.id) === Number(productId))
+
+										return product?.product_title
+									})
+									.filter(Boolean)
+									.join(', ')
+								}
+							</p>
+
+							<fieldset className={cssModal.fieldset}>
+								{groupData.matches.map((item) => (
+									<label className={cssModal.label} key={item.id}>
+							<span className={cssModal.checkbox__emulator}>
+								<Icon name={'InputChecked'} />
+							</span>
+
+										{item.name}
+
+										<input
+											type="checkbox"
+											name="modal-select"
+											className="visually-hidden"
+											checked={
+												selectedCollections[groupId]?.includes(item.id) || false
+											}
+											onChange={() =>
+												handleCheckboxChange(groupId, item.id)
+											}
+										/>
+									</label>
+								))}
+							</fieldset>
+						</div>
+					))}
+
+					<div className={cssModal.button__box}>
+						<button
+							onClick={() => setIsModalOpen(false)}
+							className="light_button_1"
+						>
+							Cancel
+						</button>
+
+						<button
+							onClick={async () => {
+								const updatedSelectedData = buildUpdatedSelectedData(
+									selectedData,
+									selectedCollections
+								)
+
+								console.log('updatedSelectedData', updatedSelectedData)
+
+								// 🔥 ДАЛІ ВСТАВЛЯЄШ СВІЙ КОД
+								//setFetchLoader(true)
+
+								const groupsPayload = Object.entries(updatedSelectedData).map(
+									([groupId, ids]) => ({
+										group_id: Number(groupId),
+										ids: ids
+									})
+								)
+								console.log('groupsPayload', groupsPayload)
+
+
+								const productsPayload = []
+
+								Object.entries(updatedSelectedData).forEach(([groupId, productIds]) => {
+									const group = currentGroups?.find(
+										(g) => Number(g.id) === Number(groupId)
+									)
+
+									if (!group) return
+
+									productIds.forEach((productId) => {
+										const product = group.products?.find(
+											(p) => Number(p.id) === Number(productId)
+										)
+
+										if (!product) return
+
+										const colors = product.colors || []
+
+										const filteredColorIds = colors
+											.filter((color) => {
+												const families = activeFilters?.colorFamilies
+
+												if (!families || families.length === 0) {
+													return true
+												}
+
+												return families.includes(String(color.parent_color_id))
+											})
+											.map((color) => Number(color.color_id))
+
+										productsPayload.push({
+											product_id: Number(productId),
+											group_id: Number(groupId),
+											color_id: filteredColorIds
+										})
+									})
+								})
+
+								console.log('productsPayload', productsPayload)
+
+								try {
+									await spiritHeroApi.addToMyStoreProductsList({
+										store_id: Number(storeIdFromQuery),
+										groups: groupsPayload
+									})
+
+									if(productsPayload.length > 0){
+										await spiritHeroApi.setColorsOfProductV2({
+											store_id: Number(storeIdFromQuery),
+											products: productsPayload
+										})
+									}
+
+
+									const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
+
+									setMyStoreGroups(storeRes?.minimum_groups || [])
+									dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
+
+									setSelectedData({})
+									setIsCatalog(false)
+									setIsModalOpen(false)
+
+									showToast(`Items added to your store`)
+								} catch (e) {
+									showToast('Error adding products', 'error')
+								} finally {
+									setFetchLoader(false)
+								}
+							}}
+							disabled={
+								Object.keys(selectedDuplicates).some(
+									(groupId) =>
+										!selectedCollections[groupId] ||
+										selectedCollections[groupId].length === 0
+								)
+							}
+							className="contrast_button_1"
+						>
+							Apply
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	)
 }

@@ -68,17 +68,18 @@
 				}
 			}
             .color {
-	            display: inline-block;
-	            width: 3rem;
-				aspect-ratio: 1/1;
-	            border-radius: 50%;
-	            border: 1px solid #CACACA;
+				display: flex;
+				width: 3rem;
+				aspect-ratio: 1 / 1;
+				border-radius: 50%;
+				border: 1px solid #CACACA;
+				align-items: center;
+				justify-content: center;
+				position: relative;
             }
 
 		}
-.category__label.active .color {
-	border: 3px solid #22c55e;
-}
+
 	}
 .filters__list.row {
 	flex-direction: row;
@@ -149,4 +150,11 @@
 	overflow: visible;
 
 }
+
+.check {
+	color: white;
+	font-size: 15px;
+	font-weight: 700;
 }
+}
+

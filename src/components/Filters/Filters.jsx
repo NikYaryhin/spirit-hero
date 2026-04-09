@@ -140,14 +140,18 @@ export default function Filters({
 									{/* 👉 COLORFAMILIES */}
 									{keyName.toLowerCase() === 'colorfamilies' && (
 										<>
+		<span className={css.tooltipWrapper}>
+			<span
+				className={css.color}
+				style={{ backgroundColor: product_color }}
+			>
+				{isActive && <span className={css.check}>✓</span>}
+			</span>
 
-										<span className={css.tooltipWrapper}>
-		<span
-			className={css.color}
-			style={{ backgroundColor: product_color }}
-		/>
-		<span className={css.tooltip}>{product_color_name}</span>
-	</span>
+			<span className={css.tooltip}>
+				{product_color_name}
+			</span>
+		</span>
 										</>
 									)}
 

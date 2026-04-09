@@ -804,9 +804,19 @@ const DesignStepNew = forwardRef((props, ref) => {
 			const fixedImage = im.startsWith('//') ? `https:${im}` : im;
 
 			try {
-				const res = await fetch(fixedImage);
-				const blob = await res.blob();
-				const url = URL.createObjectURL(blob);
+				let url;
+				if(activeSide==='back'){
+					url=fixedImage
+				}else {
+					try {
+		/*				const res = await fetch(fixedImage);
+						const blob = await res.blob();*/
+						url = fixedImage
+					}catch (e) {
+						url=fixedImage
+					}
+				}
+
 
 				const img = new Image();
 				img.onload = () => {
@@ -1247,8 +1257,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 */
 				const defaultLogoArea = {
 					logo_area: {
-						x: 200,
-						y: 200,
+						x: 300,
+						y: 300,
 						width: 200,
 						height: 200,
 					}
