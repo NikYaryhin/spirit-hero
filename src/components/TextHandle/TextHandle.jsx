@@ -51,34 +51,40 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 
 			<textarea
 				className={`${styles.textarea} light_button_1`}
-				placeholder="Add text"
+				placeholder="Enter text here"
 				value={text}
 				onChange={(e) => setText(e.target.value)}
 			/>
 
-			<button
-				className={styles.addBtn}
-				type="button"
-				onClick={handleAdd}
-				disabled={!!selectedText}
-				style={{
-					opacity: selectedText ? 0.5 : 1,
-					cursor: selectedText ? 'not-allowed' : 'pointer',
-				}}
-			>
-				{selectedText ? 'Editing selected text' : 'Add text'}
-			</button>
+			{!selectedText && (
+				<div 	className={styles.addBtnBox}>
+					<button
+						className={styles.addBtn}
+						type="button"
+						onClick={handleAdd}
+						disabled={!!selectedText}
+						style={{
+							opacity: selectedText ? 0.5 : 1,
+							cursor: selectedText ? 'not-allowed' : 'pointer',
+						}}
+					>
+						{selectedText ? 'Editing selected text' : 'Add text to design'}
+					</button>
+				</div>
+				)}
 
-			<div className={styles.row}>
-				<div className={styles.column}>
-					<span className={styles.input__label}>Font</span>
 
-					<div className={styles.fontpicker__box}>
-						<button
-							type="button"
-							className={styles.fontpicker__button}
-							onClick={() => setOpenFonts((v) => !v)}
-						>
+			{
+				selectedText && (	<div className={styles.row}>
+					<div className={styles.column}>
+						<span className={styles.input__label}>Font</span>
+
+						<div className={styles.fontpicker__box}>
+							<button
+								type="button"
+								className={styles.fontpicker__button}
+								onClick={() => setOpenFonts((v) => !v)}
+							>
 							<span
 								style={{
 									fontFamily: font,
@@ -88,70 +94,72 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 							>
 								{font}
 							</span>
-							<span className={styles.caret}></span>
+								<span className={styles.caret}></span>
+							</button>
+
+							<FontPicker
+								showFontPicker={openFonts}
+								setShowFontPicker={setOpenFonts}
+								initialFont={font}
+								setFont={setFont}
+							/>
+						</div>
+					</div>
+
+					<div className={styles.toggles}>
+						<button
+							type="button"
+							className={styles.toggleBtn}
+							aria-pressed={bold}
+							onClick={() => setBold((v) => !v)}
+						>
+							B
 						</button>
 
-						<FontPicker
-							showFontPicker={openFonts}
-							setShowFontPicker={setOpenFonts}
-							initialFont={font}
-							setFont={setFont}
-						/>
-					</div>
-				</div>
+						<button
+							type="button"
+							className={styles.toggleBtn}
+							aria-pressed={italic}
+							onClick={() => setItalic((v) => !v)}
+						>
+							I
+						</button>
 
-				<div className={styles.toggles}>
-					<button
-						type="button"
-						className={styles.toggleBtn}
-						aria-pressed={bold}
-						onClick={() => setBold((v) => !v)}
-					>
-						B
-					</button>
-
-					<button
-						type="button"
-						className={styles.toggleBtn}
-						aria-pressed={italic}
-						onClick={() => setItalic((v) => !v)}
-					>
-						I
-					</button>
-
-					<div className={`${styles.column}`}>
+						<div className={`${styles.column}`}>
 						<span className={`${styles.input__label} ${styles.bold}`}>
 							Colour
 						</span>
 
-						<label className={styles.color__picker}>
+							<label className={styles.color__picker}>
 							<span
 								className={styles.input__emulator}
 								style={{ backgroundColor: color }}
 							></span>
-							<input
-								type="color"
-								value={color}
-								onChange={(e) => setColor(e.target.value)}
-								className={'visually-hidden'}
-							/>
-						</label>
+								<input
+									type="color"
+									value={color}
+									onChange={(e) => setColor(e.target.value)}
+									className={'visually-hidden'}
+								/>
+							</label>
+						</div>
 					</div>
-				</div>
 
-				<div className={styles.column}>
-					<span className={`${styles.input__label} ${styles.bold}`}>Size</span>
+					<div className={styles.column}>
+						<span className={`${styles.input__label} ${styles.bold}`}>Size</span>
 
-					<input
-						className={styles.sizeInput}
-						type="number"
-						min={6}
-						max={100}
-						value={size}
-						onChange={(e) => setSize(Number(e.target.value) || 0)}
-					/>
-				</div>
-			</div>
+						<input
+							className={styles.sizeInput}
+							type="number"
+							min={6}
+							max={100}
+							value={size}
+							onChange={(e) => setSize(Number(e.target.value) || 0)}
+						/>
+					</div>
+				</div>)
+			}
+
 
 			{/* <label className={styles.agreeRow}>
 				<input

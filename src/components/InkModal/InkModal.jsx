@@ -3,11 +3,11 @@ import Icon from '../Icon'
 import CustomSelect from '../CustomSelect/CustomSelect'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { setPricePerColor } from '@/features/flashSale/flashSaleSlice'
+import { setPricePerColor, setStoreInfo } from '@/features/flashSale/flashSaleSlice'
 import spiritHeroApi from '@/api/spiritHeroApi'
 
 const COLOR_SELECT_VALUES = [
-	{ value: '0 Colors', id: 0, quantity: 0 },
+	{ value: 'None', id: 0, quantity: 0 },
 	{ value: '1 Color', id: 1, quantity: 1 },
 	{ value: '2 Colors', id: 2, quantity: 2 },
 	{ value: '3 Colors', id: 3, quantity: 3 },
@@ -21,7 +21,7 @@ export default function InkModal({ onClose }) {
 	const storeId = useSelector((state) => state.flashSale.storeId)
 
 	const [price, setPrice] = useState(0)
-	const [frontColorsCount, setFrontColorsCount] = useState(0)
+	const [frontColorsCount, setFrontColorsCount] = useState(1)
 	const [backColorsCount, setBackColorsCount] = useState(0)
 
 	useEffect(() => {
@@ -53,8 +53,14 @@ export default function InkModal({ onClose }) {
 				cost: price,
 			}
 
+
 			const res = await spiritHeroApi.editInkColor(payload)
 			console.debug('editInkColor res', res)
+
+			const storeData = await spiritHeroApi.getStore(storeId)
+			console.debug('getStore', storeData)
+			dispatch(setStoreInfo(storeData))
+
 			onClose()
 		} catch (error) {
 			console.error('spiritHeroApi.editInkColor()', error)

@@ -4,7 +4,7 @@ import css from './ProductCard.module.css'
 import previewImage from '@/assets/SpiritHero__Preloader.png'
 import { useSelector } from 'react-redux'
 
-export default function ProductCard({ product, isFlashSale, inputHandle, activeColors,isCatalog,minimalGroup,sendColorsToBackend }) {
+export default function sendColorsToBackendProductCard({ product, isFlashSale, inputHandle, activeColors,isCatalog,minimalGroup,sendColorsToBackend }) {
 	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
 	let { id, product_title, product_image, selected, params, colors,choosed_colors } = product
 
@@ -27,6 +27,7 @@ export default function ProductCard({ product, isFlashSale, inputHandle, activeC
 			return aSelected ? -1 : 1
 		})
 	}, [colors, selectedColors])
+
 	const visibleColors = useMemo(() => {
 		if (showAllColors) return sortedColors
 		return sortedColors.slice(0, 5)

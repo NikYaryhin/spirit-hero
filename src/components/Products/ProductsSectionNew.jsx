@@ -209,10 +209,39 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			store_id: Number(storeIdFromQuery),
 			products: [data]
 		})
-		/*const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
-		setMyStoreGroups(storeRes?.minimum_groups || [])
-		dispatch(setMinimalGroups(storeRes?.minimum_groups || []))*/
+
+		const updated = myStoreGroups.map((item) => {
+			if (item.id === +data.group_id) {
+				return {
+					...item,
+					products: item.products.map((product) => {
+						if (product.id === +data.product_id) {
+							const arr = [];
+
+							for (const arrElement of product.colors) {
+								if (data.color_id.includes(+arrElement.color_id)) {
+									arr.push(arrElement);
+								}
+							}
+
+							return {
+								...product,
+								choosed_colors: arr,
+							};
+						}
+
+						return product;
+					}),
+				};
+			}
+
+			return item;
+		});
+
+		setMyStoreGroups(updated);
+
 	}
+
 
 	const addToStoreAction = async () => {
 
@@ -579,9 +608,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 									const group = currentGroups?.find(
 										(g) => Number(g.id) === Number(groupId)
 									)
-
 									if (!group) return
-
 									productIds.forEach((productId) => {
 										const product = group.products?.find(
 											(p) => Number(p.id) === Number(productId)
@@ -625,7 +652,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 											products: productsPayload
 										})
 									}
-
 
 									const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
 

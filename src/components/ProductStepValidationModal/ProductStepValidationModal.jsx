@@ -120,9 +120,9 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					<div className={css.text__wrap}>
 						If minimums are not met, you have two options:
 						<p className={css.text}>
-							<span>1. Extend your store to allow more time for orders</span>
+							<span>Extend your store to allow more time for orders</span>
 							<span>
-								2. Purchase the remaining quantity to reach the minimum.
+								Purchase the remaining quantity to reach the minimum.
 							</span>
 						</p>
 					</div>

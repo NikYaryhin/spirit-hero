@@ -75,6 +75,7 @@ export default function FundraisingProductCard({
 	const onSellAtCost = async () => {
 		setProductsByCategory((prev) => {
 			const newProductsByCategory = { ...prev }
+			console.log('newProductsByCategory',newProductsByCategory)
 
 			newProductsByCategory[categoryKey] = prev[categoryKey].filter(
 				(prod) => prod.id !== id,
@@ -85,6 +86,7 @@ export default function FundraisingProductCard({
 
 		setSellAtCostProducts((prev) => {
 			const newSellAtCost = { ...prev }
+			console.log('newSellAtCost',newSellAtCost)
 			newSellAtCost[categoryKey] = [product, ...newSellAtCost[categoryKey]]
 
 			return newSellAtCost

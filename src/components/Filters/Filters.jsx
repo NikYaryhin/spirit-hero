@@ -1,6 +1,7 @@
 import css from './Filters.module.css'
 import Icon from '../Icon'
 import { useEffect, useState } from 'react'
+import CheckIcon from '../../assets/SpiritHero__Check_1.svg'
 
 export default function Filters({
 	keyName,
@@ -145,13 +146,20 @@ export default function Filters({
 				className={css.color}
 				style={{ backgroundColor: product_color }}
 			>
-				{isActive && <span className={css.check}>✓</span>}
+				{isActive && (
+					<img
+						src={CheckIcon}
+						className={css.check}
+						alt="selected"
+					/>
+				)}
 			</span>
 
 			<span className={css.tooltip}>
 				{product_color_name}
 			</span>
 		</span>
+
 										</>
 									)}
 

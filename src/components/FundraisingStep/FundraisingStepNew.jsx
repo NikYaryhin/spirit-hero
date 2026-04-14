@@ -299,6 +299,7 @@ export default function FundraisingStepNew() {
 								setSelectedProducts={setSelectedProducts}
 								isFundraise={isFundraiseView}
 								pricesEnd={pricesEnd}
+								setIsFundraise={setIsFundraiseView}
 								isActive={true}
 							/>
 						))}

@@ -9,6 +9,7 @@ import Modal from '../Modal/Modal'
 import InkModal from '../InkModal/InkModal'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import ProductsSectionNew from '@components/Products/ProductsSectionNew'
+import CheckIcon from '../../assets/information_5226555.png'
 
 export default function ProductsStep() {
 	const dispatch = useDispatch()
@@ -44,7 +45,26 @@ export default function ProductsStep() {
 					<div className={css['info--checkbox__wrapper']}>
 						<Lightning />
 
+
 						<span>Flash SALE Price</span>
+						<div className={css['tooltip']}>
+
+							<img
+								src={CheckIcon}
+								className={css['tooltip__icon']}
+								alt="selected"
+							/>
+							<div className={css['tooltip__content']}>
+								<ul>
+									<li>Limited-time 2–3 week group order</li>
+									<li>Lower prices</li>
+									<li>FREE shipping to 1 location</li>
+									<li>Orders arrive sorted / labeled / bagged</li>
+									<li>Option to convert to on-demand once the flash sale ends</li>
+									<li>Has minimums</li>
+								</ul>
+							</div>
+						</div>
 
 						<label className={css['info--checkbox__label']}>
 							<span className={css['info--checkbox__emulator']}></span>
@@ -57,20 +77,7 @@ export default function ProductsStep() {
 						</label>
 					</div>
 
-					{!isFlashSale ? (
-						<ul className={css.features__list}>
-							<li>Limited-time group order</li>
-							<li>Lower price</li>
-							<li>36 apparels minimum</li>
-							<li>FREE ship for 1 place</li>
-							<li>Only 1 logo</li>
-							<li>2-3 weeks timeframe</li>
-							<li>
-								Arrive sorted, labeled, bagged by student name/teacher name
-								(sort list)
-							</li>
-						</ul>
-					) : (
+					{!isFlashSale  && (
 						<button
 							onClick={() => {
 								setIsModalOpen(true)

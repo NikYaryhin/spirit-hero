@@ -19,7 +19,9 @@ export default function ProductCustomiserCard({
 	onCardClick,
 	activeGroupId,
 																								activeSide,
-																								setImageBack
+																								setImageBack,
+																								setImageLeft,
+																								setImageRight
 
 }) {
 	const {
@@ -41,16 +43,18 @@ export default function ProductCustomiserCard({
 		choosed_colors.length > 0 ? choosed_colors : [],
 	)
 	const [localImage, setLocalImage] = useState(
-		choosed_colors[0]?.color_image || product_image
+		choosed_colors[0]?.image || product_image
 	)
 	const cardClickHandle = (event) => {
 		if (active) return
 
 		const groupIdFromDataset = event?.currentTarget?.dataset?.groupId
 		onCardClick(id, groupIdFromDataset)
-		setImage(colorsArray[0]?.color_image || product_image)
-		setImageBack(colorsArray[0]?.color_image_back)
-		setLocalImage(colorsArray[0]?.color_image || product_image)
+		setImage(colorsArray[0]?.image || product_image)
+		setImageBack(colorsArray[0]?.image_back)
+		setImageLeft(colorsArray[0]?.image_side_left)
+		setImageRight(colorsArray[0]?.image_side_right)
+		setLocalImage(colorsArray[0]?.image || product_image)
 	}
 
 	const closeButtonHandle = async () => {
@@ -97,15 +101,19 @@ export default function ProductCustomiserCard({
 
 			if (checked) {
 				let selectedColor = colors.find(({ color }) => color === value)
-				setLocalImage(selectedColor?.color_image)
-				setImage(selectedColor?.color_image)
-				setImageBack(selectedColor?.color_image_back)
+				setLocalImage(selectedColor?.image)
+				setImage(selectedColor?.image)
+				setImageBack(selectedColor?.image_back)
+				setImageLeft(selectedColor?.image_side_left)
+				setImageRight(selectedColor?.image_side_right)
 				nextColors = [...prev, selectedColor]
 			} else {
 				nextColors = prev.filter(({ color }) => color !== value)
-				setLocalImage(colorsArray[0]?.color_image || product_image)
-				setImage(colorsArray[0]?.color_image || product_image)
-				setImageBack(colorsArray[0]?.color_image_back)
+				setLocalImage(colorsArray[0]?.image || product_image)
+				setImage(colorsArray[0]?.image || product_image)
+				setImageBack(colorsArray[0]?.image_back)
+				setImageLeft(colorsArray[0]?.image_side_left)
+				setImageRight(colorsArray[0]?.image_side_right)
 
 			}
 
@@ -145,7 +153,7 @@ export default function ProductCustomiserCard({
 	return (
 		<li
 			onClick={cardClickHandle}
-			className={`${css.customizer__card} ${activeCardId === String(id) && String(groupId)===activeGroupId ? css.active : ''}`}
+			className={`${css.customizer__card} ${String(activeCardId) === String(id) && String(groupId)===String(activeGroupId) ? css.active : ''}`}
 			key={id}
 			id={id}
 			data-group-id={groupKey ?? null}
@@ -158,7 +166,7 @@ export default function ProductCustomiserCard({
 				<span className={css.product_title}>{product_title}</span>
 
 				<fieldset className={css.color__swatchers}>
-					{colorsArray.map(({ color, color_image,color_image_back }) => (
+					{colorsArray.map(({ color, image,image_back,image_side_left,image_side_right }) => (
 						<label key={color}>
 							<span
 								className={css.checkbox_emulator}
@@ -169,14 +177,15 @@ export default function ProductCustomiserCard({
 									e.stopPropagation()
 									setImage(e.target.value)
 									setLocalImage(e.target.value)
-									setImageBack(color_image_back)
-
+									setImageBack(image_back)
+									setImageLeft(image_side_left)
+									setImageRight(image_side_right)
 								}}
 								type="radio"
 								name={id}
 								className="visually-hidden"
-								value={color_image}
-								checked={localImage === color_image && String(groupId)===activeGroupId}
+								value={image}
+								checked={localImage === image && String(groupId)===activeGroupId}
 							/>
 						</label>
 					))}
