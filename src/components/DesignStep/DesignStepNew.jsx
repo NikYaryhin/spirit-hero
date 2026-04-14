@@ -814,10 +814,13 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 			// 🔥 якщо позиція вперлась — теж блокуємо scaling
 
-			obj.set({
-				left: newLeft,
-				top: newTop
-			});
+			if(!isClamped){
+				obj.set({
+					left: newLeft,
+					top: newTop
+				});
+			}
+
 
 			// 🔥 збереження
 			obj.customData = {
@@ -1546,7 +1549,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 				setCustomerLogos({ ...res.design })
 				setBaseDesign(
-					res.design?.designList?.flatMap((group) => {
+					res?.design[0]?.designList?.flatMap((group) => {
 						return (group?.productDesign ?? []).map((prod) => {
 
 							const logosWithImg = (prod?.design?.customerLogos ?? []).map((logo) => {
@@ -1626,16 +1629,21 @@ const DesignStepNew = forwardRef((props, ref) => {
 					}
 
 				}
+				console.log('res.design?.designList[0]::',res.design[0]?.designList)
 
-				const designData = res.design.find((value)=>value.product_group_id === +firstGroupKey && value.product_id === firstProduct.id && value.type_id===1)
+				const designDataG = res.design[0]?.designList?.find((value)=>value.minimum_group_id === +firstGroupKey)
+				console.log('designDataG::',designDataG)
+
+				const designData = designDataG?.productDesign?.find((value)=>value.product_id === firstProduct.id && value.type_id===1)
+
 				console.log('designData::',designData)
-				if(designData){
+				if(designData && designDataG){
 					const imgMap = new Map(
-						designData.customerLogosImgList.map((item) => [item.id, item.img])
+						designDataG.customerLogosImgList.map((item) => [item.id, item.img])
 					);
-					if (designData.customerLogos && Array.isArray(designData.customerLogos)) {
+					if (designData.design.customerLogos && Array.isArray(designData.design.customerLogos)) {
 						console.log('customerLogos')
-						designData.customerLogos.forEach((logoData, index) => {
+						designData.design.customerLogos.forEach((logoData, index) => {
 							const imageLogo = logoData.image || imgMap.get(logoData.id);
 
 							if (!imageLogo) return;
@@ -1671,10 +1679,10 @@ const DesignStepNew = forwardRef((props, ref) => {
 					}
 					setUploaderFiles(serverImageFiles)
 
-					if (designData.labels && Array.isArray(designData.labels)) {
+					if (designData.design.labels && Array.isArray(designData.design.labels)) {
 						console.log('labels')
 
-						const labelsData = designData.labels.map((labelData) => {
+						const labelsData = designData.design.labels.map((labelData) => {
 							const id = uuidv4();
 
 							return {
