@@ -72,7 +72,7 @@ export default function FundraisingProductCard({
 		}
 	}
 
-	const onSellAtCost = async () => {
+/*	const onSellAtCost = async () => {
 		setProductsByCategory((prev) => {
 			const newProductsByCategory = { ...prev }
 			console.log('newProductsByCategory',newProductsByCategory)
@@ -94,9 +94,40 @@ export default function FundraisingProductCard({
 		setIsFundraise(!isFundraise)
 
 		await updateFundraisingStatus(false)
-	}
+	}*/
+	const onSellAtCost = async () => {
+		setProductsByCategory((prev) => {
+			const newProductsByCategory = { ...prev };
 
-	const onFundraiseClick = async () => {
+			const current = Array.isArray(prev[categoryKey])
+				? prev[categoryKey]
+				: [];
+
+			newProductsByCategory[categoryKey] = current.filter(
+				(prod) => prod.id !== id
+			);
+
+			return newProductsByCategory;
+		});
+
+		setSellAtCostProducts((prev) => {
+			const newSellAtCost = { ...prev };
+
+			const current = Array.isArray(prev[categoryKey])
+				? prev[categoryKey]
+				: [];
+
+			newSellAtCost[categoryKey] = [product, ...current];
+
+			return newSellAtCost;
+		});
+
+		setIsFundraise((prev) => !prev);
+
+		await updateFundraisingStatus(false);
+	};
+
+	/*const onFundraiseClick = async () => {
 		setSellAtCostProducts((prev) => {
 			const dataToReturn = { ...prev }
 			dataToReturn[categoryKey] = prev[categoryKey].filter(
@@ -116,8 +147,41 @@ export default function FundraisingProductCard({
 		setIsFundraise(!isFundraise)
 
 		await updateFundraisingStatus(true)
-	}
+	}*/
+	const onFundraiseClick = async () => {
+		setSellAtCostProducts((prev) => {
+			const dataToReturn = { ...prev };
 
+			const current = Array.isArray(prev[categoryKey])
+				? prev[categoryKey]
+				: [];
+
+			dataToReturn[categoryKey] = current.filter(
+				(prod) => prod.id !== id
+			);
+
+			return dataToReturn;
+		});
+
+		setProductsByCategory((prev) => {
+			const dataToReturn = { ...prev };
+
+			const current = Array.isArray(prev[categoryKey])
+				? prev[categoryKey]
+				: [];
+
+			dataToReturn[categoryKey] = [
+				product,
+				...current,
+			];
+
+			return dataToReturn;
+		});
+
+		setIsFundraise((prev) => !prev);
+
+		await updateFundraisingStatus(true);
+	};
 	const onCheckboxChange = (e) => {
 		const { checked } = e.target
 

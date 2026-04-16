@@ -54,8 +54,8 @@ export default function CustomSelect({
 								onClick={() => handleSelect(value, quantity)}
 								tabIndex={0}
 							>
-								{currentValue === value && <Icon name="Checked" />}
 								{value}
+								{currentValue === value && <Icon name="Checked" />}
 							</li>
 						))}
 					</ul>

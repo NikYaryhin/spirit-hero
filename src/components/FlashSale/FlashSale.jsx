@@ -433,7 +433,7 @@ const FlashSale = forwardRef((props, ref) => {
 						</fieldset>
 					)}
 
-					<label className={css.checkbox}>
+				{/*	<label className={css.checkbox}>
 						<span className={css.checkbox__emulator}>
 							<svg
 								width="18"
@@ -459,7 +459,7 @@ const FlashSale = forwardRef((props, ref) => {
 							className="visually-hidden"
 							required
 						/>
-					</label>
+					</label>*/}
 				</form>
 			</details>
 

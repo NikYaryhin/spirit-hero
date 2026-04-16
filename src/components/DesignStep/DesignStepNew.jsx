@@ -649,6 +649,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 
 		fabricCanvasRef.current = fabricCanvas
+		console.log(fabricCanvasRef)
 
 		// =========================
 		// 🎯 HANDLERS
@@ -1079,6 +1080,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 
 				const img = new Image();
+
 				img.onload = () => {
 					const fabricImg = new FabricImage(img);
 
@@ -2626,7 +2628,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 		if (!canvas) return
 		const dataUrl = canvas.toDataURL({
 			format: 'png',
-			multiplier: 3
+			multiplier: 2
 		})
 
 		const link = document.createElement('a')
@@ -2728,10 +2730,11 @@ const DesignStepNew = forwardRef((props, ref) => {
 				<div className={css.settings__box}>
 					<button
 						onClick={() => {
+							downloadCanvas()
 							console.debug('CLICK')
 						}}
 						className={`${css.button} contrast_button_1`}
-						disabled
+
 					>
 						<Icon name={'Palette'} />
 						Request a custom design

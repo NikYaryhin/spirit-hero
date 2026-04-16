@@ -137,6 +137,8 @@ export default function FundraisingStepNew() {
 
 				setProductsByCategory(fundraisingMap)
 				setSellAtCostProducts(costMap)
+
+				setIsFundraiseView(!Object.keys(costMap || {}).length > 0);
 			}
 
 			setAmountProfit(!res.store?.is_percent_profit)

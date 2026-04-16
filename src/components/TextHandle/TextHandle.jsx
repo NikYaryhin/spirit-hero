@@ -127,7 +127,7 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 
 						<div className={`${styles.column}`}>
 						<span className={`${styles.input__label} ${styles.bold}`}>
-							Colour
+							Color
 						</span>
 
 							<label className={styles.color__picker}>
