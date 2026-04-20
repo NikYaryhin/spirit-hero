@@ -9,7 +9,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 	let { id, product_title, product_image, selected, params, colors,choosed_colors } = product
 
 
-	const [image, setImage] = useState(!isCatalog ? choosed_colors[0]?.color_image_logo || choosed_colors[0]?.color_image || product_image  : product_image)
+	const [image, setImage] = useState(!isCatalog ? choosed_colors[0]?.logo?.find(value=>value.type_id===1)?.image || choosed_colors[0]?.image || product_image  : product_image)
 	const [selectedColors, setSelectedColors] = useState(choosed_colors || [])
 	const [showAllColors, setShowAllColors] = useState(false)
 	const sortedColors = useMemo(() => {
@@ -49,7 +49,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 		if (!Array.isArray(activeColors) || activeColors.length === 0) {
 
 			if(isCatalog ){
-				setImage(colors[0]?.color_image_logo || colors[0]?.color_image || product_image)
+				setImage(colors[0]?.logo?.find(value=>value.type_id===1)?.image || colors[0]?.image || product_image)
 			}
 			return colors
 		}
@@ -62,7 +62,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 
 
 		if(filtered.length > 0 && isCatalog ){
-			setImage(filtered[0]?.color_image_logo || filtered[0]?.color_image || product_image)
+			setImage(filtered[0]?.logo?.find(value=>value.type_id===1)?.image || filtered[0]?.image || product_image)
 		}
 
 
@@ -100,12 +100,14 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 	}
 
 	const handleColorHover = (color) => {
-		setImage(color.color_image_logo || color.color_image || product_image)
+		console.log(color.logo?.find(value=>value.type_id===1))
+		setImage(color.logo?.find(value=>value.type_id===1)?.image || color.image || product_image)
 	}
 	function handleColorHoverLeave (){
-		setImage(selectedColors[0].color_image_logo || selectedColors[0].color_image || product_image)
+		setImage(selectedColors[0].logo?.find(value=>value.type_id===1)?.image || selectedColors[0].image || product_image)
 	}
 
+	console.log(image)
 
 	return (
 		<li className={`${css.product__item}`} key={id} id={id}>
@@ -157,7 +159,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 								<input
 									type="radio"
 									name={`color-of-${id}`}
-									value={color.color_image || ''}
+									value={color.image || ''}
 									className="visually-hidden"
 									onChange={colorSwatchHandle}
 								/>

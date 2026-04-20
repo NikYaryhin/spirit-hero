@@ -1551,12 +1551,12 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 				setCustomerLogos({ ...res.design })
 				setBaseDesign(
-					res?.design[0]?.designList?.flatMap((group) => {
+					res?.design?.designList?.flatMap((group) => {
 						return (group?.productDesign ?? []).map((prod) => {
 
 							const logosWithImg = (prod?.design?.customerLogos ?? []).map((logo) => {
 								const found = (group?.customerLogosImgList ?? []).find(
-									(imgItem) => imgItem.id === logo.id
+									(imgItem) => imgItem.id === logo.uId
 								);
 
 								return {
@@ -1631,9 +1631,9 @@ const DesignStepNew = forwardRef((props, ref) => {
 					}
 
 				}
-				console.log('res.design?.designList[0]::',res.design[0]?.designList)
+				console.log('res.design?.designList[0]::',res.design?.designList)
 
-				const designDataG = res.design[0]?.designList?.find((value)=>value.minimum_group_id === +firstGroupKey)
+				const designDataG = res.design?.designList?.find((value)=>value.minimum_group_id === +firstGroupKey)
 				console.log('designDataG::',designDataG)
 
 				const designData = designDataG?.productDesign?.find((value)=>value.product_id === firstProduct.id && value.type_id===1)
@@ -1641,12 +1641,13 @@ const DesignStepNew = forwardRef((props, ref) => {
 				console.log('designData::',designData)
 				if(designData && designDataG){
 					const imgMap = new Map(
-						designDataG.customerLogosImgList.map((item) => [item.id, item.img])
+						designDataG.customerLogosImgList.map((item) => [item.id, item.image])
 					);
+					console.log('imgMap',imgMap)
 					if (designData.design.customerLogos && Array.isArray(designData.design.customerLogos)) {
 						console.log('customerLogos')
 						designData.design.customerLogos.forEach((logoData, index) => {
-							const imageLogo = logoData.image || imgMap.get(logoData.id);
+							const imageLogo = logoData.image || imgMap.get(logoData.uId);
 
 							if (!imageLogo) return;
 							const id = uuidv4()
@@ -2537,6 +2538,29 @@ const DesignStepNew = forwardRef((props, ref) => {
 		}*/
 
 
+	}
+	const  a = {
+		design: [
+				{
+					minimum_group_id: 1,
+					customerLogosImgList: [],
+					designList:[
+						{
+							productDesign: [
+								{
+									product_id: 1,
+									location_id: 1,
+									type_id: 1,
+									design: {
+										customerLogos: [],
+										labels: []
+									}
+								}
+							]
+						}
+					]
+				}
+		]
 	}
 
 	// Функция для получения параметров логотипа
