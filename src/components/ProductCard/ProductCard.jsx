@@ -49,7 +49,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 		if (!Array.isArray(activeColors) || activeColors.length === 0) {
 
 			if(isCatalog ){
-				setImage(colors[0]?.logo?.find(value=>value.type_id===1)?.image || colors[0]?.image || product_image)
+				setImage(colors[0]?.image || product_image)
 			}
 			return colors
 		}
@@ -62,7 +62,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 
 
 		if(filtered.length > 0 && isCatalog ){
-			setImage(filtered[0]?.logo?.find(value=>value.type_id===1)?.image || filtered[0]?.image || product_image)
+			setImage(filtered[0]?.image || product_image)
 		}
 
 
@@ -100,7 +100,8 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 	}
 
 	const handleColorHover = (color) => {
-		console.log(color.logo?.find(value=>value.type_id===1))
+		console.log(color);
+
 		setImage(color.logo?.find(value=>value.type_id===1)?.image || color.image || product_image)
 	}
 	function handleColorHoverLeave (){
@@ -113,7 +114,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 		<li className={`${css.product__item}`} key={id} id={id}>
 			<span className={css.name}>{product_title}</span>
 			<div className={css.image}>
-				<img src={image} alt={product_title} loading="lazy" />
+				<img  src={`${image}?${new Date().getTime()}`} alt={product_title} loading="lazy" />
 			</div>
 
 			{/* {params && <span className={css.price}>${price}</span>} */}
