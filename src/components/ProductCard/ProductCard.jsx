@@ -9,7 +9,6 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 	let { id, product_title, product_image, selected, params, colors,choosed_colors } = product
 
 
-	const [image, setImage] = useState(!isCatalog ? choosed_colors[0]?.logo?.find(value=>value.type_id===1)?.image || choosed_colors[0]?.image || product_image  : product_image)
 	const [selectedColors, setSelectedColors] = useState(choosed_colors || [])
 	const [showAllColors, setShowAllColors] = useState(false)
 	const sortedColors = useMemo(() => {
@@ -27,6 +26,13 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 			return aSelected ? -1 : 1
 		})
 	}, [colors, selectedColors])
+	const [image, setImage] = useState(
+		!isCatalog
+			? sortedColors[0]?.logo?.find(value => value.type_id === 1)?.image ||
+			sortedColors[0]?.image ||
+			product_image
+			: product_image
+	)
 
 	const visibleColors = useMemo(() => {
 		if (showAllColors) return sortedColors
@@ -38,6 +44,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 		if (choosed_colors) {
 			setSelectedColors(choosed_colors)
 		}
+
 	}, [choosed_colors])
 	const colorSwatchHandle = (event) => {
 		const { value } = event.currentTarget
@@ -105,7 +112,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 		setImage(color.logo?.find(value=>value.type_id===1)?.image || color.image || product_image)
 	}
 	function handleColorHoverLeave (){
-		setImage(selectedColors[0].logo?.find(value=>value.type_id===1)?.image || selectedColors[0].image || product_image)
+		setImage(sortedColors[0].logo?.find(value=>value.type_id===1)?.image || sortedColors[0].image || product_image)
 	}
 
 	console.log(image)
