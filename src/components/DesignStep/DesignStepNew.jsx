@@ -1298,17 +1298,18 @@ const DesignStepNew = forwardRef((props, ref) => {
 				imgElement.src = fileData.url
 
 				imgElement.onload = () => {
+					const width1 = fileData.width !== undefined ? fileData.width : areaBox.width
+					const height1 = fileData.height !== undefined ? fileData.height : areaBox.height
 					const scale = Math.min(
-						areaBox.width / imgElement.width,
-						areaBox.height / imgElement.height
+						width1/ imgElement.width,
+						height1 / imgElement.height
 					)
 
 
 					const left = fileData.x !== undefined ? fileData.x : areaBox.left
 					const top = fileData.y !== undefined ? fileData.y : areaBox.top
 
-					const finalWidth = imgElement.width * scale
-					const finalHeight = imgElement.height * scale
+
 
 					const fabricImg = new FabricImage(imgElement, {
 						left,
