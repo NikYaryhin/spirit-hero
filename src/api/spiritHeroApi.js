@@ -68,6 +68,12 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async getCheckStoreImageProcessing(store_id) {
+		const { data } = await this.http.get(
+			`/api/builder/check-store-image-processing?store_id=${store_id}`,
+		)
+		return data
+	}
 	async getStore(store_id) {
 		const { data } = await this.http.get(
 			`/api/builder/get-store?store_id=${store_id}`,

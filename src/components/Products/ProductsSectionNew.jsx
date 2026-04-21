@@ -18,6 +18,8 @@ import Icon from '@components/Icon'
 export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 	const dispatch = useDispatch()
 	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [isProcessingDesign, setIsProcessingDesign] = useState(false);
+	const [successMessage, setSuccessMessage] = useState(false);
 
 	// --- States ---
 	const [catalogGroups, setCatalogGroups] = useState([])
@@ -68,6 +70,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 				setFiltersData(productsRes.filters)
 				setMyStoreGroups(storeRes?.minimum_groups || [])
 				dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
+				setIsCatalog(!storeRes.minimum_groups.length>0)
 				// Авто-фільтрація по кольорах магазину
 				if (storeRes.store?.color && productsRes.filters?.colorFamilies) {
 					const storeColors = storeRes.store.color.map(c => c.toUpperCase())
@@ -87,6 +90,63 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		}
 		loadData()
 	}, [storeIdFromQuery])
+
+
+	useEffect(() => {
+		let interval;
+		let reloadTimeout;
+		let successTimeout;
+		let firstRequest = true;
+		let wasProcessingBefore = false;
+
+		const checkProcessing = async () => {
+			try {
+				const response = await spiritHeroApi.getCheckStoreImageProcessing(storeIdFromQuery);
+				const isDone = response?.process?.status === 'done';
+
+				// якщо перший запит і вже done -> просто завершити без повідомлень
+				if (firstRequest && isDone) {
+					setIsProcessingDesign(true);
+					clearInterval(interval);
+					firstRequest = false;
+					return;
+				}
+
+				// якщо раніше був процесинг і тепер done
+				if (!firstRequest && wasProcessingBefore && isDone) {
+					setIsProcessingDesign(true);
+					clearInterval(interval);
+					setSuccessMessage(true);
+					reloadTimeout = setTimeout(() => {
+						window.location.reload();
+					}, 2000);
+
+					return;
+				}
+
+				// ще обробляється
+				if (!isDone) {
+					setIsProcessingDesign(false);
+					wasProcessingBefore = true;
+				}
+
+				firstRequest = false;
+			} catch (error) {
+				clearInterval(interval);
+				console.error(error);
+			}
+		};
+
+		checkProcessing();
+
+		interval = setInterval(checkProcessing, 15000);
+
+		return () => {
+			clearInterval(interval);
+			clearTimeout(successTimeout);
+			clearTimeout(reloadTimeout);
+		};
+	}, []);
 
 	// --- Logic: Filtering & Sorting ---
 	const currentGroups = isCatalog ? catalogGroups : myStoreGroups
@@ -454,6 +514,18 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 				{totalSelectedCount > 0 && <h3 className={css['products__catalog--top__label']}>Selected {totalSelectedCount} products</h3>}
 
 				<div className={css['buttons__box']}>
+					{!isProcessingDesign && (
+						<div className={css['processing_text']}>
+							Please wait a moment. The logos are being applied.
+							<span className={css['spinner']}></span>
+						</div>
+					)}
+
+					{successMessage && (
+						<div className={css['processing_text']}>
+							The logos have been successfully applied.
+						</div>
+					)}
 					<button className="light_button_1" onClick={handleSelectAll}>Select All</button>
 					{isCatalog ? (
 						<button className="contrast_button_1" onClick={addToStoreAction} disabled={totalSelectedCount === 0}>
