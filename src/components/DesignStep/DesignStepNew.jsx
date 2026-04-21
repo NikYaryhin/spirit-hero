@@ -32,6 +32,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 	const [popup, setPopup] = useState(false)
 
 	const [isLoading, setIsLoading] = useState(true)
+	const [isLoadingD, setIsLoadingD] = useState(false)
+
 	const [productsByCategory, setProductsByCategory] = useState(null)
 	const [activeCardId, setActiveCardId] = useState(null)
 	const [activeGroupId, setActiveGroupId] = useState(null)
@@ -1551,6 +1553,31 @@ const DesignStepNew = forwardRef((props, ref) => {
 				console.debug('spiritHeroApi.getStore DESIGN', res)
 
 				setCustomerLogos({ ...res.design })
+				const  aaa = res?.design?.designList?.flatMap((group) => {
+					return (group?.productDesign ?? []).map((prod) => {
+
+						const logosWithImg = (prod?.design?.customerLogos ?? []).map((logo) => {
+							const found = (group?.customerLogosImgList ?? []).find(
+								(imgItem) => imgItem.id === logo.uId
+							);
+
+							return {
+								...logo,
+								image: found ? (found.image || found.img) : null,
+							};
+						});
+
+						return {
+							product_group_id: group?.minimum_group_id,
+							product_id: prod?.product_id,
+							type_id: prod?.type_id,
+							location_id: prod?.location_id || 1,
+							customerLogos: logosWithImg,
+							labels: prod?.design?.labels ?? [],
+						};
+					});
+				}) ?? []
+				console.log('init aaa',aaa)
 				setBaseDesign(
 					res?.design?.designList?.flatMap((group) => {
 						return (group?.productDesign ?? []).map((prod) => {
@@ -1653,7 +1680,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 							if (!imageLogo) return;
 							const id = uuidv4()
 							loadedElements.push({
-								id,
+								id:logoData.uId || id,
 								type: 'image',
 								x: logoData.x || 30,
 								y: logoData.y || 30,
@@ -1675,7 +1702,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 								width: logoData.width,
 								height: logoData.height,
 								rotation:logoData.rotation || 0,
-								id
+								id:logoData.uId || id
 							}
 
 							serverImageFiles.push(serverFile)
@@ -1690,7 +1717,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 							const id = uuidv4();
 
 							return {
-								id,
+								id:labelData.uId || id,
 							text: labelData.text || '',
 							x: labelData.x,
 							y: labelData.y,
@@ -2097,8 +2124,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 	}
 
 	const syncCanvasToGroupId = (groupId,productId,type='d',typeId) => {
-		console.log('type',type)
-		console.log('typeId',typeId)
+
 
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
@@ -2142,6 +2168,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 			}
 		})
 
+		console.log('baseDesign 111 ',baseDesign)
 		const newState = (() => {
 			let found = false;
 
@@ -2186,6 +2213,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 						i.product_id === product.id &&
 					  i.type_id === +typeId
 				)
+				console.log("item",item)
 
 				const newCustomerLogos = mapLogosForProduct(objects, product.id,groupId,type,typeId)
 				const newLabels = mapLabelsForProduct(objects, product.id, canvas,groupId,type,typeId)
@@ -2223,7 +2251,9 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 				allLogoIds.forEach((uId) => {
 					if (type === 'Apply All' || !existingLogosById[uId]) {{
+						console.log('allLogoIds uId',uId)
 						existingLogosById[uId] = newLogosById[uId]
+
 					}
 					}
 				})
@@ -2243,6 +2273,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 				allLabelIds.forEach((uId) => {
 					if (type === 'Apply All' || !existingLabelsById[uId]) {
+						console.log('allLabelIds uId',uId)
+
 						existingLabelsById[uId] = newLabelsById[uId]
 					}
 				})
@@ -2540,34 +2572,12 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 
 	}
-	const  a = {
-		design: [
-				{
-					minimum_group_id: 1,
-					customerLogosImgList: [],
-					designList:[
-						{
-							productDesign: [
-								{
-									product_id: 1,
-									location_id: 1,
-									type_id: 1,
-									design: {
-										customerLogos: [],
-										labels: []
-									}
-								}
-							]
-						}
-					]
-				}
-		]
-	}
+
 
 	// Функция для получения параметров логотипа
 	const getLogoParameters = async () => {
 		try {
-			setIsLoading(true)
+			setIsLoadingD(true)
 			const  syncData = syncCanvasToGroupId(activeGroupId,activeCardId,'d',activeTypeId)
 			console.log('syncData',syncData)
 			const designList = Object.values(syncData.reduce((acc, item) => {
@@ -2599,7 +2609,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 						// Видаляємо image, залишаємо все інше
 						customerLogos: item.customerLogos.map(({ image, ...rest }) => rest),
 						// Видаляємо uId, залишаємо все інше
-						labels: item.labels.map(({ uId, ...rest }) => rest)
+						labels: item.labels.map(({ ...rest }) => rest)
 					}
 				});
 
@@ -2638,7 +2648,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 			console.error('Error spiritHeroApi.saveDesignForGroups:', error)
 			return null
 		} finally {
-			setIsLoading(false)
+			setIsLoadingD(false)
 			setIsModalOpen(true)
 		}
 	}
@@ -2688,7 +2698,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 	}
 	return (
 		<>
-			{isLoading && <Loader />}
+			{(isLoading || isLoadingD) && <Loader />}
 			<div className={css.design_section}>
 				<div className={css.image__box}>
 					<canvas ref={canvasRef} />
@@ -2755,7 +2765,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 				<div className={css.settings__box}>
 					<button
 						onClick={() => {
-							downloadCanvas()
+							//downloadCanvas()
 							console.debug('CLICK')
 						}}
 						className={`${css.button} contrast_button_1`}
