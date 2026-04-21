@@ -23,7 +23,7 @@
 
 		.fundraising__modal__subtitle{
 			margin-bottom: 3.2rem;
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.47;
 			font-weight: 400;
 			letter-spacing: normal;
@@ -33,7 +33,7 @@
 		.fundraising__modal__button{
 			width: 100%;
 
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.47;
 			font-weight: 400;
 			color: #FCFCFC;
@@ -52,7 +52,7 @@
 .fundraising__modal__button__cancel{
 	width: 100%;
 
-	font-size: 1.4rem;
+	font-size: 1.6rem;
 	line-height: 1.47;
 	font-weight: 400;
 	color: #4E008E;

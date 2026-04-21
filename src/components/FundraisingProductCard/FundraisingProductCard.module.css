@@ -37,7 +37,7 @@
 		}
 
 		.product__title {
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.57;
 		}
 	}
@@ -51,7 +51,7 @@
 			right: 1.6rem;
 			translate: 0 -50%;
 
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.57;
 			color: #373239;
 		}
@@ -67,7 +67,7 @@
 
 		background-color: #FCFCFC;
 
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.57;
 		color: #373239;
 		text-align: right;
@@ -94,7 +94,7 @@
 	.price {
 		width: 5em;
 
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.57;
 		text-align: center;
 	}
@@ -102,7 +102,7 @@
 	.selliing__price {
 		width: 5em;
 
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.28;
 		font-weight: 700;
 		color: #AA0003;
@@ -113,7 +113,7 @@
 		padding: 0;
 		border: unset;
 
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.57;
 		color: #4E008E;
 		text-decoration: underline;

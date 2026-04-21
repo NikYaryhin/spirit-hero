@@ -3,7 +3,7 @@
 	.image__tool--title {
 		margin-bottom: 0.8rem;
 
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.43;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -17,7 +17,7 @@
 		margin-bottom: 1.6rem;
 		padding-left: 1.8rem;
 
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.57;
 		color: #605767;
 
@@ -178,7 +178,7 @@
 	padding: 0 0.8rem;
 	border: none;
 
-	font-size: 1.4rem;
+	font-size: 1.6rem;
 	line-height: 1.57;
 
 	cursor: pointer;
@@ -204,7 +204,7 @@
 	align-items: center;
 	gap: 1.6rem;
 
-	font-size: 1.4rem;
+	font-size: 1.6rem;
 	line-height: 1.57;
 
 	strong {

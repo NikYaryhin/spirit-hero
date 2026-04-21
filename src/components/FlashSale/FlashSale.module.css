@@ -26,7 +26,7 @@
 		}
 
 		.flash--sale__sign {
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.57;
 		}
 
@@ -34,7 +34,7 @@
 			padding: 1.2rem 1.6rem;
 			border-radius: 1.2rem;
 
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.57;
 			color: #FCFCFC;
 			text-wrap: nowrap;
@@ -87,7 +87,7 @@
 				border-radius: 50%;
 				border: 1px solid #9569BA;
 
-				font-size: 1.4rem;
+				font-size: 1.6rem;
 				font-weight: 400;
 				color: #4E008E;
 
@@ -200,7 +200,7 @@
 					width: 100%;
 					margin-bottom: 1.6rem;
 
-					font-size: 1.4rem;
+					font-size: 1.6rem;
 					line-height: 1.57;
 					text-align: center;
 				}
@@ -215,7 +215,7 @@
 					border-radius: 1.2rem;
 					border: 1px solid #4E008E;
 
-					font-size: 1.4rem;
+					font-size: 1.6rem;
 					line-height: 1.57;
 
 					cursor: pointer;
@@ -295,7 +295,7 @@
 					span {
 						text-decoration: underline;
 
-						font-size: 1.4rem;
+						font-size: 1.6rem;
 					}
 				}
 			}
@@ -305,7 +305,7 @@
 				align-items: center;
 				gap: 0.8rem;
 
-				font-size: 1.4rem;
+				font-size: 1.6rem;
 				line-height: 1.57;
 				cursor: pointer;
 
@@ -356,7 +356,7 @@
 				align-items: center;
 				gap: 0.8rem;
 
-				font-size: 1.4rem;
+				font-size: 1.6rem;
 				line-height: 1.57;
 			}
 		}
@@ -365,7 +365,7 @@
 	         display: flex;
 			 align-items: center;
 	         gap: 0.8rem;
-	         font-size: 1.4rem;
+	         font-size: 1.6rem;
 	         line-height: 1.57;
 	         cursor: pointer;
 		margin-top:10px;
@@ -453,7 +453,7 @@ svg {
 
 			.on--demand__label {
 
-				font-size: 1.4rem;
+				font-size: 1.6rem;
 				line-height: 1.28;
 				font-weight: 700;
 			}
@@ -467,7 +467,7 @@ svg {
 				padding-left: 1.8rem;
 
 				li {
-					font-size: 1.4rem;
+					font-size: 1.6rem;
 					line-height: 1.57;
 
 					list-style-type: disc;
@@ -482,7 +482,7 @@ svg {
 		gap: 0.8rem;
 
 		.input--label {
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.55;
 			font-weight: 400;
 			color: #4B4B4B;
@@ -499,7 +499,7 @@ svg {
 			border: 1px solid #9B9AA5;
 
 
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.55;
 			color: #605767;
 

@@ -30,7 +30,7 @@
 			justify-content: center;
 			gap: 0.8rem;
 
-			font-size: clamp(1rem, 1dvw, 1.4rem);
+			font-size: clamp(1rem, 1dvw, 1.6rem);
 			line-height: 1.28;
 			font-weight: 700;
 			color: #CACACA;
@@ -91,7 +91,7 @@
 			border-radius: 1.2rem;
 			border: 1px solid transparent;
 
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.5;
 			font-weight: 400;
 			color: #FCFCFC;
@@ -118,7 +118,7 @@
 				padding: 1rem 1.8rem;
 				border-radius: 1.2rem;
 
-				font-size: 1.4rem;
+				font-size: 1.6rem;
 				line-height: 1.5;
 				font-weight: 400;
 				color: #373239;

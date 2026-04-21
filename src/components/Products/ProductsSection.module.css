@@ -23,7 +23,7 @@ section:has(.products__section) {
 			border-radius: 2.2rem 2.2rem 0rem 0rem;
 			border: 1px solid #CACACA;
 
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.57;
 			color: #605767;
 
@@ -112,7 +112,7 @@ section:has(.products__section) {
 			align-items: center;
 			column-gap: 2.4rem;
 
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.57;
 
 			.sorting__select {

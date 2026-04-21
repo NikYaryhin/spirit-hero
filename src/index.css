@@ -51,7 +51,7 @@ input {
 
   background-color: #FCFCFC;
 
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   line-height: 1.57;
   color: #373239;
 
@@ -181,7 +181,7 @@ h1, h2, h3, h4, h5, h6, p {
   border-radius: 1.2rem;
   border: 1px solid #4E008E;
 
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   line-height: 1.57;
   color: #373239;
 }
@@ -204,7 +204,7 @@ h1, h2, h3, h4, h5, h6, p {
   padding: 1rem 1.6rem;
   border-radius: 1.2rem;
 
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   line-height: 1.57;
   color: #FCFCFC;
   text-align: center;
@@ -314,7 +314,7 @@ h1, h2, h3, h4, h5, h6, p {
   }
 
   .rdp-day_button {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     line-height: 1.33;
     font-weight: 400;
   }

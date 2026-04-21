@@ -18,9 +18,9 @@
 			justify-content: space-between;
 
 			padding: 0 0;
-			/* 
+			/*
 			padding: 2.5rem 5.6rem;
-			background-color: #F1EEF4; 
+			background-color: #F1EEF4;
 			*/
 
 			.fundraising__search--form {
@@ -31,7 +31,7 @@
 					width: 34.3rem;
 					border: 1px solid #605767;
 
-					font-size: 1.4rem;
+					font-size: 1.6rem;
 					line-height: 1.57;
 					color: #605767;
 
@@ -80,7 +80,7 @@
 				border-radius: 0.6rem;
 				box-sizing: border-box;
 
-				font-size: 1.4rem;
+				font-size: 1.6rem;
 				line-height: 1.57;
 				font-weight: 400;
 				color: #373239;
@@ -121,11 +121,11 @@
 						justify-content: center;
 						gap: 0.8rem;
 
-						padding: 1rem 1.4rem;
+						padding: 1rem 1.6rem;
 						border-radius: 2.2rem 2.2rem 0rem 0rem;
 						border: 1px solid #CACACA;
 
-						font-size: 1.4rem;
+						font-size: 1.6rem;
 						line-height: 1.57;
 						color: #605767;
 
@@ -208,7 +208,7 @@
 
 					padding-bottom: 1.2rem;
 
-					font-size: 1.4rem;
+					font-size: 1.6rem;
 					line-height: 1.57;
 
 					select {
@@ -216,7 +216,7 @@
 						border-radius: 1.2rem;
 						padding: 1rem 1.6rem;
 
-						font-size: 1.4rem;
+						font-size: 1.6rem;
 						line-height: 1.57;
 						color: #605767;
 						background-color: transparent;
@@ -297,7 +297,7 @@
 				padding: 0;
 				border: unset;
 
-				font-size: 1.4rem;
+				font-size: 1.6rem;
 				line-height: 1.57;
 
 				&.row {
@@ -316,7 +316,7 @@
 					border-radius: 2.4rem;
 					border: 1px solid #CACACA;
 
-					font-size: 1.4rem;
+					font-size: 1.6rem;
 					line-height: 1.57;
 					box-sizing: border-box;
 

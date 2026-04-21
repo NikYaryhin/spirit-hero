@@ -78,14 +78,14 @@
 		margin-bottom: 0.6rem;
 
 		font-weight: 700;
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.3;
 	}
 
 	.link {
 		margin-bottom: 1.6rem;
 
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.57;
 		color: #4E008E;
 		text-decoration: underline;
@@ -144,7 +144,7 @@
 			border-radius: 1.2rem;
 			border: 1px solid #9569BA;
 
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.57;
 			color: white;
 			background-color: #2E2C30;
@@ -163,7 +163,7 @@
 
 		.features {
 			width: fit-content;
-			font-size: 1.4rem;
+			font-size: 1.6rem;
 			line-height: 1.3;
 			font-weight: 700;
 

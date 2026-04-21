@@ -19,7 +19,7 @@
 	flex-direction: column;
 	align-items: center;
 
-	font-size: 1.4rem;
+	font-size: 1.6rem;
 	line-height: 1.57;
 	font-weight: 400;
 	letter-spacing: normal;
@@ -40,7 +40,7 @@
 		align-items: center;
 		gap: 1rem;
 
-		font-size: 1.4rem;
+		font-size: 1.6rem;
 		line-height: 1.2;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -51,7 +51,7 @@
 			.checkbox__emulator{
 				position: relative;
 				border-color: #4E008E;
-	
+
 				&::before {
 					content: '';
 					position: absolute;
@@ -81,7 +81,7 @@
 .modal__button__continue{
 	width: 100%;
 
-	font-size: 1.4rem;
+	font-size: 1.6rem;
 	line-height: 1.47;
 	font-weight: 400;
 	color: #FCFCFC;
@@ -98,7 +98,7 @@
 .modal__button__cancel{
 	width: 100%;
 
-	font-size: 1.4rem;
+	font-size: 1.6rem;
 	line-height: 1.47;
 	font-weight: 400;
 	color: #4E008E;
