@@ -117,27 +117,22 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						View Minimum Guide
 					</Link>
 
-					<div className={css.text__wrap}>
+					<div className={css.text__wrap_new}>
 						If minimums are not met, you have two options:
-						<p className={css.text}>
-							<span>Extend your store to allow more time for orders</span>
-							<span>
-								Purchase the remaining quantity to reach the minimum.
-							</span>
-						</p>
+						<ul className={css.text_new}>
+							<li>Extend your store to allow more time for orders</li>
+							<li>Purchase the remaining quantity to reach the minimum.</li>
+						</ul>
 					</div>
 
-					<div className={css.text__wrap}>
-						Important Notes:
-						<p className={css.text}>
-							<span>1. Orders are custom-made and cannot be canceled or refunded</span>
-							<span>
-								2. Flash sale pricing is based on the number of ink colors.
-							</span>
-							<span>
-								3. $1 will be added for each additional ink color
-							</span>
-						</p>
+					<div className={css.text__wrap_new}>
+						<strong>Important Notes:</strong>
+
+						<ul className={css.text_new}>
+							<li>Orders are custom-made and cannot be canceled or refunded</li>
+							<li>Flash sale pricing is based on the number of ink colors</li>
+							<li>$1 will be added for each additional ink color</li>
+						</ul>
 					</div>
 
 
