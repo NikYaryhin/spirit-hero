@@ -1792,8 +1792,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 
 
-				const locationList = product?.logo_area?.find(value => value.type_id===+typeId)
-
+				const locationList = product?.logo_area?.filter(value => value.type_id===+typeId)
+				console.log("locationList",locationList);
 				if (locationList && locationList.length > 0) {
 					const ar =
 						locationList.find(
@@ -1803,6 +1803,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 						) ||
 						locationList[0]
 
+					console.log(ar);
 					const ar1 = ar?.logo_area
 					locId=ar.location_id
 
@@ -2285,7 +2286,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 				const locationList =	product?.logo_area.filter(value => value.type_id===1)
 
-				console.log('locationList onCardClick',locationList)
+				console.log('locationList onCardClick else',locationList)
 
 				setLocationList(locationList)
 
