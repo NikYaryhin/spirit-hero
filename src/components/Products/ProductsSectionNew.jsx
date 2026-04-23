@@ -102,7 +102,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		const checkProcessing = async () => {
 			try {
 				const response = await spiritHeroApi.getCheckStoreImageProcessing(storeIdFromQuery);
-				const isDone = response?.process?.status === 'done';
+				const isDone = response?.process?.status === 'done'  || response?.process===null;
 
 				// якщо перший запит і вже done -> просто завершити без повідомлень
 				if (firstRequest && isDone) {
@@ -528,7 +528,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 					)}
 					<button className="light_button_1" onClick={handleSelectAll}>Select All</button>
 					{isCatalog ? (
-						<button className="contrast_button_1" onClick={addToStoreAction} disabled={totalSelectedCount === 0}>
+						<button className="contrast_button_1" onClick={addToStoreAction} disabled={(totalSelectedCount === 0 || (!Array.isArray(activeFilters.colorFamilies) || activeFilters.colorFamilies.length === 0))}>
 							<Lightning /> Add to my store
 						</button>
 					) : (

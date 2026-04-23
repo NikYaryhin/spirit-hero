@@ -3,6 +3,7 @@ import Icon from '../Icon'
 import css from './ProductCard.module.css'
 import previewImage from '@/assets/SpiritHero__Preloader.png'
 import { useSelector } from 'react-redux'
+import { showToast } from '@/helpers/toastCall'
 
 export default function sendColorsToBackendProductCard({ product, isFlashSale, inputHandle, activeColors,isCatalog,minimalGroup,sendColorsToBackend }) {
 	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
@@ -92,7 +93,10 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 		} else {
 			updated = [...(selectedColors || []), color]
 		}
-
+		if(updated.length === 0){
+			showToast('You cannot delete the last remaining color', 'error')
+			return ;
+		}
 		// 🔥 ОЦЕ ГОЛОВНЕ — одразу UI update
 		setSelectedColors(updated)
 
@@ -153,7 +157,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 				/>
 			</label>
 
-			<fieldset className={css.fieldset}>
+			{/*<fieldset className={css.fieldset}>
 				{isCatalog && filteredColors  &&
 					filteredColors.map((color) => {
 						return (
@@ -174,33 +178,57 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 							</label>
 						)
 					})}
-			</fieldset>
-			{/*{!isCatalog && <div className={css.colors__bottom}>
-				{colors?.map((color) => {
-					const isActive = isColorActive(color.id)
+			</fieldset>*/}
+			{isCatalog && (
+				<div className={css.colors__bottom}>
+					{(showAllColors ? filteredColors : filteredColors.slice(0, 5)).map(
+						(color) => {
+							const preview =
+								color.image ||
+								product_image
 
-					return (
+							const isActive = image === preview
+
+							return (
+								<div
+									key={color.id}
+									className={`${css.color__item} ${
+										isActive ? css.active : ""
+									}`}
+									onClick={() => setImage(preview)}
+									onMouseEnter={() => setImage(preview)}
+									onMouseLeave={() =>
+										setImage(
+
+											filteredColors[0]?.image ||
+											product_image
+										)
+									}
+								>
+            <span
+							className={css.color__circle}
+							style={{ backgroundColor: color.color }}
+						/>
+
+									{/*{isActive && <span className={css.remove}>✓</span>}*/}
+								</div>
+							)
+						}
+					)}
+
+					{!showAllColors && filteredColors.length > 5 && (
 						<div
-							key={color.id}
-							className={`${css.color__item} ${
-								isActive ? css.active : ''
-							}`}
-							onClick={() => toggleColor(color)}
-							onMouseEnter={() => handleColorHover(color)}
-							onMouseLeave={handleColorHoverLeave}
-
-
+							className={`${css.color__item} ${css.more}`}
+							onClick={() => setShowAllColors(true)}
 						>
-				<span
-					className={css.color__circle}
-					style={{ backgroundColor: color.color }}
-				/>
-
-							{isActive && <span className={css.remove}>✕</span>}
+        <span className={css.color__circle}>
+          +{filteredColors.length - 5}
+        </span>
 						</div>
-					)
-				})}
-			</div>}*/}
+					)}
+				</div>
+			)}
+
 			{!isCatalog && (
 				<div className={css.colors__bottom}>
 					{visibleColors.map((color) => {

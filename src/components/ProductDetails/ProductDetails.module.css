@@ -80,7 +80,7 @@
 
 	li {
 		max-width: 30rem;
-		width: calc(100% / 5);
+		width: calc(100% / 4);
 		box-sizing: border-box;
 	}
 }
