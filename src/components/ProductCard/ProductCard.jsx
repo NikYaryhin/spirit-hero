@@ -123,13 +123,13 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 
 	return (
 		<li className={`${css.product__item}`} key={id} id={id}>
-			<span className={css.name}>{product_title}</span>
 			<div className={css.image}>
 				<img  src={`${image}?${new Date().getTime()}`} alt={product_title} loading="lazy" />
 			</div>
-
+			<span className={css.name}>{product_title}</span>
 			{/* {params && <span className={css.price}>${price}</span>} */}
 			<div className={css.price}>
+
 				{isFlashSale ? (
 					<>
 						<span className={css.flash__price}>
@@ -142,6 +142,10 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 				) : (
 					<span className={css.price}>${(+params.on_demand_price + colorPrice).toFixed(2)}</span>
 				)}
+			</div>
+
+			<div className={css.best_seller}>
+				Best Seller
 			</div>
 
 			<label className={css.label} title={product_title}>
@@ -157,28 +161,6 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 				/>
 			</label>
 
-			{/*<fieldset className={css.fieldset}>
-				{isCatalog && filteredColors  &&
-					filteredColors.map((color) => {
-						return (
-							<label key={color.id}>
-								<span className={css.checkbox__emulator}>
-									<span
-										className={css.checkbox__emulator__color}
-										style={{ backgroundColor: `${color.color}` }}
-									></span>
-								</span>
-								<input
-									type="radio"
-									name={`color-of-${id}`}
-									value={color.image || ''}
-									className="visually-hidden"
-									onChange={colorSwatchHandle}
-								/>
-							</label>
-						)
-					})}
-			</fieldset>*/}
 			{isCatalog && (
 				<div className={css.colors__bottom}>
 					{(showAllColors ? filteredColors : filteredColors.slice(0, 5)).map(

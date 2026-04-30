@@ -15,8 +15,9 @@
     }
 .applyAllBtn {
 	position: absolute;
-	top: 10px;
-	right: 10px;
+	top: 300px;
+	right: 16px;
+
 
 	padding: 6px 12px;
 	background: #4E008E;

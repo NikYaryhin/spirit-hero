@@ -29,6 +29,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 	const [activeTypeId, setActiveTypeId] = useState(1)
 
 	const [customizerType, setCustomizerType] = useState(null)
+	const [selected, setSelected] = useState(false)
+
 	const [popup, setPopup] = useState(false)
 
 	const [isLoading, setIsLoading] = useState(true)
@@ -378,11 +380,14 @@ const DesignStepNew = forwardRef((props, ref) => {
 				setCustomizerType('image')
 				setSelectedTextObject(null)
 			}
+			setSelected(true)
 		}
 
 		const handleSelectionCleared = () => {
 			console.log('handleSelectionCleared')
 			setSelectedTextObject(null)
+			setSelected(false)
+
 		}
 
 		const handleRotating = (e) => {
@@ -644,6 +649,38 @@ const DesignStepNew = forwardRef((props, ref) => {
 		updateBackground();
 	}, [image,activeSide]);
 
+	const alignImageToTopCenter = () => {
+		const canvas = fabricCanvasRef.current;
+		const area = currentAreaRef2.current;
+
+		if (!canvas || !area) return;
+
+		const activeObj = canvas.getActiveObject();
+		if (!activeObj) return;
+
+		area.setCoords();
+		const areaBounds = area.getBoundingRect(true);
+
+		const objWidth = activeObj.getScaledWidth();
+		const objHeight = activeObj.getScaledHeight();
+
+		// По горизонталі — центр area
+		const newLeft = areaBounds.left + areaBounds.width / 2;
+
+		// По вертикалі — верхній край area + половина висоти об'єкта
+		// (бо origin = center)
+		const newTop = areaBounds.top + objHeight / 2;
+
+		activeObj.set({
+			left: newLeft,
+			top: newTop,
+			originX: 'center',
+			originY: 'center',
+		});
+
+		activeObj.setCoords();
+		canvas.renderAll();
+	};
 	useEffect(() => {
 		console.log('canvas area')
 		const canvas = fabricCanvasRef.current;
@@ -857,8 +894,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 						lockRotation: false,
 						lockUniScaling: false,
 						lockScalingFlip: true,
-						lockMovementX: true,
-						lockMovementY: true,
+					/*	lockMovementX: true,
+						lockMovementY: true,*/
 					})
 
 					fabricImg.set({
@@ -981,8 +1018,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 					lockScalingFlip: true,
 					lockUniScaling: false,
 // заборонити рухати
-					lockMovementX: true,
-					lockMovementY: true,
+				/*	lockMovementX: true,
+					lockMovementY: true,*/
 				})
 
 				// Скрываем ненужные контролы
@@ -1286,7 +1323,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 					const imgMap = new Map(
 						designDataG.customerLogosImgList.map((item) => [item.id, item.image])
 					);
-					console.log('imgMap',imgMap)
 					if (designData.design.customerLogos && Array.isArray(designData.design.customerLogos)) {
 						console.log('customerLogos')
 						designData.design.customerLogos.forEach((logoData, index) => {
@@ -2741,12 +2777,11 @@ const DesignStepNew = forwardRef((props, ref) => {
 			<div className={css.design_section}>
 				<div className={css.image__box}>
 					<canvas ref={canvasRef} />
-			{/*		<button className={css.applyAllBtn} onClick={() => {
-						console.debug('Apply All')
-						syncCanvasToGroupId(activeGroupId,activeCardId,'Apply All',activeTypeId)
-					}}>
-						Apply All
-					</button>*/}
+
+					{!selected || <button className={css.applyAllBtn} onClick={alignImageToTopCenter}>
+						Center
+					</button> }
+
 
 					{/* Новий блок з квадратиками всередині image__box */}
 					<div className={css.sideControls}>
@@ -2980,8 +3015,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 											borderColor: '#4E008E',
 											borderScaleFactor: 2,
 											transparentCorners: false,
-											lockMovementX: true,
-											lockMovementY: true,
+									/*		lockMovementX: true,
+											lockMovementY: true,*/
 										})
 
 										// =========================

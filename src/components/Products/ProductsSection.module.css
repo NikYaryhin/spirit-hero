@@ -181,7 +181,7 @@ section:has(.products__section) {
 		}
 
 		.products_filters {
-			flex: 0.25;
+			flex: 0.20;
 			display: flex;
 			flex-direction: column;
 			gap: 1.6rem;
@@ -192,7 +192,7 @@ section:has(.products__section) {
 		}
 
 		.products__groups__list{
-			flex: 0.75;
+			flex: 0.80;
 			display: flex;
 			flex-direction: column;
 		}
