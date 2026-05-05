@@ -19,13 +19,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 			(selectedColors || []).map((c) => String(c.id))
 		)
 
-		return [...colors].sort((a, b) => {
-			const aSelected = selectedSet.has(String(a.id))
-			const bSelected = selectedSet.has(String(b.id))
-
-			if (aSelected === bSelected) return 0
-			return aSelected ? -1 : 1
-		})
+		return [...colors]
 	}, [colors, selectedColors])
 	const [image, setImage] = useState(
 		!isCatalog
