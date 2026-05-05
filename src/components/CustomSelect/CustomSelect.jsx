@@ -1,6 +1,6 @@
 import Icon from '../Icon'
 import css from './CustomSelect.module.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function CustomSelect({
 	name,
@@ -11,7 +11,7 @@ export default function CustomSelect({
 																			 onClose
 }) {
 	// const initial = values && values.length > 0 ? values[0].value : null
-
+	const detailsRef = useRef(null)
 	const [currentValue, setCurrentValue] = useState(null)
 	useEffect(() => {
 		const item = values.find((item) => item.quantity === +initialValue)
@@ -22,11 +22,13 @@ export default function CustomSelect({
 	const handleSelect = (value, quantity) => {
 		setCurrentValue(value)
 		setColorCount(quantity)
-		onClose()
+		if (detailsRef.current) {
+			detailsRef.current.open = false
+		}
 	}
 
 	return (
-		<details className={css.custom__select} name={name}>
+		<details ref={detailsRef} className={css.custom__select} name={name}>
 			<summary className={css.current__value}>
 				{currentValue}
 
