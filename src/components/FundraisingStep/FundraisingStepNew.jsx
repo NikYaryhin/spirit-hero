@@ -256,33 +256,35 @@ export default function FundraisingStepNew() {
 							</button>
 						</div>
 
-						<div className={css['fundraising__head--buttons__box']}>
-							<button
-								className={`${css.delete__button} light_button_2`}
-								onClick={deleteProducts}
-								disabled={selectedProducts.length === 0}
-							>
-								Delete
-							</button>
+						<div className={css.controls__group}>
+							<div className={css['fundraising__head--buttons__box']}>
+								<button
+									className={`${css.delete__button} light_button_2`}
+									onClick={deleteProducts}
+									disabled={selectedProducts.length === 0}
+								>
+									Delete
+								</button>
 
-							<button
-								onClick={() => moveProducts(!isFundraiseView)}
-								className={`${css.change__category__button} contrast_button_1`}
-								disabled={selectedProducts.length === 0}
-							>
-								<Icon name={'Coins'} />
-								Move to {isFundraiseView ? 'Sell at cost' : 'Fundraise'}
-							</button>
-						</div>
+								<button
+									onClick={() => moveProducts(!isFundraiseView)}
+									className={`${css.change__category__button} contrast_button_1`}
+									disabled={selectedProducts.length === 0}
+								>
+									<Icon name={'Coins'} />
+									Move to {isFundraiseView ? 'Sell at cost' : 'Fundraise'}
+								</button>
+							</div>
 
-						<div className={css.category__group}>
-							<span className={css['category__group--label']}>Product Group</span>
-							<select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-								<option value="all">All</option>
-								{minimalGroups.map((g) => (
-									<option key={g.id} value={g.id}>{g.name}</option>
-								))}
-							</select>
+							<div className={css.category__group}>
+								<span className={css['category__group--label']}>Product Group</span>
+								<select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+									<option value="all">All</option>
+									{minimalGroups.map((g) => (
+										<option key={g.id} value={g.id}>{g.name}</option>
+									))}
+								</select>
+							</div>
 						</div>
 					</div>
 

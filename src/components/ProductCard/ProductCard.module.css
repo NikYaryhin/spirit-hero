@@ -40,6 +40,7 @@
 		overflow: hidden;
 	}
 
+
 	.image {
 		width: calc(100% + 1.6rem); /* компенсація padding батька */
 		margin: -0.8rem -0.8rem 0.8rem -0.8rem;
@@ -52,6 +53,30 @@ img {
 	object-position: center;
 }
 	}
+.sizes_box{
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+	width: 100%;
+.sizes1 {
+	font-size: 1.6rem;
+	line-height: 1.23;
+	font-weight: 700;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+}
+.sizes2 {
+	font-size: 1.6rem;
+	line-height: 1.23;
+	font-weight: 500;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+}
+}
 
 	.price {
 		display: flex;

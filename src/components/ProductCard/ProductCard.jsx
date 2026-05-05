@@ -128,6 +128,7 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 			</div>
 			<span className={css.name}>{product_title}</span>
 			{/* {params && <span className={css.price}>${price}</span>} */}
+
 			<div className={css.price}>
 
 				{isFlashSale ? (
@@ -143,6 +144,13 @@ export default function sendColorsToBackendProductCard({ product, isFlashSale, i
 					<span className={css.price}>${(+params.on_demand_price + colorPrice).toFixed(2)}</span>
 				)}
 			</div>
+
+			<div className={css.sizes_box}>
+				<span className={css.sizes1}>Sizes:</span>
+				<span className={css.sizes2}> XS - 3XL</span>
+			</div>
+
+
 
 			<div className={css.best_seller}>
 				Best Seller

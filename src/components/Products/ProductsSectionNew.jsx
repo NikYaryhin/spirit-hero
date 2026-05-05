@@ -175,7 +175,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 					if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(String(product.category_id))) return false
 					if (activeFilters.colorFamilies.length > 0) {
 						const productColors = product.colors?.map(c => String(c.parent_color_id)) || []
-						console.log("productColors",productColors);
 						if (!productColors.some(id => activeFilters.colorFamilies.includes(String(id)))) return false
 					}
 					return true

@@ -3,10 +3,10 @@ import { v4 as uuidv4 } from 'uuid'
 import Icon from '../Icon'
 import css from './FlashSale.module.css'
 import { DayPicker } from 'react-day-picker'
-import { format } from 'date-fns'
 import 'react-day-picker/dist/style.css'
 import { useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
+import DatePicker from '@components/dataPicker/DatePicker'
 
 const FlashSale = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
@@ -817,35 +817,10 @@ const FlashSale = forwardRef((props, ref) => {
 							Schedule Your Flash Sale End Date
 							<Icon name={'ChevronUp'} />
 						</summary>
-						{/*<div className={css.calendar__wrap}>
-					<div className={css.calendar}>
-						<DayPicker
-							mode="range"
-							navLayout="around"
-							selected={range}
-							onSelect={setRange}
-							numberOfMonths={1}
-							formatters={{
-								formatWeekdayName: (day, options) =>
-									format(day, 'EEE', { locale: options?.locale }).toUpperCase(),
-							}}
-						/>
-					</div>
 
-					<div className={css.schedule__info}>
-						<p className={css.schedule__text}>
-							<Icon name={'Clock'} />
-							First batch will end on May 28th
-						</p>
-						<p className={css.schedule__text}>
-							<Icon name={'Van'} />
-							Orders arrive between June 6th and June 17th
-						</p>
-					</div>
-				</div>*/}
 						<div className={css.calendar__wrap}>
 							<div className={css.inputs__wrap}>
-								<input
+							{/*	<input
 									type="date"
 									value={range.from}
 									onChange={(e) =>
@@ -855,12 +830,27 @@ const FlashSale = forwardRef((props, ref) => {
 										}))
 									}
 									className={css.date__input}
+								/>*/}
+
+								<DatePicker
+									value={range.from}
+									onChange={(date) =>
+										setRange((prev) => ({ ...prev, from: date }))
+									}
+									label="From"
 								/>
 
 
 								<span className={css.separator}>—</span>
 
-								<input
+								<DatePicker
+									value={range.to}
+									onChange={(date) =>
+										setRange((prev) => ({ ...prev, to: date }))
+									}
+									label="To"
+								/>
+							{/*	<input
 									type="date"
 									value={range.to}
 									onChange={(e) =>
@@ -870,7 +860,7 @@ const FlashSale = forwardRef((props, ref) => {
 										}))
 									}
 									className={css.date__input}
-								/>
+								/>*/}
 							</div>
 
 							<div className={css.schedule__info}>
@@ -912,7 +902,16 @@ const FlashSale = forwardRef((props, ref) => {
 						{isNeedByDate && (
 							<div className={css.calendar__wrap}>
 								<div className={css.inputs__wrap}>
-									<input
+									<DatePicker
+										value={range2.from}
+										onChange={(date) =>
+											setRange2((prev) => ({ ...prev, from: date }))
+										}
+										label="Date"
+									/>
+
+
+								{/*	<input
 										type="date"
 										value={range2.from}
 										onChange={(e) =>
@@ -922,7 +921,7 @@ const FlashSale = forwardRef((props, ref) => {
 											}))
 										}
 										className={css.date__input}
-									/>
+									/>*/}
 								</div>
 							</div>
 						)}

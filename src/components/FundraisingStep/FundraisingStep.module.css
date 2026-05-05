@@ -94,21 +94,28 @@
 				}
 			}
 
-			.fundraising__head--buttons__box {
-				display: flex;
-				gap: 0.8rem;
 
-				padding-bottom: 1.2rem;
-
-				.delete__button {
-					padding: 1rem;
-				}
-			}
 
 			.categories__container {
 				display: flex;
 				align-items: flex-end;
 				justify-content: space-between;
+			.controls__group{
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+
+.fundraising__head--buttons__box {
+	display: flex;
+	gap: 0.8rem;
+
+	padding-bottom: 1.2rem;
+
+.delete__button {
+	padding: 1rem;
+}
+}
 
 				.products__categories--switchers {
 					display: flex;
@@ -387,4 +394,51 @@
 	}
 
 
+}
+
+@media (width <=1370px) {
+.fundraising__section{
+	.products__handle{
+		.products__container{
+			.categories__container{
+				.products__categories--switchers{
+					.category--picker__active,  .category--picker{
+						padding: 1rem 1.2rem;
+						font-size: 1.4rem;
+					}
+
+				}
+                .fundraising__head--buttons__box{
+					gap: 0.5rem;
+
+					padding-bottom: 1rem;
+				}
+			}
+		}
+	}
+}
+}
+
+@media (width <= 1300px) {
+	.categories__container {
+		flex-direction: column-reverse;
+		align-items: flex-start;
+	}
+
+	.controls__group {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.fundraising__head--buttons__box {
+		width: 100%;
+	}
+
+	.products__categories--switchers{
+		align-items: flex-start;
+
+	}
+	.category__group {
+		width: 100%;
+	}
 }

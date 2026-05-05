@@ -8,6 +8,7 @@ export default function CustomSelect({
 	values,
 	setColorCount,
 	initialValue,
+																			 onClose
 }) {
 	// const initial = values && values.length > 0 ? values[0].value : null
 
@@ -21,6 +22,7 @@ export default function CustomSelect({
 	const handleSelect = (value, quantity) => {
 		setCurrentValue(value)
 		setColorCount(quantity)
+		onClose()
 	}
 
 	return (

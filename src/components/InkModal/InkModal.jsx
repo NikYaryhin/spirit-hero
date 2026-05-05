@@ -90,6 +90,7 @@ export default function InkModal({ onClose }) {
 							values={COLOR_SELECT_VALUES}
 							setColorCount={setFrontColorsCount}
 							initialValue={frontColorsCount}
+							onClose={onClose}
 						/>
 					</div>
 
@@ -102,6 +103,7 @@ export default function InkModal({ onClose }) {
 							values={COLOR_SELECT_VALUES}
 							setColorCount={setBackColorsCount}
 							initialValue={backColorsCount}
+							onClose={onClose}
 						/>
 					</div>
 				</div>

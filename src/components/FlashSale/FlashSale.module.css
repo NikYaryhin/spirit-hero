@@ -40,7 +40,6 @@
 			text-wrap: nowrap;
 
 			background-color: #4E008E;
-
 			transition: color 0.25s ease;
 
 			&:hover, &:focus {
@@ -59,7 +58,8 @@
 		border: 1px solid #CACACA;
 		background-color: #F1EEF4;
 
-		&[open] {
+
+&[open] {
 			summary svg {
 				rotate: 180deg;
 			}
@@ -338,6 +338,7 @@
 			display: flex;
 			gap: 1.6rem;
 			margin-top: 1.6rem;
+
 
           .inputs__wrap {
 	          display: flex;
