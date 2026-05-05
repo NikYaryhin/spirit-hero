@@ -154,7 +154,7 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 							min={6}
 							max={100}
 							value={size}
-							onChange={(e) => setSize(Number(e.target.value) || 0)}
+							onChange={(e) => setSize(Number(e.target.value) || 1)}
 						/>
 					</div>
 				</div>)
