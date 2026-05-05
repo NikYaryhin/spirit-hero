@@ -2813,6 +2813,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 					{locationList && locationList.length > 1 && (
 						<div className={css.locationControls}>
+							Print location:
 							{locationList.map((item) => (
 								<button
 									key={item.id}
