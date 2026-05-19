@@ -21,6 +21,9 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 	const [isProcessingDesign, setIsProcessingDesign] = useState(false);
 	const [successMessage, setSuccessMessage] = useState(false);
 
+
+	const [catalogSelectedColors, setCatalogSelectedColors] = useState({})
+
 	// --- States ---
 	const [catalogGroups, setCatalogGroups] = useState([])
 	const [myStoreGroups, setMyStoreGroups] = useState([])
@@ -359,7 +362,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		const productsPayload = []
 
 		console.log('activeFilters?.colorFamilies',activeFilters?.colorFamilies)
-		Object.entries(selectedData).forEach(([groupId, productIds]) => {
+		/*Object.entries(selectedData).forEach(([groupId, productIds]) => {
 			const group = currentGroups?.find(
 				(g) => Number(g.id) === Number(groupId)
 			)
@@ -392,6 +395,35 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 					product_id: Number(productId),
 					group_id: Number(groupId),
 					color_id: filteredColorIds
+				})
+			})
+		})*/
+		Object.entries(selectedData).forEach(([groupId, productIds]) => {
+			const group = currentGroups?.find(
+				(g) => Number(g.id) === Number(groupId)
+			)
+
+			if (!group) return
+
+			productIds.forEach((productId) => {
+				const product = group.products?.find(
+					(p) => Number(p.id) === Number(productId)
+				)
+
+				if (!product) return
+
+				const selectedColors =
+					catalogSelectedColors?.[productId]
+
+				// якщо нічого не вибрано — просто не додаємо цей продукт
+				if (!selectedColors || selectedColors.length === 0) return
+
+				productsPayload.push({
+					product_id: Number(productId),
+					group_id: Number(groupId),
+					color_id: selectedColors.map((c) =>
+						Number(c.color_id)
+					),
 				})
 			})
 		})
@@ -527,7 +559,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 					)}
 					<button className="light_button_1" onClick={handleSelectAll}>Select All</button>
 					{isCatalog ? (
-						<button className="contrast_button_1" onClick={addToStoreAction} disabled={(totalSelectedCount === 0 || (!Array.isArray(activeFilters.colorFamilies) || activeFilters.colorFamilies.length === 0))}>
+						<button className="contrast_button_1" onClick={addToStoreAction} disabled={(totalSelectedCount === 0 )}>
 							<Lightning /> Add to my store
 						</button>
 					) : (
@@ -586,6 +618,8 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 								activeColors={activeFilters.colorFamilies}
 								isCatalog={isCatalog}
 								sendColorsToBackend={sendColorsToBackend}
+								setCatalogSelectedColors={setCatalogSelectedColors}
+								selectedCatalogColorsList={catalogSelectedColors|| []}
 							/>
 						)
 					})}
@@ -675,11 +709,13 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 
 								const productsPayload = []
 
-								Object.entries(updatedSelectedData).forEach(([groupId, productIds]) => {
+								Object.entries(selectedData).forEach(([groupId, productIds]) => {
 									const group = currentGroups?.find(
 										(g) => Number(g.id) === Number(groupId)
 									)
+
 									if (!group) return
+
 									productIds.forEach((productId) => {
 										const product = group.products?.find(
 											(p) => Number(p.id) === Number(productId)
@@ -687,27 +723,22 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 
 										if (!product) return
 
-										const colors = product.colors || []
+										const selectedColors =
+											catalogSelectedColors?.[productId]
 
-										const filteredColorIds = colors
-											.filter((color) => {
-												const families = activeFilters?.colorFamilies
-
-												if (!families || families.length === 0) {
-													return true
-												}
-
-												return families.includes(String(color.parent_color_id))
-											})
-											.map((color) => Number(color.color_id))
+										// якщо нічого не вибрано — просто не додаємо цей продукт
+										if (!selectedColors || selectedColors.length === 0) return
 
 										productsPayload.push({
 											product_id: Number(productId),
 											group_id: Number(groupId),
-											color_id: filteredColorIds
+											color_id: selectedColors.map((c) =>
+												Number(c.color_id)
+											),
 										})
 									})
 								})
+
 
 								console.log('productsPayload', productsPayload)
 

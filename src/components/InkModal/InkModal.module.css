@@ -56,3 +56,11 @@
 		width: 100%;
 	}
 }
+
+.cost__label {
+	font-size: 1.6rem;
+}
+
+.bold {
+	font-weight: 700;
+}

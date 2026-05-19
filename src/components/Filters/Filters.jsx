@@ -37,6 +37,9 @@ export default function Filters({
 		if (keyNameLowerCase === 'brands') {
 			pass = products.some((product) => product.brand_id === id)
 		}
+		if (keyNameLowerCase === 'gender') {
+			pass = products.some((product) => product.gender_id === id)
+		}
 		if (keyNameLowerCase === 'colorfamilies') {
 			pass = products.some((product) =>
 				(!isCatalog ? product.choosed_colors : product.colors)?.some(

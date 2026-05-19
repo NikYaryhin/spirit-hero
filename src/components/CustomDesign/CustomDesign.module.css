@@ -1,0 +1,258 @@
+.modal__head {
+	display: flex;
+	flex-direction: column;
+
+	margin-bottom: 4rem;
+
+.title {
+	margin-bottom: 1.6rem;
+	font-size: 1.6rem;
+	line-height: 1.3;
+	font-weight: 900;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.subtitle {
+	font-size: 1.4rem;
+	line-height: 1.57;
+	color: #605767;
+}
+}
+
+.modal__content {
+	display: flex;
+	flex-direction: column;
+	gap: 2.8rem;
+
+.modal__button {
+	width: 100%;
+}
+
+.modal__button--disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────── */
+.section {
+	border-radius: 1rem;
+}
+
+.section__title {
+	display: block;
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin-bottom: 1.6rem;
+}
+
+/* ── Design style cards ──────────────────────────────────────────────────── */
+.styles__list {
+	display: flex;
+	gap: 0.8rem;
+	justify-content: space-between;
+}
+
+.style__card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.8rem;
+	padding: 1rem 0.6rem 1.4rem;
+	border: 2px solid transparent;
+	border-radius: 1rem;
+	background: #fff;
+	cursor: pointer;
+	flex: 1 1 9rem;
+	max-width: 13rem;
+	transition: border-color 0.15s, background 0.15s;
+
+&:hover {
+	 border-color: #4E008E;
+ }
+
+}
+.selected {
+	border-color: #5c2d91;
+}
+
+.style__check {
+	position: absolute;
+	top: 0.8rem;
+	left: 0.8rem;
+	min-width: 1.6rem;
+	width: 1.6rem;
+	height: 1.6rem;
+	border: 1px solid #9B9AA5;
+	border-radius: 0.2rem;
+	background: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: border-color 0.15s, background 0.15s;
+
+
+}
+.checked {
+	border-color: #5c2d91;
+}
+
+.style__img {
+	width: 11rem;
+	height: 13rem;
+	object-fit: contain;
+}
+
+.style__label {
+	margin-top: 1.6rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 0.2rem;
+
+span {
+	font-weight: 700;
+	font-size: 1.2rem;
+	color: #222;
+}
+}
+
+.style__sublabel {
+	font-weight: 400 !important;
+	font-size: 1.1rem !important;
+	color: #666 !important;
+}
+
+/* ── Body (colors + fields) ──────────────────────────────────────────────── */
+.body {
+	display: flex;
+	gap: 3.2rem;
+	flex-wrap: wrap;
+}
+
+/* ── Colors ──────────────────────────────────────────────────────────────── */
+.colors__col {
+	flex: 0 0 18rem;
+}
+
+.colors__list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+/* ── Fields ──────────────────────────────────────────────────────────────── */
+.fields__col {
+	flex: 1 1 26rem;
+}
+
+.field__label {
+	display: block;
+	font-size: 1.4rem;
+	line-height: 1.57;
+	margin-bottom: 0.8rem;
+}
+
+.textarea {
+	width: 100%;
+	border: 1px solid #ccc;
+	border-radius: 0.6rem;
+	padding: 0.8rem 1rem;
+	font-size: 1.4rem;
+	font-family: inherit;
+	color: #333;
+	background: white;
+	resize: vertical;
+	margin-bottom: 1.4rem;
+	box-sizing: border-box;
+	transition: border-color 0.15s;
+
+&:focus {
+	 outline: none;
+	 border-color: #4e008e;
+ }
+}
+
+/* ── Upload ──────────────────────────────────────────────────────────────── */
+.upload__row {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	border: 1px solid #ccc;
+	border-radius: 0.6rem;
+	padding: 0.6rem 1rem;
+	background: #fff;
+	margin-bottom: 0.6rem;
+}
+
+.upload__btn {
+	background: #e8e8e8;
+	border: 1px solid #bbb;
+	border-radius: 0.4rem;
+	padding: 0.4rem 1.2rem;
+	font-size: 1.3rem;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: background 0.15s;
+
+&:hover {
+	 background: #d8d8d8;
+ }
+}
+
+.upload__name {
+	font-size: 1.3rem;
+	color: #999;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.upload__hint {
+	display: block;
+	font-size: 1.2rem;
+	color: #666;
+	margin-bottom: 1.6rem;
+	line-height: 1.5;
+}
+
+/* ── Terms ───────────────────────────────────────────────────────────────── */
+.terms {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.8rem;
+	cursor: pointer;
+	font-size: 1.4rem;
+	margin-bottom: 2rem;
+}
+
+.terms__check {
+	min-width: 1.6rem;
+	width: 1.6rem;
+	height: 1.6rem;
+	border: 1px solid #9B9AA5;
+	border-radius: 0.2rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	margin-top: 0.1rem;
+	transition: border-color 0.15s, background 0.15s;
+
+}
+.checked{
+	border-color: #5c2d91;
+}
+.terms__link {
+	color: #5c2d91;
+	font-weight: 600;
+	text-decoration: underline;
+
+&:hover {
+	 color: #4e008e;
+ }
+}

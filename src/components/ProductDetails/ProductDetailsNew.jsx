@@ -11,7 +11,9 @@ export default function ProductDetailsNew({
 																				 onGroupCheckHandle,
 																				 activeColors,
 																						isCatalog,
-																						sendColorsToBackend
+																						sendColorsToBackend,
+																						setCatalogSelectedColors,
+																						selectedCatalogColorsList
 																			 }) {
 
 	// Визначаємо, чи всі товари в цій групі вибрані
@@ -65,6 +67,8 @@ export default function ProductDetailsNew({
 							isCatalog={isCatalog}
 							minimalGroup={minimalGroup}
 							sendColorsToBackend={sendColorsToBackend}
+							selectedCatalogColors={selectedCatalogColorsList[product.id] || []}
+							setCatalogSelectedColors={setCatalogSelectedColors}
 							// Якщо ProductCard очікує selected окремим пропсом, можна додати:
 							// isSelected={product.selected}
 						/>

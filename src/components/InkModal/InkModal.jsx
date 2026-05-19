@@ -41,7 +41,8 @@ export default function InkModal({ onClose }) {
 
 	useEffect(() => {
 		const backColorPrice = backColorsCount === 0 ? 0 : backColorsCount + 4
-		setPrice(frontColorsCount + backColorPrice)
+		const frontColorPrice = frontColorsCount === 0 || frontColorsCount === 1? 0 : frontColorsCount-1
+		setPrice(frontColorPrice + backColorPrice)
 	}, [frontColorsCount, backColorsCount])
 
 	const onButtonClick = async () => {
@@ -110,9 +111,15 @@ export default function InkModal({ onClose }) {
 
 				{price > 0 && (
 					<span className={css.cost__label}>
-						Additional cost fot {frontColorsCount + backColorsCount} ink kolors:
-						+${price}.00
-					</span>
+		Additional cost for{' '}
+						<span className={css.bold}>
+			{frontColorsCount + backColorsCount}
+		</span>{' '}
+						ink colors: +$
+		<span className={css.bold}>
+			{price}.00
+		</span>
+	</span>
 				)}
 
 				<button

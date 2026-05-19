@@ -15,6 +15,7 @@ import FundraisingTypeModal from '../FundraisingTypeModal/FundraisingTypeModal'
 import NewDesignModal from '../NewDesignModal/NewDesignModal'
 import { setMinimalGroups } from '@/features/products/productsSlice'
 import { setActiveStep } from '@/features/navigation/navigationSlice'
+import CustomDesign from '@components/CustomDesign/CustomDesign'
 
 const DesignStepNew = forwardRef((props, ref) => {
 	const dispatch = useDispatch()
@@ -64,6 +65,11 @@ const DesignStepNew = forwardRef((props, ref) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [isNewDesignModalOpen, setIsNewDesignModalOpen] = useState(false)
 	const [isFundraisingModalOpen, setIsFundraisingModalOpen] = useState(false)
+	const [isCustomDesignModalOpen, setIsCustomDesignModalOpen] = useState(false)
+
+	const [isSleeveModalOpen, setIsSleeveModalOpen] = useState(false)
+	const [isSleeve, setIsSleeve] = useState(false)
+
 
 	const containerRef = useRef(null)
 	const imageBoxRef = useRef(null)
@@ -266,107 +272,247 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 			obj.setCoords();
 		};*/
+		/*const handleTextScaling = (e) => {
+			const obj = e.target;
+			const area = currentAreaRef2.current;
+
+			if (!obj || obj.customData?.type !== 'text') return;
+
+			const areaBounds = area.getBoundingRect(true);
+
+			// ========================
+			// 📐 Визначаємо який corner тягнуть
+			// щоб знати в який бік обмежувати
+			// ========================
+			const transform = obj.canvas?._currentTransform;
+			const corner = transform?.corner || '';
+
+			// ========================
+			// 📐 Raw розміри
+			// ========================
+			const rawWidth = obj.width * obj.scaleX;
+
+			// Clamp width
+			const clampedWidth = Math.max(30, Math.min(rawWidth, areaBounds.width));
+
+			// ========================
+			// 🔤 FontSize пропорційно
+			// ========================
+			const originalWidth = obj.customData?.originalWidth || obj.width;
+			const originalFontSize = obj.customData?.originalFontSize || obj.fontSize;
+
+			const widthRatio = clampedWidth / originalWidth;
+			let newFontSize = Math.max(8, Math.round(originalFontSize * widthRatio));
+
+			obj.set({
+				width: clampedWidth,
+				fontSize: newFontSize,
+				scaleX: 1,
+				scaleY: 1,
+			});
+
+			obj.setCoords();
+
+			// ========================
+			// 🔒 Бінарний пошук якщо висота вилізла
+			// ========================
+			if (obj.height > areaBounds.height) {
+				let min = 8;
+				let max = newFontSize;
+
+				while (max - min > 1) {
+					const mid = Math.round((min + max) / 2);
+					obj.set({ fontSize: mid });
+					obj.setCoords();
+					obj.height > areaBounds.height ? (max = mid) : (min = mid);
+				}
+
+				obj.set({ fontSize: min });
+				obj.setCoords();
+				newFontSize = min;
+			}
+
+			// ========================
+			// 📍 Правильний clamp позиції
+			// originX: 'center' → obj.left = центр об'єкта
+			// ========================
+			const currentWidth = obj.getScaledWidth();
+			const currentHeight = obj.getScaledHeight();
+
+			// Межі для ЦЕНТРУ об'єкта
+			const minLeft = areaBounds.left + currentWidth / 2;
+			const maxLeft = areaBounds.left + areaBounds.width - currentWidth / 2;
+			const minTop  = areaBounds.top  + currentHeight / 2;
+			const maxTop  = areaBounds.top  + areaBounds.height - currentHeight / 2;
+
+			let newLeft = obj.left;
+			let newTop  = obj.top;
+
+			// ========================
+			// 🎯 Прив'язуємо до правильного краю залежно від corner
+			// ========================
+			if (corner.includes('l')) {
+				// Тягнуть лівий край → правий край має лишатись на місці
+				// Центр = правий край - половина ширини
+				const rightEdge = Math.min(
+					obj.left + currentWidth / 2, // поточний правий
+					areaBounds.left + areaBounds.width  // межа area
+				);
+				newLeft = rightEdge - currentWidth / 2;
+				newLeft = Math.max(newLeft, minLeft); // не виходимо за ліву межу
+			} else if (corner.includes('r')) {
+				// Тягнуть правий край → лівий край лишається
+				const leftEdge = Math.max(
+					obj.left - currentWidth / 2,
+					areaBounds.left
+				);
+				newLeft = leftEdge + currentWidth / 2;
+				newLeft = Math.min(newLeft, maxLeft);
+			} else {
+				newLeft = Math.min(Math.max(newLeft, minLeft), maxLeft);
+			}
+
+			if (corner.includes('t')) {
+				const bottomEdge = Math.min(
+					obj.top + currentHeight / 2,
+					areaBounds.top + areaBounds.height
+				);
+				newTop = bottomEdge - currentHeight / 2;
+				newTop = Math.max(newTop, minTop);
+			} else if (corner.includes('b')) {
+				const topEdge = Math.max(obj.top - currentHeight / 2, areaBounds.top);
+				newTop = topEdge + currentHeight / 2;
+				newTop = Math.min(newTop, maxTop);
+			} else {
+				newTop = Math.min(Math.max(newTop, minTop), maxTop);
+			}
+
+			obj.set({ left: newLeft, top: newTop });
+
+			// ========================
+			// 💾 Зберігаємо тільки коли не clamped
+			// ========================
+			if (rawWidth <= areaBounds.width) {
+				obj.customData = {
+					...obj.customData,
+					originalFontSize: newFontSize,
+					originalWidth: clampedWidth,
+				};
+			}
+
+			obj.setCoords();
+		};*/
 		const handleTextScaling = (e) => {
 			const obj = e.target;
 			const area = currentAreaRef2.current;
 
 			if (!obj || obj.customData?.type !== 'text') return;
 
-			obj.setCoords();
-			area.setCoords();
-
 			const areaBounds = area.getBoundingRect(true);
+			const transform = obj.canvas?._currentTransform;
+			const corner = transform?.corner || '';
 
-			const scaleX = obj.scaleX;
+			// ========================
+			// 📐 Clamp width
+			// ========================
+			const rawWidth = obj.width * obj.scaleX;
+			const clampedWidth = Math.max(30, Math.min(rawWidth, areaBounds.width));
 
-			// 🔥 центр об'єкта
-			const center = obj.getCenterPoint();
+			// ========================
+			// 🔤 FontSize через пряме вимірювання ctx
+			// Плавно: fontSize пропорційно до зміни ширини
+			// ========================
+			const prevWidth = obj.width  // ширина ДО скидання scale
+			const prevFontSize = obj.fontSize
 
-			// 🔥 максимально доступна ширина/висота від центру
-			const maxWidth =
-				2 * Math.min(
-				center.x - areaBounds.left,
-				areaBounds.left + areaBounds.width - center.x
-				);
-
-			const maxHeight =
-				2 * Math.min(
-				center.y - areaBounds.top,
-				areaBounds.top + areaBounds.height - center.y
-				);
-
-			// 🔥 обмежуємо scale
-			let allowedScaleX = scaleX;
-			let allowedScaleY = obj.scaleY;
-
-			if (obj.width * scaleX > maxWidth) {
-				allowedScaleX = maxWidth / obj.width;
-			}
-
-			if (obj.height * obj.scaleY > maxHeight) {
-				allowedScaleY = maxHeight / obj.height;
-			}
-
-			// 🔥 застосовуємо scale → fontSize
-			const newFontSize = Math.round(obj.fontSize * allowedScaleX);
+			// Якщо width не змінився — не рахуємо заново
+			const widthDelta = clampedWidth / prevWidth
+			let newFontSize = Math.max(8, Math.min(
+				Math.round(prevFontSize * widthDelta),
+				200
+			))
 
 			obj.set({
+				width: clampedWidth,
 				fontSize: newFontSize,
 				scaleX: 1,
 				scaleY: 1,
-			});
+			})
 
-			// 🔥 textbox width
-			if (obj.type === 'textbox') {
-				obj.set({
-					width: obj.width * allowedScaleX,
-				});
+			obj.setCoords()
+
+			// ========================
+			// 🔒 Якщо висота вилізла — бінарний пошук
+			// ========================
+			if (obj.height > areaBounds.height) {
+				let min = 8
+				let max = newFontSize
+
+				while (max - min > 1) {
+					const mid = Math.round((min + max) / 2)
+					obj.set({ fontSize: mid })
+					obj.setCoords()
+					obj.height > areaBounds.height ? (max = mid) : (min = mid)
+				}
+
+				obj.set({ fontSize: min })
+				obj.setCoords()
+				newFontSize = min
 			}
 
-			obj.setCoords();
+			// ========================
+			// 📍 Clamp позиція залежно від corner
+			// ========================
+			const currentWidth = obj.getScaledWidth()
+			const currentHeight = obj.getScaledHeight()
 
-			// 🔥 обмеження позиції (як у moving)
-			const objWidth = obj.getScaledWidth();
-			const objHeight = obj.getScaledHeight();
+			const areaRight  = areaBounds.left + areaBounds.width
+			const areaBottom = areaBounds.top  + areaBounds.height
 
-			let newLeft = obj.left;
-			let newTop = obj.top;
+			let newLeft = obj.left
+			let newTop  = obj.top
 
-			const minX = areaBounds.left + objWidth / 2;
-			const maxX = areaBounds.left + areaBounds.width - objWidth / 2;
-
-			const minY = areaBounds.top + objHeight / 2;
-			const maxY = areaBounds.top + areaBounds.height - objHeight / 2;
-
-			if (newLeft < minX) newLeft = minX;
-			if (newLeft > maxX) newLeft = maxX;
-
-			if (newTop < minY) newTop = minY;
-			if (newTop > maxY) newTop = maxY;
-			const isClamped =
-				newLeft < minX || newLeft > maxX || newTop < minY || newTop > maxY;
-
-			// 🔥 якщо позиція вперлась — теж блокуємо scaling
-
-			if(!isClamped){
-				obj.set({
-					left: newLeft,
-					top: newTop
-				});
+			if (corner.includes('l')) {
+				// Фіксуємо правий край
+				const rightEdge = Math.min(newLeft + currentWidth / 2, areaRight)
+				newLeft = rightEdge - currentWidth / 2
+				// Не виходимо за ліву межу
+				newLeft = Math.max(newLeft, areaBounds.left + currentWidth / 2)
+			} else if (corner.includes('r')) {
+				// Фіксуємо лівий край
+				const leftEdge = Math.max(newLeft - currentWidth / 2, areaBounds.left)
+				newLeft = leftEdge + currentWidth / 2
+				newLeft = Math.min(newLeft, areaRight - currentWidth / 2)
+			} else {
+				newLeft = Math.min(Math.max(newLeft, areaBounds.left + currentWidth / 2), areaRight - currentWidth / 2)
 			}
 
+			if (corner.includes('t')) {
+				const bottomEdge = Math.min(newTop + currentHeight / 2, areaBottom)
+				newTop = bottomEdge - currentHeight / 2
+				newTop = Math.max(newTop, areaBounds.top + currentHeight / 2)
+			} else if (corner.includes('b')) {
+				const topEdge = Math.max(newTop - currentHeight / 2, areaBounds.top)
+				newTop = topEdge + currentHeight / 2
+				newTop = Math.min(newTop, areaBottom - currentHeight / 2)
+			} else {
+				newTop = Math.min(Math.max(newTop, areaBounds.top + currentHeight / 2), areaBottom - currentHeight / 2)
+			}
 
-			// 🔥 збереження
+			obj.set({ left: newLeft, top: newTop })
+
+			// ========================
+			// 💾 Завжди зберігаємо поточний стан як базовий
+			// (бо рахуємо delta від попереднього кадру)
+			// ========================
 			obj.customData = {
 				...obj.customData,
-				originalFontSize: obj.fontSize,
-				originalWidth: obj.width,
-				originalHeight: obj.height,
-			};
+				originalFontSize: newFontSize,
+				originalWidth: clampedWidth,
+			}
 
-			obj.setCoords();
-		};
-
+			obj.setCoords()
+		}
 
 		const handleSelection = (e) => {
 			console.log('selected',e)
@@ -467,7 +613,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 			fabricCanvas.renderAll()
 		}
 
-		const handleImageScaling = (e) => {
+		/*const handleImageScaling = (e) => {
 			const obj = e.target;
 			const area = currentAreaRef2.current;
 
@@ -546,8 +692,103 @@ const DesignStepNew = forwardRef((props, ref) => {
 			};
 
 			obj.setCoords();
-		};
+		};*/
 
+		const handleImageScaling = (e) => {
+			const obj = e.target;
+			const area = currentAreaRef2.current;
+
+			if (!obj || obj.customData?.type !== 'uploaded-image') return;
+
+			const areaBounds = area.getBoundingRect(true);
+			const transform = obj.canvas?._currentTransform;
+			const corner = transform?.corner || '';
+
+			// ========================
+			// 📐 Raw scaled розміри
+			// ========================
+			const rawWidth  = obj.width  * obj.scaleX;
+			const rawHeight = obj.height * obj.scaleY;
+
+			// ========================
+			// ✂️ Clamp до area
+			// ========================
+			const clampedWidth  = Math.max(20, Math.min(rawWidth,  areaBounds.width));
+			const clampedHeight = Math.max(20, Math.min(rawHeight, areaBounds.height));
+
+			// ========================
+			// 🔒 Зберігаємо пропорції (aspect ratio)
+			// ========================
+			const aspectRatio = obj.width / obj.height;
+
+			let finalWidth  = clampedWidth;
+			let finalHeight = clampedWidth / aspectRatio;
+
+			// Якщо висота все одно вилізла — обмежуємо по висоті
+			if (finalHeight > areaBounds.height) {
+				finalHeight = clampedHeight;
+				finalWidth  = clampedHeight * aspectRatio;
+			}
+
+			const finalScaleX = finalWidth  / obj.width;
+			const finalScaleY = finalHeight / obj.height;
+
+			obj.set({
+				scaleX: finalScaleX,
+				scaleY: finalScaleY,
+			});
+
+			obj.setCoords();
+
+			// ========================
+			// 📍 Clamp позиція залежно від corner
+			// ========================
+			const currentWidth  = obj.getScaledWidth();
+			const currentHeight = obj.getScaledHeight();
+
+			const areaRight  = areaBounds.left + areaBounds.width;
+			const areaBottom = areaBounds.top  + areaBounds.height;
+
+			let newLeft = obj.left;
+			let newTop  = obj.top;
+
+			if (corner.includes('l')) {
+				const rightEdge = Math.min(newLeft + currentWidth / 2, areaRight);
+				newLeft = rightEdge - currentWidth / 2;
+				newLeft = Math.max(newLeft, areaBounds.left + currentWidth / 2);
+			} else if (corner.includes('r')) {
+				const leftEdge = Math.max(newLeft - currentWidth / 2, areaBounds.left);
+				newLeft = leftEdge + currentWidth / 2;
+				newLeft = Math.min(newLeft, areaRight - currentWidth / 2);
+			} else {
+				newLeft = Math.min(Math.max(newLeft, areaBounds.left + currentWidth / 2), areaRight - currentWidth / 2);
+			}
+
+			if (corner.includes('t')) {
+				const bottomEdge = Math.min(newTop + currentHeight / 2, areaBottom);
+				newTop = bottomEdge - currentHeight / 2;
+				newTop = Math.max(newTop, areaBounds.top + currentHeight / 2);
+			} else if (corner.includes('b')) {
+				const topEdge = Math.max(newTop - currentHeight / 2, areaBounds.top);
+				newTop = topEdge + currentHeight / 2;
+				newTop = Math.min(newTop, areaBottom - currentHeight / 2);
+			} else {
+				newTop = Math.min(Math.max(newTop, areaBounds.top + currentHeight / 2), areaBottom - currentHeight / 2);
+			}
+
+			obj.set({ left: newLeft, top: newTop });
+
+			// ========================
+			// 💾 Зберігаємо поточний стан
+			// ========================
+			obj.customData = {
+				...obj.customData,
+				originalWidth:  finalWidth,
+				originalHeight: finalHeight,
+			};
+
+			obj.setCoords();
+		};
 		// =========================
 		// 📡 EVENTS
 		// =========================
@@ -1007,8 +1248,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 					fontWeight: labelData.bold ? 700 : 400,
 					fontStyle: labelData.italic ? 'italic' : 'normal',
 					width,
-					angle: labelData.rotation || 0,
 					textAlign: 'center',
+					angle: labelData.rotation || 0,
 					cornerStyle: 'circle',
 					cornerColor: '#4E008E',
 					cornerStrokeColor: '#ffffff',
@@ -2353,7 +2594,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 					const ar =
 						locationList.find(
 							(value) =>
-								value?.location_title?.toLowerCase() === "front"
+								value?.print_location?.toLowerCase() === "front"
 						) || locationList[0];
 					const ar1 = ar?.logo_area
 
@@ -2603,7 +2844,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 				const ar =
 					locationList.find(
 						(value) =>
-							value?.location_title?.toLowerCase() === "front"
+							value?.print_location?.toLowerCase() === "front"
 					) || locationList[0];
 				const ar1 = ar?.logo_area
 
@@ -2771,6 +3012,29 @@ const DesignStepNew = forwardRef((props, ref) => {
 	const toggleSide = () => {
 		setActiveSide(prev => prev === 'front' ? 'back' : 'front')
 	}
+	console.log('locationList',locationList)
+	const hasSleeveDesign =
+		Boolean(imageLeft || imageRight)
+
+	const allSides = [
+		{ id: 'front', label: 'Front', img: image, id2: 1 },
+		{ id: 'back', label: 'Back', img: imageBack, id2: 2 },
+		{ id: 'left', label: 'Left', img: imageLeft, id2: 3 },
+		{ id: 'right', label: 'Right', img: imageRight, id2: 4 },
+	]
+	const sides = hasSleeveDesign
+		? isSleeve
+			? allSides
+			: allSides.filter(
+				(s) =>
+					s.id === 'front' ||
+					s.id === 'back'
+			)
+		: allSides.filter(
+			(s) =>
+				s.id === 'front' ||
+				s.id === 'back'
+		)
 	return (
 		<>
 			{(isLoading || isLoadingD) && <Loader />}
@@ -2785,30 +3049,57 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 					{/* Новий блок з квадратиками всередині image__box */}
 					<div className={css.sideControls}>
-						{[
-							{ id: 'front', label: 'Front', img: image ,id2:1},
-							{ id: 'back', label: 'Back', img: imageBack ,id2:2},
-							{ id: 'left', label: 'Left', img: imageLeft ,id2:3},
-							{ id: 'right', label: 'Right', img: imageRight ,id2:4},
-						].map((side) => (
-							// Рендеримо тільки якщо картинка для цієї сторони існує (опціонально)
-							// Якщо хочете бачити всі 4 завжди, приберіть "side.img &&"
+						{sides.map((side) => (
 							side.img && (
 								<div
 									key={side.id}
-									className={`${css.sideSquare} ${activeSide === side.id ? css.activeSquare : ''}`}
+									className={`${css.sideSquare} ${
+										activeSide === side.id
+											? css.activeSquare
+											: ''
+									}`}
 									onClick={(e) => {
-										e.stopPropagation();
-										onSideClick(side.id,side.id2)
+										e.stopPropagation()
+										onSideClick(
+											side.id,
+											side.id2
+										)
 									}}
 								>
 									<div className={css.squarePreview}>
-										<img src={side.img} alt={side.label} />
+										<img
+											src={side.img}
+											alt={side.label}
+										/>
 									</div>
-									<span className={css.squareLabel}>{side.label}</span>
+
+									<span className={css.squareLabel}>
+					{side.label}
+				</span>
 								</div>
 							)
 						))}
+
+						{/* sleeve button */}
+						{(!isSleeve && hasSleeveDesign) && (
+							<div
+								className={css.sideSquare}
+								onClick={(e) => {
+									e.stopPropagation()
+									setIsSleeveModalOpen(true)
+								}}
+							>
+								<div className={css.squareSleeve}>
+									<div className={css.sleeveIcon}>
+										Sleeve design
+									</div>
+								</div>
+
+								<span className={css.squareLabel}>
+
+			</span>
+							</div>
+						)}
 					</div>
 
 					{locationList && locationList.length > 1 && (
@@ -2826,7 +3117,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 										syncCanvasToLocation(item.location_id);
 									}}
 								>
-									{item.location_title}
+									{item.print_location_title || item.print_location }
 								</button>
 							))}
 						</div>
@@ -2839,6 +3130,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 					<button
 						onClick={() => {
 							//downloadCanvas()
+							setIsCustomDesignModalOpen(true)
 							console.debug('CLICK')
 						}}
 						className={`${css.button} contrast_button_1`}
@@ -2923,10 +3215,15 @@ const DesignStepNew = forwardRef((props, ref) => {
 									}
 
 									onUpdate={(text, options) => {
+										console.log(11111)
 										if (!selectedTextObject) return
-
 										const canvas = fabricCanvasRef.current
 										if (!canvas) return
+
+										const area = currentAreaRef.current
+										if (!area) return
+
+										const areaBox = { left: area.x, top: area.y, width: area.w, height: area.h }
 
 										selectedTextObject.set({
 											text,
@@ -2935,9 +3232,48 @@ const DesignStepNew = forwardRef((props, ref) => {
 											fontStyle: options.italic ? 'italic' : 'normal',
 											fill: options.color,
 											textAlign: 'center',
+											width: areaBox.width,
+											scaleX: 1,
+											scaleY: 1,
 											fontSize: options.size,
 										})
 
+										// 🔒 Зменшуємо fontSize поки не влізе і по висоті і по ширині
+										const fitsInArea = () => {
+											// getMinWidth() — мінімальна ширина для найдовшого слова без переносу
+											const minW = selectedTextObject.getMinWidth?.() ?? selectedTextObject.width
+											return (
+												selectedTextObject.height <= areaBox.height &&
+												minW <= areaBox.width
+											)
+										}
+
+										if (!fitsInArea()) {
+											let min = 8
+											let max = options.size
+
+											while (max - min > 1) {
+												const mid = Math.round((min + max) / 2)
+												selectedTextObject.set({ fontSize: mid })
+												fitsInArea() ? (min = mid) : (max = mid)
+											}
+
+											selectedTextObject.set({ fontSize: min })
+										}
+
+										// 🔒 Центруємо в area
+										selectedTextObject.set({
+											left: areaBox.left,
+											top: areaBox.top,
+										})
+
+										selectedTextObject.customData = {
+											...selectedTextObject.customData,
+											originalFontSize: selectedTextObject.fontSize,
+											originalWidth: areaBox.width,
+										}
+
+										selectedTextObject.setCoords()
 										canvas.renderAll()
 									}}
 
@@ -2992,33 +3328,67 @@ const DesignStepNew = forwardRef((props, ref) => {
 										// 🧱 CREATE TEXTBOX
 										// =========================
 										const textbox = new Textbox(text, {
-											left: areaBox.left ,
+											left: areaBox.left,
 											top: areaBox.top,
 
 											originX: 'center',
 											originY: 'center',
-
 											width: areaBox.width,
 
 											fontFamily: options.font,
-											fontSize: optimalFontSize,
+											fontSize: options.size,
 											fontWeight: options.bold ? 'bold' : 'normal',
 											fontStyle: options.italic ? 'italic' : 'normal',
 											fill: options.color,
 											textAlign: 'center',
-
 											lockScalingFlip: true,
 											lockUniScaling: false,
-
+											padding: 0,
 											cornerStyle: 'circle',
 											cornerColor: '#4E008E',
 											cornerStrokeColor: '#ffffff',
 											borderColor: '#4E008E',
 											borderScaleFactor: 2,
 											transparentCorners: false,
+											objectCaching: false,
+											noScaleCache: true,
 									/*		lockMovementX: true,
 											lockMovementY: true,*/
 										})
+										const fitFontSizeToArea = (obj, maxWidth, maxHeight, initialSize, canvas) => {
+											obj.set({ fontSize: initialSize })
+
+											const ctx = canvas.getContext()
+
+											const getTextWidth = (fontSize) => {
+												ctx.font = `${obj.fontStyle} ${obj.fontWeight} ${fontSize}px ${obj.fontFamily}`
+												// Міряємо кожен рядок і беремо максимум
+												const lines = obj.text.split('\n')
+												return Math.max(...lines.map(line => ctx.measureText(line).width))
+											}
+
+											const fitsInArea = (fontSize) => {
+												const textWidth = getTextWidth(fontSize)
+												obj.set({ fontSize })
+												return obj.height <= maxHeight && textWidth <= maxWidth * 0.95
+											}
+
+											if (fitsInArea(initialSize)) return initialSize
+
+											let min = 8
+											let max = initialSize
+
+											while (max - min > 1) {
+												const mid = Math.round((min + max) / 2)
+												fitsInArea(mid) ? (min = mid) : (max = mid)
+											}
+
+											obj.set({ fontSize: min })
+											return min
+										}
+
+// Виклик — додайте canvas як параметр
+										const fittedFontSize = fitFontSizeToArea(textbox, areaBox.width, areaBox.height, options.size, canvas)
 
 										// =========================
 										// 🚫 CLIP TO AREA (VERY IMPORTANT)
@@ -3060,7 +3430,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 										textbox.customData = {
 											type: 'text',
-											originalFontSize: optimalFontSize,
+											originalFontSize: fittedFontSize,
 											originalWidth: areaBox.width,
 											orgObj:{
 												id:uuidv4(),
@@ -3170,6 +3540,68 @@ const DesignStepNew = forwardRef((props, ref) => {
 				>
 					<FundraisingTypeModal setIsFundraisingModalOpen={setIsFundraisingModalOpen} />
 				</Modal>
+				<Modal
+					isOpen={isCustomDesignModalOpen}
+					onClose={() => setIsCustomDesignModalOpen(false)}
+				>
+					<CustomDesign onClose={() => setIsCustomDesignModalOpen(false)} />
+				</Modal>
+
+					<Modal
+						isOpen={isSleeveModalOpen}
+						onClose={() => setIsSleeveModalOpen(false)}
+					>
+						<div className={css.sleeveModal}>
+							<h2 className={css.sleeveModal__title}>
+								Custom sleeve designs to make you stand out
+							</h2>
+
+							<p className={css.sleeveModal__text}>
+								Sleeve designs are available with special pricing
+								(shown at checkout)
+							</p>
+
+							{/* 👇 PREVIEW IMAGES */}
+							<div className={css.sleevePreview}>
+								{imageLeft && (
+									<div className={css.sleevePreview__item}>
+										<img src={imageLeft} alt="Left sleeve" />
+										<span>Left sleeve</span>
+									</div>
+								)}
+
+								{imageRight && (
+									<div className={css.sleevePreview__item}>
+										<img src={imageRight} alt="Right sleeve" />
+										<span>Right sleeve</span>
+									</div>
+								)}
+							</div>
+
+							<div className={css.sleeveModal__actions}>
+								<button
+									className={css.modal__button__continue}
+									onClick={() => {
+										setIsSleeve(true)
+										setIsSleeveModalOpen(false)
+									}}
+								>
+									Add Sleeve Design
+								</button>
+
+								<button
+									className={css.modal__button__secondary}
+									onClick={() => {
+										setIsSleeveModalOpen(false)
+										setIsSleeve(false)
+									}}
+								>
+									No thanks, take me back to the Design Lab
+								</button>
+							</div>
+						</div>
+					</Modal>
+
 
 				<Modal
 					isOpen={isNewDesignModalOpen}
