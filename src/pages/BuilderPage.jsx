@@ -62,8 +62,8 @@ export default function Builder() {
 				}
 
 				if (!uuid) {
-					window.location.href = 'https://spirit-hero.splitdev.org/';
-					return;
+					/*window.location.href = 'https://spirit-hero.splitdev.org/';
+					return;*/
 				}
 
 				if (!localStorage.getItem('access_token')) {
