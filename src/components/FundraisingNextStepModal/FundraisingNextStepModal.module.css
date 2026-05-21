@@ -102,4 +102,26 @@
 
 		background-color: #FFFFFF;
 	}
+select {
+	padding: 1rem 1.6rem;
+	border-radius: 1.2rem;
+	border: 1px solid #9B9AA5;
+
+	font-size: 1.6rem;
+	line-height: 1.55;
+	color: #605767;
+
+	background-color: #FFFFFF;
+
+	width: 100%;
+	outline: none;
+}
+
+select {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+
+	cursor: pointer;
+}
 }

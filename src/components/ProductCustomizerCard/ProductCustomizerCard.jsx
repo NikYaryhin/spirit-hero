@@ -5,6 +5,7 @@ import spiritHeroApi from '@/api/spiritHeroApi'
 import { showToast } from '@/helpers/toastCall'
 import Modal from '../Modal/Modal'
 import ColorCheckbox from '../ColorCheckbox/ColorCheckbox'
+import { useSelector } from 'react-redux'
 
 export default function ProductCustomiserCard({
 	groupKey,
@@ -31,10 +32,14 @@ export default function ProductCustomiserCard({
 		choosed_colors,
 		colors,
 		active,
+		params
 	} = product
 	const {
 		id:groupId,
 	} = group
+	const colorPrice = useSelector(
+		(state) => state.flashSale.pricePerColor
+	)
 
 
 
@@ -164,6 +169,11 @@ export default function ProductCustomiserCard({
 
 			<div className={css.info}>
 				<span className={css.product_title}>{product_title}</span>
+				<span className={css.product_title}>$
+				{(
+					+params.on_demand_price +
+					colorPrice
+					).toFixed(2)}</span>
 
 				<fieldset className={css.color__swatchers}>
 					{colorsArray.map(({ color, image,image_back,image_side_left,image_side_right }) => (
