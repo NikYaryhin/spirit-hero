@@ -151,10 +151,10 @@ export default function Builder() {
 
 			<div className="content--wrapper">
 				{activeStep === 1 && <Details />}
-				{activeStep === 4 && <ProductsStep />}
+				{activeStep === 2 && <ProductsStep />}
 				{activeStep === 3 && <DesignStepNew ref={designStepRef} />}
 
-				{activeStep === 2 && <FundraisingStepNew />}
+				{activeStep === 4 && <FundraisingStepNew />}
 				{activeStep ===5 && <FlashSale ref={flashSaleRef} />}
 			</div>
 
