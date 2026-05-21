@@ -51,6 +51,13 @@ class SpiritHeroApi {
 		return data
 	}
 
+	async loginUuid(uuid) {
+		if (bearerToken) return
+
+		const { data } = await this.http.post(`/api/login-uuid?uuid=${uuid}`, null,{})
+		setToken(data.access_token)
+		return data
+	}
 	async saveStore(payload) {
 		const { data } = await this.http.post('/api/builder/save-store', payload)
 		return data

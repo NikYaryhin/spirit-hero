@@ -39,12 +39,45 @@ export default function Builder() {
 	useEffect(() => {
 		const initBuilder = async () => {
 			try {
-				if (!localStorage.getItem('access_token')) {
-					const res = await spiritHeroApi.login('admin@gmail.com', '12345678')
-					console.debug('Login res', res)
+				const params = new URLSearchParams(window.location.search)
+
+
+				const uuidFromUrl = params.get('uuid');
+				const uuidFromStorage = localStorage.getItem('uuid');
+
+				let uuid = null;
+
+				if (uuidFromUrl) {
+					uuid = uuidFromUrl;
+					localStorage.setItem('uuid', uuidFromUrl);
+
+					params.delete('uuid');
+					const newQuery = params.toString();
+					const newUrl =
+						window.location.pathname + (newQuery ? `?${newQuery}` : '');
+
+					window.history.replaceState({}, document.title, newUrl);
+				} else if (uuidFromStorage) {
+					uuid = uuidFromStorage;
 				}
 
-				const params = new URLSearchParams(window.location.search)
+				if (!uuid) {
+					window.location.href = 'https://spirit-hero.splitdev.org/';
+					return;
+				}
+
+				if (!localStorage.getItem('access_token')) {
+					if(uuid){
+						await spiritHeroApi.loginUuid(uuid)
+
+					}else {
+						const res = await spiritHeroApi.login('admin@gmail.com', '12345678')
+						console.debug('Login res', res)
+					}
+
+
+				}
+
 				const storeIdFromQuery = params.get('store_id')
 				const changeLogoFromQuery = params.get('change_logo')
 
@@ -118,11 +151,11 @@ export default function Builder() {
 
 			<div className="content--wrapper">
 				{activeStep === 1 && <Details />}
-				{activeStep === 2 && <ProductsStep />}
+				{activeStep === 4 && <ProductsStep />}
 				{activeStep === 3 && <DesignStepNew ref={designStepRef} />}
 
-				{activeStep === 4 && <FundraisingStepNew />}
-				{activeStep === 5 && <FlashSale ref={flashSaleRef} />}
+				{activeStep === 2 && <FundraisingStepNew />}
+				{activeStep ===5 && <FlashSale ref={flashSaleRef} />}
 			</div>
 
 			<Modal

@@ -277,7 +277,6 @@ export default function FundraisingStepNew() {
 							</div>
 
 							<div className={css.category__group}>
-								<span className={css['category__group--label']}>Product Group</span>
 								<select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
 									<option value="all">All</option>
 									{minimalGroups.map((g) => (

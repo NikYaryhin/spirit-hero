@@ -32,6 +32,19 @@ export default function FundraisingNextStepModal({ closeModal }) {
 		account_number: '',
 	})
 
+	const US_STATES = [
+		"Alabama", "Alaska", "Arizona", "Arkansas", "California",
+		"Colorado", "Connecticut", "Delaware", "Florida", "Georgia",
+		"Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas",
+		"Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts",
+		"Michigan", "Minnesota", "Mississippi", "Missouri", "Montana",
+		"Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+		"New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+		"Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+		"South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+		"Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+	];
+
 	useEffect(() => {
 		const fetchStore = async () => {
 
@@ -280,7 +293,7 @@ export default function FundraisingNextStepModal({ closeModal }) {
 								/>
 							</label>
 
-							<label className={`${css['text--label']} width-33`}>
+							{/*<label className={`${css['text--label']} width-33`}>
 								<span className={css['input--label']}>State</span>
 								<input
 									id="state"
@@ -294,6 +307,29 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									placeholder="State"
 									required
 								/>
+							</label>*/}
+							<label className={`${css['text--label']} width-33`}>
+								<span className={css['input--label']}>State</span>
+
+								<select
+									id="state"
+									value={checkData.state}
+									onChange={(e) => {
+										setCheckData((prev) => ({
+											...prev,
+											state: e.target.value,
+										}));
+									}}
+									required
+								>
+									<option value="">Select state</option>
+
+									{US_STATES.map((state) => (
+										<option key={state} value={state}>
+											{state}
+										</option>
+									))}
+								</select>
 							</label>
 
 							<label className={`${css['text--label']} width-33`}>

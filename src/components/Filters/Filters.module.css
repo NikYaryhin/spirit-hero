@@ -35,6 +35,7 @@
 		.category__label {
 			display: flex;
 			align-items: center;
+
 			gap: 0.4rem;
 			font-size: 1.6rem;
 			line-height: 1.57;
@@ -46,19 +47,19 @@
 
 				.checkbox__emulator {
 					svg {
+						display: flex;
+						align-self: center;
 						visibility: visible;
 					}
 				}
 			}
 
 			.checkbox__emulator {
-				top: 1.6rem;
-				left: 1.2rem;
-
-				display: inline-block;
+				display: block;
 				min-width: 1.6rem;
 				width: 1.6rem;
 				height: 1.6rem;
+				text-align: center;
 
 				border: 1px solid #9B9AA5;
 				border-radius: 0.2rem;

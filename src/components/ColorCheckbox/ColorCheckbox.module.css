@@ -19,6 +19,8 @@
 
 		.checkbox__emulator {
 			svg {
+				display: flex;
+				align-items: center;
 				visibility: visible;
 			}
 		}
@@ -67,6 +69,8 @@
 		border-radius: 0.2rem;
 
 		svg {
+			display: flex;
+			align-items: center;
 			visibility: hidden;
 		}
 	}

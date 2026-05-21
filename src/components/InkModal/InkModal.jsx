@@ -39,9 +39,17 @@ export default function InkModal({ onClose }) {
 		dispatch(setPricePerColor(price))
 	}, [price])
 
+//TODO task 1
+
 	useEffect(() => {
-		const backColorPrice = backColorsCount === 0 ? 0 : backColorsCount + 4
+		const backColorPrice =
+			frontColorsCount === 0 && backColorsCount === 1
+				? 0
+				: backColorsCount === 0
+				? 0
+				: backColorsCount + 4;
 		const frontColorPrice = frontColorsCount === 0 || frontColorsCount === 1? 0 : frontColorsCount-1
+
 		setPrice(frontColorPrice + backColorPrice)
 	}, [frontColorsCount, backColorsCount])
 

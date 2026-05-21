@@ -10,6 +10,8 @@ import { useEffect, useState } from 'react'
 
 export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 	const dispatch = useDispatch()
+	const uuid = localStorage.getItem('uuid') || null
+
 	const [steps, setSteps] = useState(STEPS_LIST)
 	const activeStep = useSelector((state) => state.navigation.activeStep)
 	// const customerApproveFlashSale = useSelector((state) => state.flashSale.customerApproveFlashSale)
@@ -31,7 +33,9 @@ export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 			} else {
 				await onNextStep()
 			}
-			window.location.href = 'https://spirit-hero.splitdev.org/store/dashboard'
+			window.location.href =  `https://spirit-hero.splitdev.org/login-uuid?uuid=${uuid}`
+
+
 		} catch (error) {
 			console.error('Save and exit error', error)
 		}

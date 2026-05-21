@@ -21,7 +21,7 @@ const slugify = (value) =>
 
 export default function StoreDetailsForm({ image }) {
 	const dispatch = useDispatch()
-
+	const uuid = localStorage.getItem('uuid') || null
 	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 	const storeId = useSelector((state) => state.flashSale.storeId)
 	console.log('storeInfo',storeInfo)
@@ -99,6 +99,7 @@ export default function StoreDetailsForm({ image }) {
 				res = await spiritHeroApi.saveStore({
 					...payload,
 					current_page: 2,
+					uuid:uuid
 				})
 				console.debug('spiritHeroApi.saveStore()', res)
 
