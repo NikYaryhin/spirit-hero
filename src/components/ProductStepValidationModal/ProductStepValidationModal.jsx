@@ -168,12 +168,12 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 				</>*/
 				<>
 					{/* Шапка модалки */}
-					<div className={css.header_v2}>
+				{/*	<div className={css.header_v2}>
 						<span className={css.badge_v2}>Success</span>
-					{/*	<button onClick={() => setIsModalOpen(false)} className={css.close_btn_v2} aria-label="Close">
+						<button onClick={() => setIsModalOpen(false)} className={css.close_btn_v2} aria-label="Close">
 							✕
-						</button>*/}
-					</div>
+						</button>
+					</div>*/}
 
 					<h3 className={css.title_v2}>
 						Great! You have added flash sale collections to your store.
