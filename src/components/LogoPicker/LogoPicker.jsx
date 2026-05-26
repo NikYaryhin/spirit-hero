@@ -32,7 +32,9 @@ export default function LogoPicker({ setCustomerImage }) {
 	return (
 		<div className={css['logo--picker']}>
 			<div className={css['logo--picker__image']}>
+{/*
 				<img src={image} alt="" loading="lazy" />
+*/}
 
 				<span className={css['logo--picker__label']}>
 					Add your own custom background
@@ -40,8 +42,20 @@ export default function LogoPicker({ setCustomerImage }) {
 			</div>
 
 			<label className={css['logo--picker__button']}>
-				<span>Upload</span>
-				<Upload />
+
+				{image ? (
+					<img
+						src={image}
+						alt="Preview"
+						className={css['logo--picker__preview']}
+					/>
+				) : (
+					/* Якщо фото немає — показуємо стандартний дефолтний текст та іконку */
+					<>
+						<span>Upload</span>
+						<Upload />
+					</>
+				)}
 				<input
 					onChange={onInputChange}
 					className="visually-hidden"

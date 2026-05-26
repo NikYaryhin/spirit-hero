@@ -117,6 +117,7 @@ export default function ProductCard({
 
 		// якщо продукт НЕ selected
 		if (!selected) {
+
 			return
 		}
 
@@ -188,15 +189,15 @@ export default function ProductCard({
 				return
 			}*/
 
+			if (!selected && updated.length===1 && current.length===0){
+				cardClickHandleV2(+id);
+			}
 			setCatalogSelectedColors((prev) => ({
 				...prev,
 				[id]: updated,
 			}))
 
 
-			if (!selected && updated.length===1 && current.length===0){
-				cardClickHandleV2(+id);
-			}
 			return
 		}
 

@@ -245,7 +245,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 							</div>
 							<div className={css.mix_match_v2}>mix/match</div>
 							<Link to="https://spirithero.com/pages/minimums-for-group-orders" className={css.link_v2} target="_blank">
-								View minimum guide here <span className={css.arrow_v2}>→</span>
+								View minimum guide here
 							</Link>
 						</div>
 					</div>
