@@ -117,10 +117,6 @@ export default function ProductCard({
 
 		// якщо продукт НЕ selected
 		if (!selected) {
-			setCatalogSelectedColors((prev) => ({
-				...prev,
-				[id]: [],
-			}))
 			return
 		}
 
