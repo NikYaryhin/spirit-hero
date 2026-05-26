@@ -407,7 +407,7 @@ export default function ProductCard({
 								}
 								onMouseLeave={() =>
 									setImage(
-										filteredColors?.[0]
+										selectedCatalogColors?.[0]?.image || filteredColors?.[0]
 											?.image ||
 										product_image
 									)
