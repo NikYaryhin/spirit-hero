@@ -19,6 +19,7 @@ export default function ProductCard({
 																			// catalog props
 																			selectedCatalogColors,
 																			setCatalogSelectedColors,
+																			cardClickHandleV2
 																		}) {
 	const colorPrice = useSelector(
 		(state) => state.flashSale.pricePerColor
@@ -115,7 +116,13 @@ export default function ProductCard({
 		if (!isCatalog) return
 
 		// якщо продукт НЕ selected
-		if (!selected) return
+		if (!selected) {
+			setCatalogSelectedColors((prev) => ({
+				...prev,
+				[id]: [],
+			}))
+			return
+		}
 
 		// якщо нема кольорів
 		if (!filteredColors?.length) return
@@ -176,20 +183,24 @@ export default function ProductCard({
 				updated = [...current, color]
 			}
 
-			if (updated.length === 0) {
+		/*	if (updated.length === 0) {
 				showToast(
 					'You cannot delete the last remaining color',
 					'error'
 				)
 
 				return
-			}
+			}*/
 
 			setCatalogSelectedColors((prev) => ({
 				...prev,
 				[id]: updated,
 			}))
 
+
+			if (!selected && updated.length===1 && current.length===0){
+				cardClickHandleV2(+id);
+			}
 			return
 		}
 

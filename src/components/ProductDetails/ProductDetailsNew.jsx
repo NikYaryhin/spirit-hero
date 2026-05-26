@@ -13,7 +13,8 @@ export default function ProductDetailsNew({
 																						isCatalog,
 																						sendColorsToBackend,
 																						setCatalogSelectedColors,
-																						selectedCatalogColorsList
+																						selectedCatalogColorsList,
+																						cardClickHandleV2
 																			 }) {
 
 	// Визначаємо, чи всі товари в цій групі вибрані
@@ -69,6 +70,8 @@ export default function ProductDetailsNew({
 							sendColorsToBackend={sendColorsToBackend}
 							selectedCatalogColors={selectedCatalogColorsList[product.id] || []}
 							setCatalogSelectedColors={setCatalogSelectedColors}
+							cardClickHandleV2={cardClickHandleV2}
+
 							// Якщо ProductCard очікує selected окремим пропсом, можна додати:
 							// isSelected={product.selected}
 						/>

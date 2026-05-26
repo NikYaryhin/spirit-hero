@@ -530,6 +530,26 @@ export default function Icon({ name, className }) {
 				</svg>
 			)
 
+		case 'InputChecked2':
+			return (
+				<svg
+					className={className}
+					width="18"
+					height="13"
+					viewBox="0 0 18 13"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M1 7.1875L5.86957 12L17 1"
+						stroke="#ffffff"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				</svg>
+			)
+
 		case 'Dots':
 			return (
 				<svg

@@ -77,7 +77,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 	return (
 		<div className={css.modal__content}>
 			{isFlashSale ? (
-				<>
+				/*<>
 					<h3 className={css.title}>
 						Great choice! Flash sales give you the best pricing and a simple, streamlined ordering experience.
 						<br />
@@ -161,6 +161,122 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 							onClick={onConfitmButtonClick}
 							disabled={!isApprove || choosedCollection.length < 1}
 							className={`${css.confirm} contrast_button_1`}
+						>
+							Yes, confirm
+						</button>
+					</div>
+				</>*/
+				<>
+					{/* Шапка модалки */}
+					<div className={css.header_v2}>
+						<span className={css.badge_v2}>Success</span>
+					{/*	<button onClick={() => setIsModalOpen(false)} className={css.close_btn_v2} aria-label="Close">
+							✕
+						</button>*/}
+					</div>
+
+					<h3 className={css.title_v2}>
+						Great! You have added flash sale collections to your store.
+						<span className={css.subtitle_v2}>Please select the collection you want to run a flash sale for.</span>
+					</h3>
+
+					{/* Селектор колекцій */}
+					<fieldset className={css.fieldset_v2}>
+						{isLoadingGroups ? (
+							<Loader />
+						) : minimalGroupsInStore.length > 0 ? (
+							minimalGroupsInStore.map((item) => (
+								<label className={css.label_v2} key={item.id || item.name}>
+									<input
+										type="checkbox"
+										name="modal-select"
+										value={item.name}
+										className="visually-hidden"
+										onChange={handleCollectionChange}
+										checked={choosedCollection.includes(item.name)}
+									/>
+									<span className={css.checkbox__emulator_v2}>
+            <Icon name={'InputChecked2'} />
+          </span>
+									{item.name}
+								</label>
+							))
+						) : (
+							<div className={css.empty_v2}>No collections found</div>
+						)}
+					</fieldset>
+
+					{/* Політика та інформаційні картки */}
+					<div className={css.policy_section_v2}>
+						<h4 className={css.policy_title_v2}>Minimum Requirements Policy</h4>
+						<p className={css.policy_subtitle_v2}>If the minimums aren't met, you can choose one of the following options:</p>
+
+						<ol className={css.numbered_list_v2}>
+							<li>
+								<span className={css.list_number_v2}>1</span>
+								Extend the store duration to allow for more sales.
+							</li>
+							<li>
+								<span className={css.list_number_v2}>2</span>
+								Purchase the remaining items to meet the minimum for each group.
+							</li>
+						</ol>
+					</div>
+
+					{/* Дві картки поруч */}
+					<div className={css.cards_container_v2}>
+						{/* Ліва картка (Важливо) */}
+						<div className={css.notice_card_v2}>
+							<h5 className={css.card_title_v2}>
+								<span className={css.info_icon_v2}>i</span> Important Notice
+							</h5>
+							<ul className={css.bullet_list_v2}>
+								<li>Orders will not be canceled or refunded.</li>
+								<li>Flash sale pricing is based on the number of ink colors.</li>
+								<li>$1 will be added for each additional ink color.</li>
+							</ul>
+						</div>
+
+						{/* Права картка (Мінімуми) */}
+						<div className={css.minimum_card_v2}>
+							<span className={css.min_label_v2}>Required Minimum</span>
+							<div className={css.min_count_v2}>
+								36 <span className={css.min_text_v2}>items</span>
+							</div>
+							<div className={css.mix_match_v2}>mix/match</div>
+							<Link to="https://spirithero.com/pages/minimums-for-group-orders" className={css.link_v2} target="_blank">
+								View minimum guide here <span className={css.arrow_v2}>→</span>
+							</Link>
+						</div>
+					</div>
+
+					{/* Чекбокс згоди */}
+					<label className={css.checkbox__label_v2}>
+						<input
+							type="checkbox"
+							name="modal-approve"
+							className="visually-hidden"
+							checked={isApprove}
+							onChange={(e) => setIsApprove(e.currentTarget.checked)}
+						/>
+						<span className={css.checkbox__emulator_v2}>
+      <Icon name={'InputChecked2'} />
+    </span>
+						I agree with the minimum order requirements for each product group
+					</label>
+
+					{/* Кнопки дії */}
+					<div className={css.button__box_v2}>
+						<button
+							onClick={() => setIsModalOpen(false)}
+							className={`${css.back_v2} light_button_1`}
+						>
+							Back
+						</button>
+						<button
+							onClick={onConfitmButtonClick}
+							disabled={!isApprove || choosedCollection.length < 1}
+							className={`${css.confirm_v2} contrast_button_1`}
 						>
 							Yes, confirm
 						</button>

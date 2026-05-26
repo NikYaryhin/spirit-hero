@@ -234,6 +234,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 
 	// --- Handlers ---
 	const toggleSelect = useCallback((productId, groupId) => {
+		console.log()
 		setSelectedData(prev => {
 			const next = { ...prev }
 			const gId = String(groupId)
@@ -604,6 +605,8 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 								}))}
 								isFlashSale={isFlashSale}
 								cardClickHandle={(e) => toggleSelect(e.currentTarget.value, group.id)}
+								cardClickHandleV2={(id) => toggleSelect(id, group.id)}
+
 								onGroupCheckHandle={(checked) => {
 									setSelectedData(prev => {
 										const next = { ...prev }
