@@ -11,6 +11,7 @@ import {
 	setFlashSale,
 } from '@/features/flashSale/flashSaleSlice'
 import ColorsList from '../ColorsList/ColorsList'
+import { showToast } from '@/helpers/toastCall'
 
 const slugify = (value) =>
 	value
@@ -82,6 +83,13 @@ export default function StoreDetailsForm({ image }) {
 			social_media_2: secondSocial || '',
 			color: colors,
 		}
+		if(colors.length === 0){
+			showToast(
+				'Please select at least one color',
+				'error'
+			)
+		}
+
 
 		if (image) payload.background_image = image
 

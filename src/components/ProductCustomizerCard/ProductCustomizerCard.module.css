@@ -32,8 +32,11 @@
 	.image__box {
 		width: 8rem;
 		height: 8rem;
+		display: flex;
+		align-self: center;
 
-		img {
+
+img {
 			width: 100%;
 			height: 100%;
 
@@ -46,13 +49,19 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
-
 		width: 52%;
 
 	    .product_title{
 			font-size: 1.6rem;
 			line-height: 1.57;
+			font-weight: bold;
 		}
+
+      .product_price{
+	     font-size: 1.6rem;
+	     line-height: 1.57;
+		  margin-bottom: 5px;
+        }
 		.title {
 			font-size: 1.6rem;
 			line-height: 1.57;

@@ -37,11 +37,13 @@ export default function LogoPicker({ setCustomerImage }) {
 */}
 
 				<span className={css['logo--picker__label']}>
-					Add your own custom background
+					Add your own logo
 				</span>
 			</div>
 
-			<label className={css['logo--picker__button']}>
+			<label className={`${css['logo--picker__button']} ${
+				image ? css['has-image'] : ''
+			}`}>
 
 				{image ? (
 					<img
@@ -55,6 +57,12 @@ export default function LogoPicker({ setCustomerImage }) {
 						<span>Upload</span>
 						<Upload />
 					</>
+				)}
+				{image && (
+					<div className={css['logo--picker__overlay']}>
+						<Upload className={css['logo--picker__upload-icon']} />
+						<span>Update</span>
+					</div>
 				)}
 				<input
 					onChange={onInputChange}

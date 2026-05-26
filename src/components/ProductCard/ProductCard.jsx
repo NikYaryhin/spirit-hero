@@ -60,7 +60,7 @@ export default function ProductCard({
 			)?.image ||
 			sortedColors?.[0]?.image ||
 			product_image
-			: product_image
+			: selectedCatalogColors?.[0]?.image  ||  product_image
 	)
 
 	const visibleColors = useMemo(() => {
@@ -101,16 +101,17 @@ export default function ProductCard({
 
 	// set first image
 	useEffect(() => {
+
 		if (
 			isCatalog &&
 			filteredColors.length > 0
 		) {
 			setImage(
-				filteredColors?.[0]?.image ||
+				selectedCatalogColors?.[0]?.image || filteredColors?.[0]?.image ||
 				product_image
 			)
 		}
-	}, [filteredColors, isCatalog, product_image])
+	}, [filteredColors, isCatalog, product_image,selectedCatalogColors])
 
 	useEffect(() => {
 		if (!isCatalog) return

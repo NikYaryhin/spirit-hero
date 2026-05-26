@@ -169,7 +169,7 @@ export default function ProductCustomiserCard({
 
 			<div className={css.info}>
 				<span className={css.product_title}>{product_title}</span>
-				<span className={css.product_title}>$
+				<span className={css.product_price}>$
 				{(
 					+params.on_demand_price +
 					colorPrice

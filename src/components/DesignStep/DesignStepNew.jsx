@@ -3590,7 +3590,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 								</button>
 
 								<button
-									className={css.modal__button__secondary}
+									className={css.modal__button__cancel}
 									onClick={() => {
 										setIsSleeveModalOpen(false)
 										setIsSleeve(false)
