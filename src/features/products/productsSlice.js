@@ -118,7 +118,7 @@ const productsSlice = createSlice({
 				state.catalogProducts = filteredCatalogProducts
 				state.initialCatalogProducts = filteredCatalogProducts
 				state.filters = action.payload.filters
-				state.minimalGroups = action.payload.minimum_groups
+				//state.minimalGroups = action.payload.minimum_groups
 			})
 			.addCase(fetchProducts.rejected, (state, action) => {
 				state.isLoading = false
