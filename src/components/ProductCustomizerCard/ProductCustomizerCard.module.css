@@ -214,3 +214,25 @@ img {
 		flex: 1;
 	}
 }
+
+.price_row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 16px;
+	margin-bottom: 10px;
+}
+
+.flash__price {
+	color: #1e293b;
+}
+
+.old__price_wrapper {
+	display: flex;
+	align-items: center;
+	font-size: 16px;
+}
+
+.dash {
+	margin-right: 4px;
+}

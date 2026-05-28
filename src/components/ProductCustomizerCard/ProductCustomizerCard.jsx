@@ -32,7 +32,9 @@ export default function ProductCustomiserCard({
 		choosed_colors,
 		colors,
 		active,
-		params
+		params,
+		sale_price_min,
+		sale_price_max
 	} = product
 	const {
 		id:groupId,
@@ -169,11 +171,17 @@ export default function ProductCustomiserCard({
 
 			<div className={css.info}>
 				<span className={css.product_title}>{product_title}</span>
-				<span className={css.product_price}>$
-				{(
-					+params.on_demand_price +
-					colorPrice
-					).toFixed(2)}</span>
+				<div className={css.price_row}>
+  <span className={css.flash__price}>
+    ${(+sale_price_min+ colorPrice).toFixed(2)}
+  </span>
+					<span className={css.old__price_wrapper}>
+    <span className={css.dash}>-</span>
+    <span className={css.old__price}>
+      ${(+sale_price_max+ colorPrice).toFixed(2)}
+    </span>
+  </span>
+				</div>
 
 				<fieldset className={css.color__swatchers}>
 					{colorsArray.map(({ color, image,image_back,image_side_left,image_side_right }) => (

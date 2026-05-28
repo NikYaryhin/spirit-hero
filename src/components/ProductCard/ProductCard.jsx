@@ -2,9 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 import Icon from '../Icon'
-
 import css from './ProductCard.module.css'
-
 import { showToast } from '@/helpers/toastCall'
 
 export default function ProductCard({
@@ -21,9 +19,7 @@ export default function ProductCard({
 																			setCatalogSelectedColors,
 																			cardClickHandleV2
 																		}) {
-	const colorPrice = useSelector(
-		(state) => state.flashSale.pricePerColor
-	)
+	const colorPrice = useSelector((state) => state.flashSale.pricePerColor)
 
 	const {
 		id,
@@ -32,45 +28,47 @@ export default function ProductCard({
 		selected,
 		params,
 		colors,
+		sale_price_min,
+		sale_price_max,
 		choosed_colors,
 	} = product
 
-	// only for non-catalog
-	const [selectedColors, setSelectedColors] = useState(
-		choosed_colors || []
-	)
-
+	const [selectedColors, setSelectedColors] = useState(choosed_colors || [])
 	const [showAllColors, setShowAllColors] = useState(false)
 
-	// ACTIVE COLORS SOURCE
 	const currentSelectedColors = isCatalog
 		? selectedCatalogColors || []
 		: selectedColors || []
 
 	const sortedColors = useMemo(() => {
 		if (!Array.isArray(colors)) return []
-
 		return [...colors]
 	}, [colors])
 
 	const [image, setImage] = useState(
 		!isCatalog
-			? sortedColors?.[0]?.logo?.find(
-			(value) => value.type_id === 1
-			)?.image ||
+			? sortedColors?.[0]?.logo?.find((value) => value.type_id === 1)?.image ||
 			sortedColors?.[0]?.image ||
 			product_image
-			: selectedCatalogColors?.[0]?.image  ||  product_image
+			: selectedCatalogColors?.[0]?.image || product_image
 	)
 
+	// Статичні розміри як на макеті
+	const mockSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
+
+	const filteredColors = useMemo(() => {
+		if (!Array.isArray(colors)) return []
+		if (!Array.isArray(activeColors) || activeColors.length === 0) {
+			return colors
+		}
+		const activeSet = new Set(activeColors.map((id) => String(id)))
+		return colors.filter((color) => activeSet.has(String(color.parent_color_id)))
+	}, [colors, activeColors])
+
 	const visibleColors = useMemo(() => {
-		if (showAllColors) return sortedColors
-
-		return sortedColors.slice(0, 5)
-	}, [sortedColors, showAllColors])
-
-	const hiddenColorsCount =
-		(sortedColors?.length || 0) - 5
+		if (showAllColors) return filteredColors
+		return filteredColors.slice(0, 10) // Показуємо перші 9 кольорів, як на фото
+	}, [filteredColors, showAllColors])
 
 	useEffect(() => {
 		if (!isCatalog && choosed_colors) {
@@ -78,477 +76,226 @@ export default function ProductCard({
 		}
 	}, [choosed_colors, isCatalog])
 
-	const filteredColors = useMemo(() => {
-		if (!Array.isArray(colors)) return []
-
-		if (
-			!Array.isArray(activeColors) ||
-			activeColors.length === 0
-		) {
-			return colors
-		}
-
-		const activeSet = new Set(
-			activeColors.map((id) => String(id))
-		)
-
-		return colors.filter((color) =>
-			activeSet.has(
-				String(color.parent_color_id)
-			)
-		)
-	}, [colors, activeColors])
-
-	// set first image
 	useEffect(() => {
-
-		if (
-			isCatalog &&
-			filteredColors.length > 0
-		) {
+		if (isCatalog && filteredColors.length > 0) {
 			setImage(
-				selectedCatalogColors?.[0]?.image || filteredColors?.[0]?.image ||
-				product_image
+				selectedCatalogColors?.[0]?.image || filteredColors?.[0]?.image || product_image
 			)
 		}
-	}, [filteredColors, isCatalog, product_image,selectedCatalogColors])
+	}, [filteredColors, isCatalog, product_image, selectedCatalogColors])
 
 	useEffect(() => {
-		if (!isCatalog) return
+		if (!isCatalog || !selected || !filteredColors?.length) return
+		if (selectedCatalogColors && selectedCatalogColors.length > 0) return
 
-		// якщо продукт НЕ selected
-		if (!selected) {
-
-			return
-		}
-
-		// якщо нема кольорів
-		if (!filteredColors?.length) return
-
-		// якщо вже є вибрані кольори — нічого не робимо
-		if (
-			selectedCatalogColors &&
-			selectedCatalogColors.length > 0
-		) {
-			return
-		}
-
-		// перший колір
 		const firstColor = filteredColors[0]
-
 		setCatalogSelectedColors((prev) => ({
 			...prev,
 			[id]: [firstColor],
 		}))
-	}, [
-		selected,
-		isCatalog,
-		filteredColors,
-		selectedCatalogColors,
-		id,
-		setCatalogSelectedColors,
-	])
+	}, [selected, isCatalog, filteredColors, selectedCatalogColors, id, setCatalogSelectedColors])
+
 	const isColorActive = (colorId) => {
-		return currentSelectedColors?.some(
-			(c) => String(c.id) === String(colorId)
-		)
+		return currentSelectedColors?.some((c) => String(c.id) === String(colorId))
 	}
 
 	const toggleColor = (color) => {
-		// =========================
-		// CATALOG MODE
-		// =========================
-
 		if (isCatalog) {
-			const current =
-				selectedCatalogColors || []
-
-			const isActive = current.some(
-				(c) =>
-					String(c.id) ===
-					String(color.id)
-			)
-
+			const current = selectedCatalogColors || []
+			const isActive = current.some((c) => String(c.id) === String(color.id))
 			let updated
 
 			if (isActive) {
-				updated = current.filter(
-					(c) =>
-						String(c.id) !==
-						String(color.id)
-				)
+				updated = current.filter((c) => String(c.id) !== String(color.id))
 			} else {
 				updated = [...current, color]
 			}
 
-		/*	if (updated.length === 0) {
-				showToast(
-					'You cannot delete the last remaining color',
-					'error'
-				)
-
-				return
-			}*/
-
-			if (!selected && updated.length===1 && current.length===0){
-				cardClickHandleV2(+id);
+			if (!selected && updated.length === 1 && current.length === 0) {
+				cardClickHandleV2(+id)
 			}
 			setCatalogSelectedColors((prev) => ({
 				...prev,
 				[id]: updated,
 			}))
-
-
 			return
 		}
 
-		// =========================
-		// NORMAL MODE
-		// =========================
-
-		const isActive = selectedColors?.some(
-			(c) =>
-				String(c.id) ===
-				String(color.id)
-		)
-
+		const isActive = selectedColors?.some((c) => String(c.id) === String(color.id))
 		let updated
 
 		if (isActive) {
-			updated = selectedColors.filter(
-				(c) =>
-					String(c.id) !==
-					String(color.id)
-			)
+			updated = selectedColors.filter((c) => String(c.id) !== String(color.id))
 		} else {
-			updated = [
-				...(selectedColors || []),
-				color,
-			]
+			updated = [...(selectedColors || []), color]
 		}
 
 		if (updated.length === 0) {
-			showToast(
-				'You cannot delete the last remaining color',
-				'error'
-			)
-
+			showToast('You cannot delete the last remaining color', 'error')
 			return
 		}
 
 		setSelectedColors(updated)
-
 		sendColorsToBackend({
 			product_id: +id,
 			group_id: +minimalGroup.id,
-			color_id: updated.map(
-				(v) => +v.color_id
-			),
+			color_id: updated.map((v) => +v.color_id),
 		})
 	}
 
-	const handleColorHover = (color) => {
-		setImage(
-			color.logo?.find(
-				(value) => value.type_id === 1
-			)?.image ||
-			color.image ||
-			product_image
-		)
-	}
-
-	const handleColorHoverLeave = () => {
-		setImage(
-			sortedColors?.[0]?.logo?.find(
-				(value) => value.type_id === 1
-			)?.image ||
-			sortedColors?.[0]?.image ||
-			product_image
-		)
-	}
-
 	return (
-		<li
-			className={css.product__item}
-			key={id}
-			id={id}
-		>
-			<div className={css.image}>
-				<img
-					src={`${image}?${new Date().getTime()}`}
-					alt={product_title}
-					loading="lazy"
-				/>
+		<li className={`${css.product__item} ${selected ? css.selected : ''}`} key={id}>
+
+			{/* Контейнер зображення з сірим фоном */}
+			<div className={css.image_container}>
+				<div className={css.image}>
+					<img src={`${image}`} alt={product_title} loading="lazy" />
+				</div>
+
+				{/* Хіт продажів */}
+				<div className={css.best_seller}>Bestseller</div>
+
+				{/* Чекбокс у верхньому лівому кутку */}
+				<label className={css.label} title={product_title}>
+					<input
+						checked={Boolean(selected)}
+						type="checkbox"
+						className="visually-hidden"
+						value={id}
+						onChange={inputHandle}
+					/>
+          <span className={css.checkbox__emulator}>
+              <Icon name={'InputChecked'} />
+          </span>
+
+				</label>
 			</div>
 
-			<span className={css.name}>
-				{product_title}
-			</span>
+			{/* Рядок Рейтингу та Мінімалки */}
+			<div className={css.meta_row}>
+				<div className={css.rating}>
+					<span className={css.star}>★</span>
+					<span className={css.rating_val}>5.0</span>
+				</div>
+				<div className={css.min_items}>
+					{isFlashSale ? (
+						<>
+							<span className={css.info_icon}>ℹ</span>
+							<span>36 items (min)</span>
+						</>
+					) : (
+						<span>
+            No minimums
+          </span>
+					)}
+				</div>
+			</div>
 
-			<div className={css.price}>
+			{/* Назва та Опис */}
+			<div className={css.info_block}>
+				<h3 className={css.name}>{product_title}</h3>
+			</div>
+
+			{/* Ціна */}
+	{/*		<div className={css.price_row}>
 				{isFlashSale ? (
 					<>
-						<span
-							className={
-								css.flash__price
-							}
-						>
-							$
-							{(
-								+params.flash_sale_price +
-								colorPrice
-							).toFixed(2)}
-						</span>
-
-						<span
-							className={
-								css.old__price
-							}
-						>
-							$
-							{(
-								+params.on_demand_price +
-								colorPrice
-							).toFixed(2)}
-						</span>
+            <span className={css.flash__price}>
+              ${(+params.flash_sale_price + colorPrice).toFixed(2)}
+            </span>
+						<span className={css.old__price_wrapper}>
+              <span className={css.dash}>-</span>
+              <span className={css.old__price}>
+                ${(+params.on_demand_price + colorPrice).toFixed(2)}
+              </span>
+            </span>
 					</>
 				) : (
 					<span className={css.price}>
-						$
-						{(
-							+params.on_demand_price +
-							colorPrice
-						).toFixed(2)}
-					</span>
+            ${(+params.on_demand_price + colorPrice).toFixed(2)}
+          </span>
 				)}
+			</div>*/}
+			<div className={css.price_row}>
+  <span className={css.flash__price}>
+    ${(+sale_price_min+ colorPrice).toFixed(2)}
+  </span>
+				<span className={css.old__price_wrapper}>
+    <span className={css.dash}>-</span>
+    <span className={css.old__price}>
+      ${(+sale_price_max+ colorPrice).toFixed(2)}
+    </span>
+  </span>
 			</div>
 
-			<div className={css.sizes_box}>
-				<span className={css.sizes1}>
-					Sizes:
-				</span>
-
-				<span className={css.sizes2}>
-					XS - 3XL
-				</span>
+			{/* Плашки розмірів */}
+			<div className={css.sizes_grid}>
+				{mockSizes.map((size) => (
+					<div key={size} className={css.size_badge}>
+						{size}
+					</div>
+				))}
 			</div>
 
-			<div className={css.best_seller}>
-				Best Seller
-			</div>
-
-			<label
-				className={css.label}
-				title={product_title}
-			>
-				<span
-					className={
-						css.checkbox__emulator
-					}
-				>
-					<Icon name="Checked" />
-				</span>
-
-				<input
-					checked={Boolean(selected)}
-					type="checkbox"
-					className="visually-hidden"
-					value={id}
-					onChange={inputHandle}
-				/>
-			</label>
-
-			{/* ========================= */}
-			{/* CATALOG */}
-			{/* ========================= */}
-
-			{isCatalog && (
+			{/* Секція кольорів */}
+			<div className={css.colors_section}>
 				<div className={css.colors__bottom}>
-					{(
-						showAllColors
-							? filteredColors
-							: filteredColors.slice(
-							0,
-							5
-							)
-					).map((color) => {
-						const preview =
-							color.image ||
-							product_image
-
-						const isActive =
-							isColorActive(
-								color.id
-							)
+					{visibleColors.map((color) => {
+						const preview = color.image || product_image
+						const isActive = isColorActive(color.id)
 
 						return (
 							<div
 								key={color.id}
-								className={`${
-									css.color__item
-								} ${
-									isActive
-										? css.active
-										: ''
-								}`}
+								className={`${css.color__item} ${isActive ? css.active : ''}`}
 								onClick={() => {
-									setImage(
-										preview
-									)
-
-									toggleColor(
-										color
-									)
+									if (isCatalog) setImage(preview)
+									toggleColor(color)
 								}}
-								onMouseEnter={() =>
-									setImage(
-										preview
-									)
-								}
-								onMouseLeave={() =>
-									setImage(
-										selectedCatalogColors?.[0]?.image || filteredColors?.[0]
-											?.image ||
+								onMouseEnter={() => {
+									if (isCatalog) setImage(preview)
+									else setImage(
+										color.logo?.find((value) => value.type_id === 1)?.image ||
+										color.image ||
 										product_image
 									)
-								}
-							>
-								<span
-									className={
-										css.color__circle
+								}}
+								onMouseLeave={() => {
+									if (isCatalog) {
+										setImage(selectedCatalogColors?.[0]?.image || filteredColors?.[0]?.image || product_image)
+									} else {
+										setImage(
+											sortedColors?.[0]?.logo?.find((value) => value.type_id === 1)?.image ||
+											sortedColors?.[0]?.image ||
+											product_image
+										)
 									}
-									style={{
-										backgroundColor:
-										color.color,
-									}}
+								}}
+							>
+                <span
+									className={css.color__circle}
+									style={{ backgroundColor: color.color }}
 								/>
 
-								{isActive && (
-									<span
-										className={
-											css.remove
-										}
-									>
-										✓
-									</span>
-								)}
+								{/* Повернено галочку як було раніше */}
+								{isActive && <span className={css.remove}>✓</span>}
 							</div>
 						)
 					})}
-
-					{!showAllColors &&
-					filteredColors.length >
-					5 && (
-						<div
-							className={`${css.color__item} ${css.more}`}
-							onClick={() =>
-								setShowAllColors(
-									true
-								)
-							}
-						>
-								<span
-									className={
-										css.color__circle
-									}
-								>
-									+
-									{filteredColors.length -
-									5}
-								</span>
-						</div>
-					)}
 				</div>
-			)}
 
-			{/* ========================= */}
-			{/* NORMAL */}
-			{/* ========================= */}
+				{/* Кнопка розгортання кольорів */}
+				{!showAllColors && filteredColors.length > 10 && (
+					<button
+						type="button"
+						className={css.view_more_btn}
+						onClick={() => setShowAllColors(true)}
+					>
+						View more colors <span className={css.arrow}>➔</span>
+					</button>
+				)}
+			</div>
 
-			{!isCatalog && (
-				<div className={css.colors__bottom}>
-					{visibleColors.map(
-						(color) => {
-							const isActive =
-								isColorActive(
-									color.id
-								)
-
-							return (
-								<div
-									key={
-										color.id
-									}
-									className={`${
-										css.color__item
-									} ${
-										isActive
-											? css.active
-											: ''
-									}`}
-									onClick={() =>
-										toggleColor(
-											color
-										)
-									}
-									onMouseEnter={() =>
-										handleColorHover(
-											color
-										)
-									}
-									onMouseLeave={
-										handleColorHoverLeave
-									}
-								>
-									<span
-										className={
-											css.color__circle
-										}
-										style={{
-											backgroundColor:
-											color.color,
-										}}
-									/>
-
-									{isActive && (
-										<span
-											className={
-												css.remove
-											}
-										>
-											✓
-										</span>
-									)}
-								</div>
-							)
-						}
-					)}
-
-					{!showAllColors &&
-					hiddenColorsCount >
-					0 && (
-						<div
-							className={`${css.color__item} ${css.more}`}
-							onClick={() =>
-								setShowAllColors(
-									true
-								)
-							}
-						>
-								<span
-									className={
-										css.color__circle
-									}
-								>
-									+
-									{
-										hiddenColorsCount
-									}
-								</span>
-						</div>
-					)}
-				</div>
-			)}
 		</li>
 	)
 }

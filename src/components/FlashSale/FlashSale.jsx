@@ -7,7 +7,6 @@ import 'react-day-picker/dist/style.css'
 import { useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import DatePicker from '@components/dataPicker/DatePicker'
-import sampleCsvUrl from '../../assets/sample_csv.csv';
 const FlashSale = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
@@ -761,7 +760,7 @@ const FlashSale = forwardRef((props, ref) => {
 									/>
 								</label>
 								<a
-									href={sampleCsvUrl}
+									href="/sample_csv.csv"
 									download="sample_csv.csv"
 									className={css.uploader}
 								>
