@@ -50,7 +50,7 @@ export default function ProductCard({
 			? sortedColors?.[0]?.logo?.find((value) => value.type_id === 1)?.image ||
 			sortedColors?.[0]?.image ||
 			product_image
-			: selectedCatalogColors?.[0]?.image || product_image
+			: selectedCatalogColors?.[selectedCatalogColors.length-1]?.image || product_image
 	)
 
 	// Статичні розміри як на макеті
@@ -79,7 +79,7 @@ export default function ProductCard({
 	useEffect(() => {
 		if (isCatalog && filteredColors.length > 0) {
 			setImage(
-				selectedCatalogColors?.[0]?.image || filteredColors?.[0]?.image || product_image
+				selectedCatalogColors?.[selectedCatalogColors.length-1]?.image || filteredColors?.[0]?.image || product_image
 			)
 		}
 	}, [filteredColors, isCatalog, product_image, selectedCatalogColors])
@@ -272,7 +272,7 @@ export default function ProductCard({
 								}}
 								onMouseLeave={() => {
 									if (isCatalog) {
-										setImage(selectedCatalogColors?.[0]?.image || filteredColors?.[0]?.image || product_image)
+										setImage(selectedCatalogColors?.[selectedCatalogColors.length-1]?.image || filteredColors?.[0]?.image || product_image)
 									} else {
 										setImage(
 											sortedColors?.[0]?.logo?.find((value) => value.type_id === 1)?.image ||
