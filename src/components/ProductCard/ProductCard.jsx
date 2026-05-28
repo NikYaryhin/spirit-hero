@@ -217,15 +217,25 @@ export default function ProductCard({
 				)}
 			</div>*/}
 			<div className={css.price_row}>
-  <span className={css.flash__price}>
+				{
+					+sale_price_min ===+sale_price_max  ? (<>
+							<span className={css.flash__price}>
     ${(+sale_price_min+ colorPrice).toFixed(2)}
   </span>
-				<span className={css.old__price_wrapper}>
+					</>):(<>
+
+						<span className={css.flash__price}>
+    ${(+sale_price_min+ colorPrice).toFixed(2)}
+  </span>
+						<span className={css.old__price_wrapper}>
     <span className={css.dash}>-</span>
     <span className={css.old__price}>
       ${(+sale_price_max+ colorPrice).toFixed(2)}
     </span>
   </span>
+					</>)
+				}
+
 			</div>
 
 			{/* Плашки розмірів */}
