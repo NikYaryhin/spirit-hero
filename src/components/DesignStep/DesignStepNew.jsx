@@ -3013,9 +3013,22 @@ const DesignStepNew = forwardRef((props, ref) => {
 		setActiveSide(prev => prev === 'front' ? 'back' : 'front')
 	}
 	console.log('locationList',locationList)
+	const [sleeveSeenGroups, setSleeveSeenGroups] = useState(new Set());
+
 	const hasSleeveDesign =
 		Boolean(imageLeft || imageRight)
 
+	const shouldShowSleeveButton = (groupId) => {
+		return hasSleeveDesign && !sleeveSeenGroups.has(groupId);
+	};
+
+	const markSleeveSeen = (groupId) => {
+		setSleeveSeenGroups(prev => {
+			const next = new Set(prev);
+			next.add(groupId);
+			return next;
+		});
+	};
 	const allSides = [
 		{ id: 'front', label: 'Front', img: image, id2: 1 },
 		{ id: 'back', label: 'Back', img: imageBack, id2: 2 },
@@ -3023,7 +3036,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 		{ id: 'right', label: 'Right', img: imageRight, id2: 4 },
 	]
 	const sides = hasSleeveDesign
-		? isSleeve
+		? sleeveSeenGroups.has(activeGroupId)
 			? allSides
 			: allSides.filter(
 				(s) =>
@@ -3081,7 +3094,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 						))}
 
 						{/* sleeve button */}
-						{(!isSleeve && hasSleeveDesign) && (
+						{(shouldShowSleeveButton(activeGroupId)) && (
 							<div
 								className={css.sideSquare}
 								onClick={(e) => {
@@ -3582,7 +3595,9 @@ const DesignStepNew = forwardRef((props, ref) => {
 								<button
 									className={css.modal__button__continue}
 									onClick={() => {
-										setIsSleeve(true)
+										//setIsSleeve(true)
+										markSleeveSeen(activeGroupId);
+
 										setIsSleeveModalOpen(false)
 									}}
 								>
@@ -3593,7 +3608,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 									className={css.modal__button__cancel}
 									onClick={() => {
 										setIsSleeveModalOpen(false)
-										setIsSleeve(false)
+										//setIsSleeve(false)
 									}}
 								>
 									No thanks, take me back to the Design Lab

@@ -173,7 +173,13 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 					if (isCatalog && myStoreRegistry.has(`${group.id}-${product.id}`)) {
 						return false
 					}
-					if (isFlashSale && !product.is_flash_sale_type) return false
+					if (isCatalog && isFlashSale && !product.is_flash_sale_type) {
+						return false
+					}
+
+					if (isCatalog && !isFlashSale && product.is_flash_sale_type) {
+						return false
+					}
 					if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(String(product.brand_id))) return false
 					if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(String(product.category_id))) return false
 					if (activeFilters.colorFamilies.length > 0) {
@@ -212,7 +218,13 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			.filter(g => g.is_duplicate === 0)
 			.flatMap(group =>
 				group.products?.filter(product => {
-					if (isFlashSale && !product.is_flash_sale_type) return false;
+					if ( isFlashSale && !product.is_flash_sale_type) {
+						return false
+					}
+
+					if (!isFlashSale && product.is_flash_sale_type) {
+						return false
+					}
 
 					return !(
 						myStoreRegistry.has(`${group.id}-${product.id}`));
@@ -234,7 +246,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 
 	// --- Handlers ---
 	const toggleSelect = useCallback((productId, groupId) => {
-		console.log()
 		setSelectedData(prev => {
 			const next = { ...prev }
 			const gId = String(groupId)
@@ -641,7 +652,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 
 					{Object.entries(selectedDuplicates).map(([groupId, groupData]) => (
 						<div key={groupId} className={cssModal.group__block}>
-							<p className={cssModal.group__title}>
+						{/*	<p className={cssModal.group__title}>
 								{groupData.productIds
 									.map((productId) => {
 										const product = catalogGroups
@@ -654,7 +665,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 									.join(', ')
 								}
 							</p>
-
+*/}
 							<fieldset className={cssModal.fieldset}>
 								{groupData.matches.map((item) => (
 									<label className={cssModal.label} key={item.id}>

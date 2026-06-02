@@ -31,20 +31,15 @@ export default function LogoPicker({ setCustomerImage }) {
 
 	return (
 		<div className={css['logo--picker']}>
-			<div className={css['logo--picker__image']}>
-{/*
-				<img src={image} alt="" loading="lazy" />
-*/}
+		<span className={css['logo--picker__label']}>
+			Add your own logo
+		</span>
 
-				<span className={css['logo--picker__label']}>
-					Add your own logo
-				</span>
-			</div>
-
-			<label className={`${css['logo--picker__button']} ${
-				image ? css['has-image'] : ''
-			}`}>
-
+			<label
+				className={`${css['logo--picker__button']} ${
+					image ? css['has-image'] : ''
+				}`}
+			>
 				{image ? (
 					<img
 						src={image}
@@ -52,18 +47,19 @@ export default function LogoPicker({ setCustomerImage }) {
 						className={css['logo--picker__preview']}
 					/>
 				) : (
-					/* Якщо фото немає — показуємо стандартний дефолтний текст та іконку */
 					<>
 						<span>Upload</span>
 						<Upload />
 					</>
 				)}
+
 				{image && (
 					<div className={css['logo--picker__overlay']}>
 						<Upload className={css['logo--picker__upload-icon']} />
 						<span>Update</span>
 					</div>
 				)}
+
 				<input
 					onChange={onInputChange}
 					className="visually-hidden"

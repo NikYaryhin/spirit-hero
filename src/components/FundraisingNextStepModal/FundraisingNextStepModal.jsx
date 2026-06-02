@@ -47,57 +47,83 @@ export default function FundraisingNextStepModal({ closeModal }) {
 
 	useEffect(() => {
 		const fetchStore = async () => {
-
 			try {
-				setIsLoadingFetchStore(true)
+				setIsLoadingFetchStore(true);
+
 				const res = await spiritHeroApi.getStore(storeId);
 				const store = res?.store;
 
-				if (store?.receiveFunds) {
-					const {
-						type_id,
-						payment_name,
-						first_name,
-						last_name,
-						organization_name,
-						address_1,
-						address_2,
-						city,
-						state,
-						zip_code,
-					} = store.receiveFunds;
+				const receiveType = store?.receive_type;
 
-					setCheckData({
-						type_id,
-						payment_name,
-						first_name,
-						last_name,
-						organization_name,
-						address_1,
-						address_2,
-						city,
-						state,
-						zip_code,
-					});
+				// ACH
+				if (receiveType === 'ach') {
+					if (store?.receiveFundsAch) {
+						const {
+							account_number,
+							routing_number,
+							bank_name,
+						} = store.receiveFundsAch;
+
+						setAchData({
+							account_number,
+							routing_number,
+							bank_name,
+						});
+						setIsCheck(false)
+					}
 				}
+				// FUNDS або старі записи без receive_type
+				else {
+					if (store?.receiveFunds) {
+						const {
+							type_id,
+							payment_name,
+							first_name,
+							last_name,
+							organization_name,
+							address_1,
+							address_2,
+							city,
+							state,
+							zip_code,
+						} = store.receiveFunds;
 
-				if (store?.receiveFundsAch) {
-					const { account_number, routing_number, bank_name } =
-						store.receiveFundsAch;
+						setCheckData({
+							type_id,
+							payment_name,
+							first_name,
+							last_name,
+							organization_name,
+							address_1,
+							address_2,
+							city,
+							state,
+							zip_code,
+						});
+						setIsCheck(true)
 
-					setAchData({
-						account_number,
-						routing_number,
-						bank_name,
-					});
+					}
+					// fallback якщо receive_type=funds, але дані лежать в receiveFundsAch
+					else if (store?.receiveFundsAch) {
+						const {
+							account_number,
+							routing_number,
+							bank_name,
+						} = store.receiveFundsAch;
+
+						setAchData({
+							account_number,
+							routing_number,
+							bank_name,
+						});
+						setIsCheck(false)
+
+					}
 				}
 			} catch (e) {
 				console.error('getStore error', e);
-				setIsLoadingFetchStore(false)
-
-			}finally {
-				setIsLoadingFetchStore(false)
-
+			} finally {
+				setIsLoadingFetchStore(false);
 			}
 		};
 

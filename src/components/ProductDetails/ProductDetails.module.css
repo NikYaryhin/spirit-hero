@@ -67,7 +67,6 @@
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 2.4rem;
-
 	padding: 1rem;
 	background-color: #FCFCFC;
 

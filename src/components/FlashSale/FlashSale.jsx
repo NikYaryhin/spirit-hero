@@ -760,8 +760,8 @@ const FlashSale = forwardRef((props, ref) => {
 									/>
 								</label>
 								<a
-									href="/sample_csv.csv"
-									download="sample_csv.csv"
+									href="/sort_list_sample_(1).csv"
+									download="sort_list_sample_(1).csv"
 									className={css.uploader}
 								>
 									Download Sample CSV

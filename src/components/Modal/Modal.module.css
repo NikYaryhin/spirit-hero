@@ -10,7 +10,7 @@
 	align-items: center;
 	justify-content: center;
 
-	background: rgba(0, 0, 0, 0.0);
+	background: rgba(5, 5, 5, 0.32);
 
 	& .side {
 		justify-content: flex-end;

@@ -5,7 +5,7 @@ body:has(.loader__wrap) {
 .loader__wrap {
 	position: fixed;
 	inset: 0 0 0 0;
-	z-index: 10;
+	z-index: 100;
 
 	display: inline-flex;
 	align-items: center;

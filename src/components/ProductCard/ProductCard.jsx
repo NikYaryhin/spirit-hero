@@ -31,6 +31,7 @@ export default function ProductCard({
 		sale_price_min,
 		sale_price_max,
 		choosed_colors,
+		product_description
 	} = product
 
 	const [selectedColors, setSelectedColors] = useState(choosed_colors || [])
@@ -194,29 +195,51 @@ export default function ProductCard({
 			{/* Назва та Опис */}
 			<div className={css.info_block}>
 				<h3 className={css.name}>{product_title}</h3>
+
+				{product_description && (				<div className={css.tooltip}>
+						<svg
+							className={css.tooltip__icon}
+							width="16"
+							height="16"
+							viewBox="0 0 16 16"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<g clipPath="url(#clip0)">
+								<path
+									d="M8 6H8.00667"
+									stroke="#FBB041"
+									strokeWidth="1.5"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+								<path
+									d="M7.33203 8H7.9987V10.6667H8.66536"
+									stroke="#FBB041"
+									strokeWidth="1.5"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+								<path
+									d="M8 2C12.8 2 14 3.2 14 8C14 12.8 12.8 14 8 14C3.2 14 2 12.8 2 8C2 3.2 3.2 2 8 2Z"
+									stroke="#FBB041"
+									strokeWidth="1.5"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</g>
+						</svg>
+
+						<div className={css.tooltip__content}>
+							{product_description}
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* Ціна */}
-	{/*		<div className={css.price_row}>
-				{isFlashSale ? (
-					<>
-            <span className={css.flash__price}>
-              ${(+params.flash_sale_price + colorPrice).toFixed(2)}
-            </span>
-						<span className={css.old__price_wrapper}>
-              <span className={css.dash}>-</span>
-              <span className={css.old__price}>
-                ${(+params.on_demand_price + colorPrice).toFixed(2)}
-              </span>
-            </span>
-					</>
-				) : (
-					<span className={css.price}>
-            ${(+params.on_demand_price + colorPrice).toFixed(2)}
-          </span>
-				)}
-			</div>*/}
-			<div className={css.price_row}>
+
+			{/*<div className={css.price_row}>
 				{
 					+sale_price_min ===+sale_price_max  ? (<>
 							<span className={css.flash__price}>
@@ -236,6 +259,43 @@ export default function ProductCard({
 					</>)
 				}
 
+			</div>*/}
+
+
+			<div className={css.price_row}>
+				{isFlashSale ? (
+					<>
+			<span className={css.flash__price_red}>
+				${(+params.flash_sale_price + colorPrice).toFixed(2)}
+			</span>
+
+						<span className={css.old__price_wrapper}>
+				<span className={css.dash}>-</span>
+
+				<span className={css.old__price_des}>
+					${(+sale_price_min + colorPrice).toFixed(2)}
+				</span>
+			</span>
+					</>
+				) : +sale_price_min === +sale_price_max ? (
+					<span className={css.flash__price}>
+			${(+sale_price_min + colorPrice).toFixed(2)}
+		</span>
+				) : (
+					<>
+			<span className={css.flash__price}>
+				${(+sale_price_min + colorPrice).toFixed(2)}
+			</span>
+
+						<span className={css.old__price_wrapper}>
+				<span className={css.dash}>-</span>
+
+				<span className={css.old__price}>
+					${(+sale_price_max + colorPrice).toFixed(2)}
+				</span>
+			</span>
+					</>
+				)}
 			</div>
 
 			{/* Плашки розмірів */}
