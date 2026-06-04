@@ -22,7 +22,8 @@ export default function ProductCustomiserCard({
 																								activeSide,
 																								setImageBack,
 																								setImageLeft,
-																								setImageRight
+																								setImageRight,
+																								hasSleeveUpcharge
 
 }) {
 	const {
@@ -156,7 +157,7 @@ export default function ProductCustomiserCard({
 			console.error('setColorsOfProduct error', error)
 		}
 	}
-
+	const extraPrice = hasSleeveUpcharge ? 5 : 0;
 	return (
 		<li
 			onClick={cardClickHandle}
@@ -169,16 +170,17 @@ export default function ProductCustomiserCard({
 				<img src={localImage} alt={product_title} loading="lazy" />
 			</div>
 
+
 			<div className={css.info}>
 				<span className={css.product_title}>{product_title}</span>
 				<div className={css.price_row}>
   <span className={css.flash__price}>
-    ${(+sale_price_min+ colorPrice).toFixed(2)}
+    ${(+sale_price_min+ colorPrice+extraPrice).toFixed(2)}
   </span>
 					<span className={css.old__price_wrapper}>
     <span className={css.dash}>-</span>
     <span className={css.old__price}>
-      ${(+sale_price_max+ colorPrice).toFixed(2)}
+      ${(+sale_price_max+ colorPrice+extraPrice).toFixed(2)}
     </span>
   </span>
 				</div>

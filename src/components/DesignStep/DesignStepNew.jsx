@@ -3021,6 +3021,30 @@ const DesignStepNew = forwardRef((props, ref) => {
 	const shouldShowSleeveButton = (groupId) => {
 		return hasSleeveDesign && !sleeveSeenGroups.has(groupId);
 	};
+	const sleevePriceProducts = useMemo(() => {
+		const result = new Set();
+		console.log('result sleeveSeenGroups',sleeveSeenGroups)
+		console.log('result baseDesign',baseDesign)
+
+		baseDesign.forEach(design => {
+			const hasDesign =
+				(design.customerLogos?.length ?? 0) > 0 ||
+				(design.labels?.length ?? 0) > 0;
+
+			if (!hasDesign) return;
+
+			if (design.type_id !== 3 && design.type_id !== 4) return;
+
+			if (!sleeveSeenGroups.has(String(design.product_group_id))) return;
+
+			result.add(
+				`${design.product_group_id}-${design.product_id}`
+			);
+		});
+		console.log('result',result)
+
+		return result;
+	}, [baseDesign, sleeveSeenGroups]);
 
 	const markSleeveSeen = (groupId) => {
 		setSleeveSeenGroups(prev => {
@@ -3485,6 +3509,9 @@ const DesignStepNew = forwardRef((props, ref) => {
 													key={product.id}
 													groupKey={key}
 													image={image}
+													hasSleeveUpcharge={sleevePriceProducts.has(
+														`${group.id}-${product.id}`
+													)}
 													setImage={setImage}
 													activeCardId={activeCardId}
 													setActiveCardId={setActiveCardId}
