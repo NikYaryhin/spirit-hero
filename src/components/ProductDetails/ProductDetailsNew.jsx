@@ -54,6 +54,8 @@ export default function ProductDetailsNew({
       {products.length} item{products.length !== 1 ? 's' : ''}
      </span>
 				</div>
+				{isFlashSale && (	<div  className={css.minimal_group_mix} >36 item minimum mix/match</div>)}
+
 			</summary>
 
 			<div className={css.products__list_container}>

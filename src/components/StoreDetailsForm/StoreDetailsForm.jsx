@@ -223,13 +223,11 @@ export default function StoreDetailsForm({ image }) {
 					<h3>2. Choose primary colors</h3>
 
 					<p className={css.paragraph}>
-						<span>
-							Choose colors for the products you will sell in your store. Be
-							sure to select colors that will look good with your logo on them.
+						<span className={css.paragraphstrong}>
+							Choose your organization's primary colors
 						</span>
 						<span>
-							Our system automatically selects products & colorizes design
-							templates based on your store colors.
+							Our system will automatically select products that match the colors you choose.
 						</span>
 					</p>
 

@@ -61,6 +61,15 @@
 				color: #47424A;
 			}
 		}
+        .minimal_group_mix{
+			display: flex;
+			align-items: flex-end;
+			margin-left: auto;
+			font-size: 1.6rem;
+			line-height: 1.43;
+			font-weight: 400;
+			color: #47424A;
+		}
 }
 
 .products__list {

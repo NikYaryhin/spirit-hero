@@ -177,12 +177,12 @@ export default function ProductCustomiserCard({
   <span className={css.flash__price}>
     ${(+sale_price_min+ colorPrice+extraPrice).toFixed(2)}
   </span>
-					<span className={css.old__price_wrapper}>
+			{/*		<span className={css.old__price_wrapper}>
     <span className={css.dash}>-</span>
     <span className={css.old__price}>
       ${(+sale_price_max+ colorPrice+extraPrice).toFixed(2)}
     </span>
-  </span>
+  </span>*/}
 				</div>
 
 				<fieldset className={css.color__swatchers}>

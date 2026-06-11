@@ -7,6 +7,7 @@ import 'react-day-picker/dist/style.css'
 import { useSelector } from 'react-redux'
 import spiritHeroApi from '@/api/spiritHeroApi'
 import DatePicker from '@components/dataPicker/DatePicker'
+import Papa from "papaparse";
 const FlashSale = forwardRef((props, ref) => {
 	const params = new URLSearchParams(window.location.search)
 	const storeIdFromQuery = params.get('store_id')
@@ -87,14 +88,34 @@ const FlashSale = forwardRef((props, ref) => {
 		fetchFlashSaleSettings()
 	}, [storeId])
 
-	const handleFilesChange = (e) => {
+/*	const handleFilesChange = (e) => {
 		const files = Array.from(e.target.files || [])
 		const withIds = files.map((file) => ({
 			id: `${uuidv4()}`,
 			file,
 		}))
 		setOrdersFiles((prev) => [...prev, ...withIds])
-	}
+	}*/
+	const handleFilesChange = (e) => {
+		const files = Array.from(e.target.files || []);
+
+		files.forEach((file) => {
+			console.log(files)
+			Papa.parse(file, {
+				header: false,
+				skipEmptyLines: true,
+				complete: (results) => {
+					const notes = results.data.map((row) => ({
+						id: uuidv4(),
+						value: row[0] || '',
+					}));
+
+					setOrdersNote((prev) => [...prev, ...notes]);
+				},
+			});
+		});
+		e.target.value = "";
+	};
 
 	const onDeleteFileClick = (e) => {
 		e.preventDefault()

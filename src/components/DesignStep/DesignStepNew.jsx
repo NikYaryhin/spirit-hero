@@ -1862,14 +1862,18 @@ const DesignStepNew = forwardRef((props, ref) => {
 						rotation: Math.round(obj.angle),
 					}
 				}
+				let scale = Math.min(
+					areaData.w / obj.customData.orgObj.w,
+					areaData.h / obj.customData.orgObj.h
+				)
 
 				// ❌ fallback (центр)
 				return {
 					...base,
 					x: Math.round(areaData.x),
 					y: Math.round(areaData.y),
-					width: undefined,
-					height: undefined,
+					width: obj.customData.orgObj.w * scale,
+					height: obj.customData.orgObj.h * scale,
 					rotation: 0,
 				}
 			})

@@ -46,13 +46,37 @@ export default function ProductCard({
 		return [...colors]
 	}, [colors])
 
-	const [image, setImage] = useState(
+/*	const [image, setImage] = useState(
 		!isCatalog
 			? sortedColors?.[0]?.logo?.find((value) => value.type_id === 1)?.image ||
 			sortedColors?.[0]?.image ||
 			product_image
 			: selectedCatalogColors?.[selectedCatalogColors.length-1]?.image || product_image
-	)
+	)*/
+	const [image, setImage] = useState(() => {
+		if (isCatalog) {
+			return (
+				selectedCatalogColors?.[selectedCatalogColors.length - 1]?.image ||
+				product_image
+			)
+		}
+
+		const lastSelectedId =
+			currentSelectedColors?.[currentSelectedColors.length - 1]?.id
+
+		const selectedColor =
+			sortedColors.find((color) => color.id === lastSelectedId)
+
+		const logo = selectedColor?.logo?.find(
+			(item) => item.type_id === 1
+		)
+
+		return (
+			logo?.image ||
+			selectedColor?.image ||
+			product_image
+		)
+	})
 
 	// Статичні розміри як на макеті
 	const mockSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
@@ -144,6 +168,7 @@ export default function ProductCard({
 		})
 	}
 
+
 	return (
 		<li className={`${css.product__item} ${selected ? css.selected : ''}`} key={id}>
 
@@ -173,7 +198,7 @@ export default function ProductCard({
 			</div>
 
 			{/* Рядок Рейтингу та Мінімалки */}
-			<div className={css.meta_row}>
+		{/*	<div className={css.meta_row}>
 				<div className={css.rating}>
 					<span className={css.star}>★</span>
 					<span className={css.rating_val}>5.0</span>
@@ -190,7 +215,7 @@ export default function ProductCard({
           </span>
 					)}
 				</div>
-			</div>
+			</div>*/}
 
 			{/* Назва та Опис */}
 			<div className={css.info_block}>
@@ -334,9 +359,19 @@ export default function ProductCard({
 									if (isCatalog) {
 										setImage(selectedCatalogColors?.[selectedCatalogColors.length-1]?.image || filteredColors?.[0]?.image || product_image)
 									} else {
+										const lastSelectedId =
+											currentSelectedColors?.[currentSelectedColors.length - 1]?.id
+
+										const selectedColor =
+											sortedColors.find((color) => color.id === lastSelectedId)
+
+										const logo = selectedColor?.logo?.find(
+											(item) => item.type_id === 1
+										)
+
 										setImage(
-											sortedColors?.[0]?.logo?.find((value) => value.type_id === 1)?.image ||
-											sortedColors?.[0]?.image ||
+											logo?.image ||
+											selectedColor?.image ||
 											product_image
 										)
 									}
