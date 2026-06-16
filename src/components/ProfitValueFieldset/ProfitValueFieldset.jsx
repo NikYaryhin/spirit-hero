@@ -7,7 +7,9 @@ export default function ProfitValueFieldset({
 	valuesArray,
 	disabled,
 	setProfitValue,
+																							handleProfitChange,
 	isPercent = false,
+
 }) {
 	const [isOwnValue, setIsOwnValue] = useState(false)
 	const [ownValue, setOwnValue] = useState(1)
@@ -21,13 +23,19 @@ export default function ProfitValueFieldset({
 		setPresetValue(value)
 
 		setProfitValue(+value)
+		handleProfitChange?.(+value)
 	}
 
 	const onCheckboxChange = (e) => {
 		const { checked } = e.target
 
 		setIsOwnValue(checked)
-		checked && setProfitValue(ownValue || 1)
+		if (checked) {
+			const profit = ownValue || 1
+
+			setProfitValue(profit)
+			handleProfitChange?.(profit)
+		}
 	}
 
 	const onNumberChange = (e) => {
@@ -44,6 +52,8 @@ export default function ProfitValueFieldset({
 		}
 		setOwnValue(+newValue)
 		setProfitValue(+newValue)
+		handleProfitChange?.(+newValue)
+
 	}
 
 	return (

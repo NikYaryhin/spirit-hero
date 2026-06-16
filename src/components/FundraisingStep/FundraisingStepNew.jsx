@@ -211,8 +211,32 @@ export default function FundraisingStepNew() {
 	const profitTypeChangeHandle = async (e) => {
 		const is_percent_profit = e.target.value === 'percent'
 		setAmountProfit(!is_percent_profit)
+
+
 		try {
 			await spiritHeroApi.updateProfitType({ store_id: storeId, is_percent_profit })
+
+		} catch (error) {
+			console.error(error)
+		}
+	}
+
+	const handleProfitChange = async (profit) => {
+		try {
+			console.log(
+				'profit',Object.values(activeDisplayMap)
+			)
+			const payload = {
+				store_id: storeId,
+				products_info: Object.values(activeDisplayMap).flatMap((items) =>
+					items.map((item) => ({
+						id: item.id,
+						percent: profit,
+					}))
+				),
+			}
+
+			await spiritHeroApi.updateFundraisingStatus(payload)
 		} catch (error) {
 			console.error(error)
 		}
@@ -220,6 +244,7 @@ export default function FundraisingStepNew() {
 
 	// --- Filtering logic for display ---
 	const activeDisplayMap = isFundraiseView ? productsByCategory : sellAtCostProducts
+	console.log('activeDisplayMap',activeDisplayMap)
 	const displayCategoryKeys = useMemo(() => {
 		const keys = Object.keys(activeDisplayMap)
 		if (selectedCategory === 'all') return keys
@@ -333,6 +358,7 @@ export default function FundraisingStepNew() {
 							valuesArray={amountProfit ? fundraisingFixedAmounValues : fundraisingPercentageValues}
 							setProfitValue={setProfitValue}
 							isPercent={!amountProfit}
+							handleProfitChange={handleProfitChange}
 						/>
 					</li>
 
