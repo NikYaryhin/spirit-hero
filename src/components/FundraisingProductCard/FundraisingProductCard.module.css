@@ -42,7 +42,7 @@
 		}
 	}
 
-	.input__wrapper {
+	/*.input__wrapper {
 		position: relative;
 
 		.input__unit {
@@ -55,7 +55,40 @@
 			line-height: 1.57;
 			color: #373239;
 		}
-	}
+	}*/
+.input__wrapper {
+	position: relative;
+
+input {
+	width: 100%;
+}
+
+.input__unit {
+	position: absolute;
+	top: 50%;
+	translate: 0 -50%;
+	font-size: 1.6rem;
+	line-height: 1.57;
+	color: #373239;
+	pointer-events: none;
+}
+
+.input__unit--left {
+	left: 1.6rem;
+}
+
+.input__unit--right {
+	right: 1.6rem;
+}
+
+.input__withPrefix {
+	padding-left: 3.6rem;
+}
+
+.input__withSuffix {
+	padding-right: 3.6rem;
+}
+}
 
 	input[type="number"] {
 		width: 9rem;

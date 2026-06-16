@@ -4,7 +4,7 @@ import ProductCard from '../ProductCard/ProductCard'
 import Icon from '../Icon'
 
 export default function ProductDetailsNew({
-																				 products, // Це вже відфільтровані товари саме для цієї групи
+																				 products,
 																				 minimalGroup,
 																				 isFlashSale,
 																				 cardClickHandle,
@@ -27,7 +27,7 @@ export default function ProductDetailsNew({
 	if (products.length === 0) return null
 
 	return (
-		<details className={css.products__group} name={minimalGroup.name} open>
+		<details className={css.products__group} name={`${minimalGroup.name}_${minimalGroup.id}`} open>
 			<summary className={css.products__group__summary}>
 				<Icon name={'ChevronUp'} />
 
@@ -54,7 +54,7 @@ export default function ProductDetailsNew({
       {products.length} item{products.length !== 1 ? 's' : ''}
      </span>
 				</div>
-				{isFlashSale && (	<div  className={css.minimal_group_mix} >36 item minimum mix/match</div>)}
+				{(isFlashSale &&minimalGroup.type_id ===1) && (	<div  className={css.minimal_group_mix} >36 item minimum mix/match</div>)}
 
 			</summary>
 

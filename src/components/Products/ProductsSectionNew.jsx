@@ -180,6 +180,10 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 					if (isCatalog && !isFlashSale && product.is_flash_sale_type) {
 						return false
 					}
+					if (!isCatalog && !isFlashSale && product.is_flash_sale_type) {
+						return false
+					}
+
 					if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(String(product.brand_id))) return false
 					if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(String(product.category_id))) return false
 					if (activeFilters.colorFamilies.length > 0) {
@@ -226,6 +230,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 						return false
 					}
 
+
 					return !(
 						myStoreRegistry.has(`${group.id}-${product.id}`));
 				}) || []
@@ -236,9 +241,21 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		// Якщо хочемо бачити кількість тільки тих, що залишилися в каталозі:
 		return processedGroups.reduce((acc, g) => acc + g.products.length, 0)
 	}, [processedGroups])*/
-	const totalMyStoreCount = useMemo(() =>
-			myStoreGroups.reduce((acc, g) => acc + (g.products_count || 0), 0),
-		[myStoreGroups])
+	const totalMyStoreCount = useMemo(() => {
+		return myStoreGroups
+			.flatMap(group =>
+				group.products?.filter(product => {
+					if (!isFlashSale && product.is_flash_sale_type) {
+						return false
+					}
+
+
+					return product;
+				})
+			)
+			.length;
+	},
+		[myStoreGroups,isFlashSale])
 
 	const totalSelectedCount = useMemo(() =>
 			Object.values(selectedData).reduce((acc, ids) => acc + ids.length, 0),
@@ -520,6 +537,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 	}
 
 	if (isLoading) return <Loader />
+
 
 	return (
 		<div className={css['products__section']}>

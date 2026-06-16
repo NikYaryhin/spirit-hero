@@ -276,16 +276,28 @@ export default function FundraisingProductCard({
 					<span className={css.price}>${basePrice.toFixed(2)}</span>
 
 					<div className={css.input__wrapper}>
+						{amountProfit && (
+							<span className={`${css.input__unit} ${css['input__unit--left']}`}>
+			$
+		</span>
+						)}
+
 						<input
 							type="number"
 							value={profit}
 							onChange={onPriceInputChange}
-							min="0"
-							step="0.01"
-							inputMode="decimal"
-							name="profit--input"
+							className={
+								amountProfit
+									? css.input__withPrefix
+									: css.input__withSuffix
+							}
 						/>
-						<span className={css.input__unit}>{amountProfit ? '$' : '%'}</span>
+
+						{!amountProfit && (
+							<span className={`${css.input__unit} ${css['input__unit--right']}`}>
+			%
+		</span>
+						)}
 					</div>
 
 					<span className={css.selliing__price}>${sellingPrice}</span>

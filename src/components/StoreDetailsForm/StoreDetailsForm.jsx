@@ -220,12 +220,12 @@ export default function StoreDetailsForm({ image }) {
 				</fieldset>
 
 				<fieldset>
-					<h3>2. Choose primary colors</h3>
+					<h3>2. Choose your organization's primary colors</h3>
 
 					<p className={css.paragraph}>
-						<span className={css.paragraphstrong}>
-							Choose your organization's primary colors
-						</span>
+						{/*<span className={css.paragraphstrong}>*/}
+						{/*	Choose your organization's primary colors*/}
+						{/*</span>*/}
 						<span>
 							Our system will automatically select products that match the colors you choose.
 						</span>

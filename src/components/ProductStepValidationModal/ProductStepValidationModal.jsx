@@ -23,7 +23,12 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const myShopProducts = useSelector((state) => state.products.myShopProducts)
 	const [myStoreGroups, setMyStoreGroups] = useState([])
 
-/*	useEffect(() => {
+
+	const [showFlashSaleWarning, setShowFlashSaleWarning] = useState(false)
+	const [storeGroupsToDelete, setStoreGroupsToDelete] = useState([])
+	const [fetchLoader, setFetchLoader] = useState(false)
+
+	useEffect(() => {
 		async function loadData() {
 			try {
 				setIsLoadingGroups(true)
@@ -31,7 +36,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					spiritHeroApi.getStore(storeId)
 				])
 
-				setMyStoreGroups(storeRes?.minimum_groups || [])
+				//setMyStoreGroups(storeRes?.minimum_groups || [])
 
 			} catch (e) {
 				showToast('Failed to load data', 'error')
@@ -39,8 +44,11 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 				setIsLoadingGroups(false)
 			}
 		}
-		loadData()
-	}, [storeId])*/
+		if(!isFlashSale){
+			loadData()
+		}
+
+	}, [storeId])
 
 	const minimalGroupsInStore = useMemo(() => {
 		if (!Array.isArray(minimalGroups) || minimalGroups.length < 1) return []
@@ -56,12 +64,41 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 	}, [minimalGroups])
 
 
-	const onConfitmButtonClick = () => {
+	/*const onConfitmButtonClick = () => {
+		setIsModalOpen(false)
+		dispatch(setCustomerApproveFlashSale(true))
+		dispatch(setActiveStep(3))
+	}*/
+
+	const onConfitmButtonClick = async () => {
+		if (!isFlashSale) {
+			try {
+				setFetchLoader(true)
+
+				const storeRes = await spiritHeroApi.getStore(storeId)
+
+				const flashSaleGroups =
+					storeRes?.minimum_groups?.filter(
+						(group) => Number(group.type_id) === 1
+					) || []
+
+				if (flashSaleGroups.length > 0) {
+					setStoreGroupsToDelete(flashSaleGroups)
+					setShowFlashSaleWarning(true)
+					return
+				}
+			} catch (e) {
+				showToast('Failed to validate store', 'error')
+				return
+			} finally {
+				setFetchLoader(false)
+			}
+		}
+
 		setIsModalOpen(false)
 		dispatch(setCustomerApproveFlashSale(true))
 		dispatch(setActiveStep(3))
 	}
-
 	const onStartFlashSaleClick = () => {
 		dispatch(setFlashSale(true))
 		dispatch(setCustomerApproveFlashSale(true))
@@ -71,9 +108,77 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 
 	const handleCollectionChange = (e) => {
 		const { value, checked } = e.target
+		console.log(value)
+		console.log(checked)
+
+		console.log(choosedCollection)
+
 		setChoosedCollection((prev) => checked ? [...prev, value] : prev.filter((item) => item !== value))
 	}
+	const deleteFlashSaleProducts = async () => {
+		try {
+			setFetchLoader(true)
 
+			const groupsPayload = storeGroupsToDelete.map((group) => ({
+				group_id: Number(group.id),
+				ids:
+					group.products?.map((p) => p.id) ||
+					group.product_ids ||
+					[]
+			}))
+
+			await spiritHeroApi.deleteFromMyStoreProducts({
+				store_id: Number(storeIdFromQuery),
+				groups: groupsPayload
+			})
+
+			showToast('Flash sale products removed')
+
+			setIsModalOpen(false)
+			dispatch(setActiveStep(3))
+
+		} catch (e) {
+			console.log(e)
+			showToast('Error removing products', 'error')
+		} finally {
+			setFetchLoader(false)
+		}
+	}
+
+	if (showFlashSaleWarning) {
+		return (
+			<div className={css.modal__content}>
+				<h3 className={css.title}>
+					Your store contains Flash Sale products
+				</h3>
+
+				<p className={css.text__wrap}>
+					Please enable Flash Sale or remove these products.
+				</p>
+
+				<div className={css.button__box}>
+					<button
+						onClick={() => {
+							setShowFlashSaleWarning(false)
+							setIsModalOpen(false)
+						}
+						}
+						className="light_button_1"
+					>
+						Back
+					</button>
+
+					<button
+						onClick={deleteFlashSaleProducts}
+						disabled={fetchLoader}
+						className="contrast_button_1"
+					>
+						{fetchLoader ? 'Removing...' : 'Remove products'}
+					</button>
+				</div>
+			</div>
+		)
+	}
 	return (
 		<div className={css.modal__content}>
 			{isFlashSale ? (
@@ -190,10 +295,10 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 									<input
 										type="checkbox"
 										name="modal-select"
-										value={item.name}
+										value={item.id}
 										className="visually-hidden"
 										onChange={handleCollectionChange}
-										checked={choosedCollection.includes(item.name)}
+										checked={choosedCollection.includes(String(item.id))}
 									/>
 									<span className={css.checkbox__emulator_v2}>
             <Icon name={'InputChecked2'} />
