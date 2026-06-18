@@ -195,7 +195,16 @@ section:has(.products__section) {
 			flex: 0.80;
 			display: flex;
 			flex-direction: column;
+			justify-content: center;
+			align-items: center;
 		}
+.no_products{
+	text-align: center;
+	font-size: 1.8rem;
+	line-height: 1.43;
+	font-weight: 600;
+	color: #47424A;
+}
 
 
 	}

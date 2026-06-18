@@ -51,6 +51,13 @@ export default function FundraisingProductCard({
 	}, [profitValue])
 
 	useEffect(() => {
+		if(pricesEnd){
+			setProfit(+(sellingPrice - basePrice).toFixed(2))
+		}
+
+	}, [pricesEnd])
+
+	useEffect(() => {
 		setIsChecked(checked)
 	}, [checked])
 

@@ -72,7 +72,11 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 				setCatalogGroups(productsRes.minimum_groups || [])
 				setFiltersData(productsRes.filters)
 				setMyStoreGroups(storeRes?.minimum_groups || [])
-				dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
+				const flashSaleGroups =
+					storeRes?.minimum_groups?.filter(
+						(group) => Number(group.type_id) === 1
+					) || []
+				dispatch(setMinimalGroups(flashSaleGroups || []))
 				setIsCatalog(!storeRes.minimum_groups.length>0)
 				// Авто-фільтрація по кольорах магазину
 				if (storeRes.store?.color && productsRes.filters?.colorFamilies) {
@@ -81,9 +85,9 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 						.filter(f => storeColors.includes(f.product_color.toUpperCase()))
 						.map(f => String(f.id))
 
-					if (matchingIds.length > 0) {
+				/*	if (matchingIds.length > 0) {
 						setActiveFilters(prev => ({ ...prev, colorFamilies: matchingIds }))
-					}
+					}*/
 				}
 			} catch (e) {
 				showToast('Failed to load data', 'error')
@@ -151,6 +155,9 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		};
 	}, []);
 
+	useEffect(() => {
+		setSelectedData({})
+	},[isFlashSale])
 	// --- Logic: Filtering & Sorting ---
 	const currentGroups = isCatalog ? catalogGroups : myStoreGroups
 
@@ -337,8 +344,10 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 	const addToStoreAction = async () => {
 
 		const duplicatedGroups = {}
+		const targetTypeId = isFlashSale ? 1 : 2
 
 		Object.entries(selectedData).forEach(([groupId, productIds]) => {
+
 			const existingGroup = catalogGroups?.find(
 				(g) => Number(g.id) === Number(groupId)
 			)
@@ -351,7 +360,11 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			const normalizedExisting = normalize(existingGroup.name)
 
 			// 🔥 беремо ВСІ includes (включаючи exact)
-			const matches = myStoreGroups.filter((value) =>
+			const catalogGroupsFiltered =
+				myStoreGroups?.filter(
+					(group) => Number(group.type_id) === targetTypeId
+				) || []
+			const matches = catalogGroupsFiltered.filter((value) =>
 				normalize(value.name).includes(normalizedExisting)
 			)
 
@@ -469,7 +482,9 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			})
 			const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
 			setMyStoreGroups(storeRes?.minimum_groups || [])
-			dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
+			dispatch(setMinimalGroups(storeRes?.minimum_groups?.filter(
+				(group) => Number(group.type_id) === 1
+			) || []))
 
 			setSelectedData({})
 			setIsCatalog(false)
@@ -519,7 +534,9 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			})
 			const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
 			setMyStoreGroups(storeRes?.minimum_groups || [])
-			dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
+			dispatch(setMinimalGroups(storeRes?.minimum_groups?.filter(
+				(group) => Number(group.type_id) === 1
+			) || []))
 
 			const countNew = storeRes?.minimum_groups.reduce((acc, g) => acc + (g.products_count || 0), 0)
 
@@ -790,7 +807,9 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 									const storeRes = await spiritHeroApi.getStore(storeIdFromQuery)
 
 									setMyStoreGroups(storeRes?.minimum_groups || [])
-									dispatch(setMinimalGroups(storeRes?.minimum_groups || []))
+									dispatch(setMinimalGroups(storeRes?.minimum_groups?.filter(
+										(group) => Number(group.type_id) === 1
+									) || []))
 
 									setSelectedData({})
 									setIsCatalog(false)

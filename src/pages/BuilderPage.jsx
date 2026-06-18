@@ -92,10 +92,11 @@ export default function Builder() {
 					console.debug('getStore', storeData)
 
 					dispatch(setStoreInfo(storeData))
+					dispatch(setFlashSale(!!storeData.store.is_flash_sale))
+
 					if (storeData.products?.length) {
 						dispatch(setMyShopProducts(storeData.products))
 						dispatch(setInitialMyShopProducts(storeData.products))
-						dispatch(setFlashSale(storeData.store.is_flash_sale ? true : false))
 					}
 
 					if (storeData.store?.inkColorDetail?.cost)

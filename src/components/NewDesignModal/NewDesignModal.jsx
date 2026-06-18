@@ -66,7 +66,7 @@ export default function NewDesignModal({ setIsNewDesignModalOpen }) {
 								onChange={() => setSelectedGroupId(group.id)}
 								/>
 							<span className={css.checkbox__emulator}></span>
-							{group.name} (36-piece minimum)
+							{group.name}
 						</label>
 					))}
 			</fieldset>

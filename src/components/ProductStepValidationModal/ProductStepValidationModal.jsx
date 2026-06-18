@@ -28,7 +28,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const [storeGroupsToDelete, setStoreGroupsToDelete] = useState([])
 	const [fetchLoader, setFetchLoader] = useState(false)
 
-	useEffect(() => {
+	/*useEffect(() => {
 		async function loadData() {
 			try {
 				setIsLoadingGroups(true)
@@ -48,7 +48,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 			loadData()
 		}
 
-	}, [storeId])
+	}, [storeId])*/
 
 	const minimalGroupsInStore = useMemo(() => {
 		if (!Array.isArray(minimalGroups) || minimalGroups.length < 1) return []
@@ -70,7 +70,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 		dispatch(setActiveStep(3))
 	}*/
 
-	const onConfitmButtonClick = async () => {
+	/*const onConfitmButtonClick = async () => {
 		if (!isFlashSale) {
 			try {
 				setFetchLoader(true)
@@ -98,6 +98,66 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 		setIsModalOpen(false)
 		dispatch(setCustomerApproveFlashSale(true))
 		dispatch(setActiveStep(3))
+	}*/
+
+
+	const onConfitmButtonClick = async () => {
+		try {
+			setFetchLoader(true)
+
+			if (!isFlashSale) {
+				const storeRes = await spiritHeroApi.getStore(storeId)
+
+				const flashSaleGroups =
+					storeRes?.minimum_groups?.filter(
+						(group) => Number(group.type_id) === 1
+					) || []
+
+				if (flashSaleGroups.length > 0) {
+					setStoreGroupsToDelete(flashSaleGroups)
+					setShowFlashSaleWarning(true)
+					return
+				}
+			} else {
+				const storeRes = await spiritHeroApi.getStore(storeId)
+
+				const flashSaleGroups =
+					storeRes?.minimum_groups?.filter(
+						(group) => Number(group.type_id) === 1
+					) || []
+
+				// ті що НЕ вибрані → видаляємо
+				const groupsToDelete = flashSaleGroups.filter(
+					(group) => !choosedCollection.includes(String(group.id))
+				)
+
+				if (groupsToDelete.length > 0) {
+					const groupsPayload = groupsToDelete.map((group) => ({
+						group_id: Number(group.id),
+						ids:
+							group.products?.map((p) => p.id) ||
+							group.product_ids ||
+							[]
+					}))
+
+					await spiritHeroApi.deleteFromMyStoreProducts({
+						store_id: Number(storeIdFromQuery),
+						groups: groupsPayload
+					})
+
+					showToast('Unselected flash sale products removed')
+				}
+			}
+
+			setIsModalOpen(false)
+			dispatch(setCustomerApproveFlashSale(true))
+			dispatch(setActiveStep(3))
+		} catch (e) {
+			console.log(e)
+			showToast('Failed to process store', 'error')
+		} finally {
+			setFetchLoader(false)
+		}
 	}
 	const onStartFlashSaleClick = () => {
 		dispatch(setFlashSale(true))
@@ -380,11 +440,12 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						</button>
 						<button
 							onClick={onConfitmButtonClick}
-							disabled={!isApprove || choosedCollection.length < 1}
+							disabled={!isApprove || choosedCollection.length < 1 || fetchLoader}
 							className={`${css.confirm_v2} contrast_button_1`}
 						>
-							Yes, confirm
+							{fetchLoader ? 'Loading...' : 'Yes, confirm'}
 						</button>
+
 					</div>
 				</>
 			) : (

@@ -54,7 +54,7 @@ export default function ProductDetailsNew({
       {products.length} item{products.length !== 1 ? 's' : ''}
      </span>
 				</div>
-				{(isFlashSale &&minimalGroup.type_id ===1) && (	<div  className={css.minimal_group_mix} >36 item minimum mix/match</div>)}
+				{(!isCatalog && isFlashSale && minimalGroup.type_id ===1) ? (	<div  className={css.minimal_group_mix} >36 item minimum mix/match</div>) : !isCatalog && (	<div  className={css.minimal_group_mix} >No minimum</div>) }
 
 			</summary>
 

@@ -222,6 +222,7 @@ export default function FundraisingStepNew() {
 	}
 
 	const handleProfitChange = async (profit) => {
+		setPricesEnd(null)
 		try {
 			console.log(
 				'profit',Object.values(activeDisplayMap)
