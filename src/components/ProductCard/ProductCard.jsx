@@ -294,13 +294,17 @@ export default function ProductCard({
 				${(+params.flash_sale_price + colorPrice).toFixed(2)}
 			</span>
 
-						<span className={css.old__price_wrapper}>
-				<span className={css.dash}>-</span>
+			{((+(+params.flash_sale_price + colorPrice).toFixed(2)) < (+(+sale_price_min + colorPrice).toFixed(2))) &&
+			(<span className={css.old__price_wrapper}>
+				      <span className={css.dash}>-</span>
 
-				<span className={css.old__price_des}>
-					${(+sale_price_min + colorPrice).toFixed(2)}
-				</span>
-			</span>
+				      <span className={css.old__price_des}>
+				        	${(+sale_price_min + colorPrice).toFixed(2)}
+				       </span>
+			         </span>)
+			}
+
+
 					</>
 				) : +sale_price_min === +sale_price_max ? (
 					<span className={css.flash__price}>
