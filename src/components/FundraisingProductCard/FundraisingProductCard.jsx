@@ -53,17 +53,6 @@ export default function FundraisingProductCard({
 	useEffect(async () => {
 		if (pricesEnd) {
 			setProfit(+(sellingPrice - basePrice).toFixed(2))
-			const payload = {
-				store_id: storeId,
-				products_info: [
-					{
-						id,
-						percent: +(sellingPrice - basePrice).toFixed(2),
-					},
-				],
-			}
-
-			await spiritHeroApi.updateFundraisingStatus(payload)
 		}
 
 	}, [pricesEnd])
