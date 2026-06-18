@@ -1358,8 +1358,8 @@ const DesignStepNew = forwardRef((props, ref) => {
 						})
 					}))
 					: []
-				/*const storeMinimalGroups = Array.isArray(res?.minimum_groups) ? res.minimum_groups : []
-				dispatch(setMinimalGroups(storeMinimalGroups))*/
+				const storeMinimalGroups1 = Array.isArray(res?.minimum_groups) ? res.minimum_groups : []
+				dispatch(setMinimalGroups(storeMinimalGroups1))
 				setMinimalGroupsFromStore(storeMinimalGroups)
 				console.debug('spiritHeroApi.getStore DESIGN', res)
 
