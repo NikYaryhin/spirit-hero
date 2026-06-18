@@ -26,12 +26,13 @@ import {
 import { setActiveStep } from '@/features/navigation/navigationSlice'
 import FundraisingStepNew from '@components/FundraisingStep/FundraisingStepNew'
 import DesignStepNew from '@components/DesignStep/DesignStepNew'
+import { showToast } from '@/helpers/toastCall'
 
 export default function Builder() {
 	const dispatch = useDispatch()
 	const isLoading = useSelector((state) => state.products.isLoading)
 	const activeStep = useSelector((state) => state.navigation.activeStep)
-	// const storeId = useSelector((state) => state.flashSale.storeId)
+	const storeId = useSelector((state) => state.flashSale.storeId)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const designStepRef = useRef(null)
 	const flashSaleRef = useRef(null)
@@ -124,7 +125,20 @@ export default function Builder() {
 	// Функция для обработки перехода на следующий шаг
 	const handleNextStep = async () => {
 		if (activeStep === 2) {
-			setIsModalOpen(true)
+			try {
+				const storeRes = await spiritHeroApi.getStore(storeId)
+
+				const minimumGroups = storeRes?.minimum_groups || []
+
+				if (minimumGroups.length === 0) {
+					showToast('You cannot proceed without products', 'error')
+					return
+				}
+
+				setIsModalOpen(true)
+			} catch (e) {
+				showToast('Failed to load data', 'error')
+			}
 		} else if (activeStep === 3 && designStepRef.current) {
 			try {
 				await designStepRef.current.getLogoParameters()
