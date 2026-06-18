@@ -31,7 +31,8 @@ export default function ProductCard({
 		sale_price_min,
 		sale_price_max,
 		choosed_colors,
-		product_description
+		product_description,
+		is_flash_sale_type
 	} = product
 
 	const [selectedColors, setSelectedColors] = useState(choosed_colors || [])
@@ -288,7 +289,7 @@ export default function ProductCard({
 
 
 			<div className={css.price_row}>
-				{isFlashSale ? (
+				{isFlashSale && is_flash_sale_type ? (
 					<>
 			<span className={css.flash__price_red}>
 				${(+params.flash_sale_price + colorPrice).toFixed(2)}
