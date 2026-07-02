@@ -14,8 +14,9 @@ import ProductStepValidationModal from '@components/ProductStepValidationModal/P
 import FundraisingNextStepModal from '@components/FundraisingNextStepModal/FundraisingNextStepModal'
 import cssModal from '../ProductStepValidationModal/ProductStepValidationModal.module.css'
 import Icon from '@components/Icon'
+import { setFlashSale } from '@/features/flashSale/flashSaleSlice'
 
-export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
+export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCatalogProduct,onCatalogChange }) {
 	const dispatch = useDispatch()
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [isProcessingDesign, setIsProcessingDesign] = useState(false);
@@ -77,7 +78,10 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 						(group) => Number(group.type_id) === 1
 					) || []
 				dispatch(setMinimalGroups(flashSaleGroups || []))
+				dispatch(setFlashSale(flashSaleGroups.length>0))
 				setIsCatalog(!storeRes.minimum_groups.length>0)
+				onCatalogChange(!storeRes.minimum_groups.length>0)
+
 				// Авто-фільтрація по кольорах магазину
 				if (storeRes.store?.color && productsRes.filters?.colorFamilies) {
 					const storeColors = storeRes.store.color.map(c => c.toUpperCase())
@@ -187,9 +191,9 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 					if (isCatalog && !isFlashSale && product.is_flash_sale_type) {
 						return false
 					}
-					if (!isCatalog && !isFlashSale && product.is_flash_sale_type) {
+					/*if (!isCatalog && !isFlashSale && product.is_flash_sale_type) {
 						return false
-					}
+					}*/
 
 					if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(String(product.brand_id))) return false
 					if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(String(product.category_id))) return false
@@ -252,9 +256,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		return myStoreGroups
 			.flatMap(group =>
 				group.products?.filter(product => {
-					if (!isFlashSale && product.is_flash_sale_type) {
-						return false
-					}
 
 
 					return product;
@@ -485,9 +486,14 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			dispatch(setMinimalGroups(storeRes?.minimum_groups?.filter(
 				(group) => Number(group.type_id) === 1
 			) || []))
+			dispatch(setFlashSale(storeRes?.minimum_groups?.filter(
+				(group) =>
+					Number(group.type_id) === 1
+			).length>0))
 
 			setSelectedData({})
 			setIsCatalog(false)
+			onCatalogChange(false)
 			showToast(`Items added to your store`)
 		} catch (e) {
 			showToast('Error adding products', 'error')
@@ -537,6 +543,10 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			dispatch(setMinimalGroups(storeRes?.minimum_groups?.filter(
 				(group) => Number(group.type_id) === 1
 			) || []))
+			dispatch(setFlashSale(storeRes?.minimum_groups?.filter(
+				(group) =>
+					Number(group.type_id) === 1
+			).length>0))
 
 			const countNew = storeRes?.minimum_groups.reduce((acc, g) => acc + (g.products_count || 0), 0)
 
@@ -544,6 +554,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			console.log('COUNT',countNew)
 			if(countNew === 0){
 				setIsCatalog(true)
+				onCatalogChange(true)
 			}
 			showToast(`Items removed`)
 		} catch (e) {
@@ -553,6 +564,42 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 		}
 	}
 
+	const handleGroupTypeChange = async (minimumGroupId, checked) => {
+		try {
+			setIsLoading(true)
+			await spiritHeroApi.updateMinimumGroup(storeIdFromQuery,
+				minimumGroupId,
+				checked ? 1 : 2,
+			);
+
+			const storeRes =
+				await spiritHeroApi.getStore(
+					storeIdFromQuery
+				);
+
+			setMyStoreGroups(
+				storeRes?.minimum_groups || []
+			);
+
+			dispatch(
+				setMinimalGroups(
+					storeRes?.minimum_groups?.filter(
+						(group) =>
+							Number(group.type_id) === 1
+					) || []
+				)
+			);
+			dispatch(setFlashSale(storeRes?.minimum_groups?.filter(
+				(group) =>
+					Number(group.type_id) === 1
+			).length>0))
+
+		} catch (e) {
+			console.error('handleGroupTypeChange',e);
+		}finally {
+			setIsLoading(false)
+		}
+	};
 	if (isLoading) return <Loader />
 
 
@@ -561,7 +608,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 			<div className={css['products__catalog--pickers']}>
 				<button
 					className={isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}
-					onClick={() => { setIsCatalog(true); setSelectedData({});setActiveFilters({brands: [],
+					onClick={() => { setIsCatalog(true);onCatalogChange(true); setSelectedData({});setActiveFilters({brands: [],
 						categories: [],
 						colorFamilies: [],}) }}
 				>
@@ -570,7 +617,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 				</button>
 				<button
 					className={!isCatalog ? css['products__catalog--picker__active'] : css['products__catalog--picker']}
-					onClick={() => { setIsCatalog(false); setSelectedData({});setActiveFilters({brands: [],
+					onClick={() => { setIsCatalog(false);onCatalogChange(false); setSelectedData({});setActiveFilters({brands: [],
 						categories: [],
 						colorFamilies: [],}) }}
 				>
@@ -653,6 +700,15 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 								cardClickHandle={(e) => toggleSelect(e.currentTarget.value, group.id)}
 								cardClickHandleV2={(id) => toggleSelect(id, group.id)}
 
+								onFlashSaleChange={(
+									checked
+								) =>
+									handleGroupTypeChange(
+										group.id,
+										checked
+									)
+								}
+								isFlashSaleGroup={group.type_id===1}
 								onGroupCheckHandle={(checked) => {
 									setSelectedData(prev => {
 										const next = { ...prev }
@@ -810,9 +866,15 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery }) {
 									dispatch(setMinimalGroups(storeRes?.minimum_groups?.filter(
 										(group) => Number(group.type_id) === 1
 									) || []))
+									dispatch(setFlashSale(storeRes?.minimum_groups?.filter(
+										(group) =>
+											Number(group.type_id) === 1
+									).length>0))
 
 									setSelectedData({})
 									setIsCatalog(false)
+									onCatalogChange(false)
+
 									setIsModalOpen(false)
 
 									showToast(`Items added to your store`)

@@ -118,7 +118,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					setShowFlashSaleWarning(true)
 					return
 				}
-			} else {
+			}/* else {
 				const storeRes = await spiritHeroApi.getStore(storeId)
 
 				const flashSaleGroups =
@@ -147,7 +147,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 
 					showToast('Unselected flash sale products removed')
 				}
-			}
+			}*/
 
 			setIsModalOpen(false)
 			dispatch(setCustomerApproveFlashSale(true))

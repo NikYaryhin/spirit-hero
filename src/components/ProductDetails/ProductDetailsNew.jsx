@@ -2,6 +2,7 @@ import css from './ProductDetails.module.css'
 import { useMemo } from 'react'
 import ProductCard from '../ProductCard/ProductCard'
 import Icon from '../Icon'
+import Lightning from '@components/Icons/Lightning'
 
 export default function ProductDetailsNew({
 																				 products,
@@ -14,7 +15,9 @@ export default function ProductDetailsNew({
 																						sendColorsToBackend,
 																						setCatalogSelectedColors,
 																						selectedCatalogColorsList,
-																						cardClickHandleV2
+																						cardClickHandleV2,
+																						onFlashSaleChange,
+																						isFlashSaleGroup
 																			 }) {
 
 	// Визначаємо, чи всі товари в цій групі вибрані
@@ -25,6 +28,7 @@ export default function ProductDetailsNew({
 
 	// Якщо після фільтрації в групі немає товарів, нічого не рендеримо
 	if (products.length === 0) return null
+
 
 	return (
 		<details className={css.products__group} name={`${minimalGroup.name}_${minimalGroup.id}`} open>
@@ -54,7 +58,38 @@ export default function ProductDetailsNew({
       {products.length} item{products.length !== 1 ? 's' : ''}
      </span>
 				</div>
+{/*
 				{(!isCatalog && isFlashSale && minimalGroup.type_id ===1) ? (	<div  className={css.minimal_group_mix} >36 item minimum mix/match</div>) : !isCatalog && (	<div  className={css.minimal_group_mix} >No minimum</div>) }
+*/}
+
+				{
+					(!isCatalog && minimalGroup?.is_connect_products
+					) && (<div className={css.products_info}>
+						<div className={css['info--checkbox__wrapper']}>
+							<Lightning />
+
+
+							<span>Flash SALE Price</span>
+							<label className={css['info--checkbox__label']}>
+								<span className={css['info--checkbox__emulator']}></span>
+								<input
+									type="checkbox"
+									className="visually-hidden"
+									checked={isFlashSaleGroup}
+									onChange={(
+										e
+									) =>
+										onFlashSaleChange?.(
+											e
+												.target
+												.checked
+										)
+									}
+								/>
+							</label>
+						</div>
+					</div>)
+				}
 
 			</summary>
 

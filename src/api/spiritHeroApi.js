@@ -93,6 +93,13 @@ class SpiritHeroApi {
 		)
 		return data
 	}
+	async updateMinimumGroup(store_id,minimumGroupId,type_id) {
+		const { data } = await this.http.post(
+			`/api/builder/update-store-flash_sale?store_id=${store_id}&minimum_group_id=${minimumGroupId}&type_id=${type_id}`,
+		)
+		return data
+	}
+
 
 	async getProducts(store_id) {
 		const { data } = await this.http.get(`/api/builder/get-products?store_id=${store_id}`)
