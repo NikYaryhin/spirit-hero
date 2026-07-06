@@ -22,6 +22,7 @@ export default function ProductsStep() {
 	const flashSaleInputHandle = (event) => {
 		const { checked } = event.currentTarget
 		setIsFlashSaleProduct(checked)
+		dispatch(setFlashSale(checked))
 	/*	dispatch(setFlashSale(checked))
 
 		if (storeId)
