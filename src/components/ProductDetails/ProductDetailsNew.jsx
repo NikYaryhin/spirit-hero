@@ -62,34 +62,28 @@ export default function ProductDetailsNew({
 				{(!isCatalog && isFlashSale && minimalGroup.type_id ===1) ? (	<div  className={css.minimal_group_mix} >36 item minimum mix/match</div>) : !isCatalog && (	<div  className={css.minimal_group_mix} >No minimum</div>) }
 */}
 
-				{
-					(!isCatalog && minimalGroup?.is_connect_products
-					) && (<div className={css.products_info}>
+				{!isCatalog && (minimalGroup?.is_connect_products || isFlashSaleGroup) && (
+					<div className={css.products_info}>
 						<div className={css['info--checkbox__wrapper']}>
 							<Lightning />
-
-
 							<span>Flash SALE Price</span>
-							<label className={css['info--checkbox__label']}>
-								<span className={css['info--checkbox__emulator']}></span>
-								<input
-									type="checkbox"
-									className="visually-hidden"
-									checked={isFlashSaleGroup}
-									onChange={(
-										e
-									) =>
-										onFlashSaleChange?.(
-											e
-												.target
-												.checked
-										)
-									}
-								/>
-							</label>
+
+							{minimalGroup?.is_connect_products && (
+								<label className={css['info--checkbox__label']}>
+									<span className={css['info--checkbox__emulator']}></span>
+									<input
+										type="checkbox"
+										className="visually-hidden"
+										checked={isFlashSaleGroup}
+										onChange={(e) =>
+											onFlashSaleChange?.(e.target.checked)
+										}
+									/>
+								</label>
+							)}
 						</div>
-					</div>)
-				}
+					</div>
+				)}
 
 			</summary>
 
