@@ -3504,7 +3504,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 									<details key={key} open>
 										<summary>
 											<Icon name={'ChevronUp'} />
-											<strong>{getGroupLabel(key)}</strong>
+											<strong>{getGroupLabel(key)} {group.type_id ===1?'Flash Sale' :'On Demand' }</strong>
 										</summary>
 
 										<ul className={css.products__list}>
