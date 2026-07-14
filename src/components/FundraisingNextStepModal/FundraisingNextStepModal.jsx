@@ -414,10 +414,14 @@ export default function FundraisingNextStepModal({ closeModal }) {
 							<label className={`${css['text--label']} width-100`}>
 								<span className={css['input--label']}>Account number</span>
 								<input
+
 									onChange={(e) => {
-										setAchData((prev) => {
-											return { ...prev, account_number: e.target.value }
-										})
+										const value = e.target.value.replace(/\D/g, '');
+
+										setAchData((prev) => ({
+											...prev,
+											account_number: value,
+										}));
 									}}
 									value={achData.account_number}
 									type="text"
