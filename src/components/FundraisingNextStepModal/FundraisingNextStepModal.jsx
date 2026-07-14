@@ -395,12 +395,17 @@ export default function FundraisingNextStepModal({ closeModal }) {
 								<span className={css['input--label']}>Routing number</span>
 								<input
 									onChange={(e) => {
-										setAchData((prev) => {
-											return { ...prev, routing_number: e.target.value }
-										})
+										const value = e.target.value.replace(/\D/g, '');
+
+										setAchData((prev) => ({
+											...prev,
+											routing_number: value,
+										}));
 									}}
 									value={achData.routing_number}
 									type="text"
+									inputMode="numeric"
+									pattern="[0-9]*"
 									placeholder="Enter routing number"
 									required
 								/>
@@ -417,6 +422,8 @@ export default function FundraisingNextStepModal({ closeModal }) {
 									value={achData.account_number}
 									type="text"
 									placeholder="Enter account number"
+									inputMode="numeric"
+									pattern="[0-9]*"
 									required
 								/>
 							</label>

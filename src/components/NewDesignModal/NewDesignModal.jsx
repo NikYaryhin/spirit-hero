@@ -66,7 +66,7 @@ export default function NewDesignModal({ setIsNewDesignModalOpen }) {
 								onChange={() => setSelectedGroupId(group.id)}
 								/>
 							<span className={css.checkbox__emulator}></span>
-							{group.name}
+							{group.name} - {group.type_id ===1?'Flash Sale' :'On Demand' }
 						</label>
 					))}
 			</fieldset>
