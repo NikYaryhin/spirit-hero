@@ -377,3 +377,21 @@ h1, h2, h3, h4, h5, h6, p {
     height: auto;
   }
 }
+
+.buttonLoaderModal {
+  display: block;
+  width: 18px;
+  height: 18px;
+
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -116,7 +116,7 @@ class SpiritHeroApi {
 
 	async addToMyStoreProductsList(body) {
 		const { data } = await this.http.post(
-			'/api/builder/add-to-my-store-products-list',
+			'/api/builder/add-products-to-collection',
 			body,
 		)
 		return data

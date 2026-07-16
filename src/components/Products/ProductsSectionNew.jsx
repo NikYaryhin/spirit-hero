@@ -53,6 +53,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 	const [isLoading, setIsLoading] = useState(true)
 	const [isLoadingV2, setIsLoadingV2] = useState(false)
 	const [isLoadingId, setIsLoadingId] = useState(null)
+	const [isApplying, setIsApplying] = useState(false);
 
 	const [fetchLoader, setFetchLoader] = useState(false)
 	const [isCatalog, setIsCatalog] = useState(true)
@@ -800,6 +801,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 
 						<button
 							onClick={async () => {
+								setIsApplying(true)
 								const updatedSelectedData = buildUpdatedSelectedData(
 									selectedData,
 									selectedCollections
@@ -888,11 +890,13 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 								} catch (e) {
 									showToast('Error adding products', 'error')
 								} finally {
+									setIsApplying(false)
+
 									setFetchLoader(false)
 								}
 							}}
 							disabled={
-								Object.keys(selectedDuplicates).some(
+								isApplying || Object.keys(selectedDuplicates).some(
 									(groupId) =>
 										!selectedCollections[groupId] ||
 										selectedCollections[groupId].length === 0
@@ -900,8 +904,16 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 							}
 							className="contrast_button_1"
 						>
-							Apply
+							{isApplying ? (
+								<>
+									<span className="buttonLoaderModal"></span>
+									Applying...
+								</>
+							) : (
+								'Apply'
+							)}
 						</button>
+
 					</div>
 				</div>
 			</Modal>
