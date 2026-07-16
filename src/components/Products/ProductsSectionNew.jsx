@@ -857,7 +857,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 								console.log('productsPayload', productsPayload)
 
 								try {
-									await spiritHeroApi.addToMyStoreProductsList({
+									await spiritHeroApi.addToMyStoreProductsListV2({
 										store_id: Number(storeIdFromQuery),
 										groups: groupsPayload
 									})
