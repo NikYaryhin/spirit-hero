@@ -245,12 +245,13 @@ export default function FundraisingStepNew() {
 
 	// --- Filtering logic for display ---
 	const activeDisplayMap = isFundraiseView ? productsByCategory : sellAtCostProducts
-	console.log('activeDisplayMap',activeDisplayMap)
 	const displayCategoryKeys = useMemo(() => {
 		const keys = Object.keys(activeDisplayMap)
 		if (selectedCategory === 'all') return keys
 		return keys.filter(k => k === selectedCategory)
 	}, [activeDisplayMap, selectedCategory])
+
+	console.log('displayCategoryKeys',displayCategoryKeys)
 
 	if (isLoading) return <Loader />
 

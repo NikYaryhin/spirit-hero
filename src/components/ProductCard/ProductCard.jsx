@@ -220,7 +220,10 @@ export default function ProductCard({
 
 			{/* Назва та Опис */}
 			<div className={css.info_block}>
+{/*
 				<h3 className={css.name}>{product_title} - id:{id}</h3>
+*/}
+				<h3 className={css.name}>{product_title}</h3>
 
 				{product_description && (				<div className={css.tooltip}>
 						<svg

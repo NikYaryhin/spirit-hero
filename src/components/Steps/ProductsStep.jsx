@@ -1,7 +1,7 @@
 import css from './ProductsStep.module.css'
 import Lightning from '../Icons/Lightning'
 import ProductsSection from '../Products/ProductsSection'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { setFlashSale } from '../../features/flashSale/flashSaleSlice'
 import Icon from '../Icon'
@@ -19,10 +19,13 @@ export default function ProductsStep() {
 	const [isCatalogProduct, setIsCatalogProduct] = useState(true);
 	const [isFlashSaleProduct, setIsFlashSaleProduct] = useState(isFlashSale);
 
+	useEffect(() => {
+		setIsFlashSaleProduct(isFlashSale);
+	}, [isFlashSale]);
 	const flashSaleInputHandle = (event) => {
 		const { checked } = event.currentTarget
 		setIsFlashSaleProduct(checked)
-		dispatch(setFlashSale(checked))
+			//dispatch(setFlashSale(checked))
 	/*	dispatch(setFlashSale(checked))
 
 		if (storeId)
@@ -106,7 +109,7 @@ export default function ProductsStep() {
 
 
 
-			<ProductsSectionNew isFlashSale={isFlashSale} storeIdFromQuery={storeId}   isCatalogProduct={isCatalogProduct}
+			<ProductsSectionNew isFlashSale={isFlashSaleProduct} storeIdFromQuery={storeId}   isCatalogProduct={isCatalogProduct}
 													onCatalogChange={setIsCatalogProduct} />
 
 

@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import ProductCard from '../ProductCard/ProductCard'
 import Icon from '../Icon'
 import Lightning from '@components/Icons/Lightning'
+import Loader from '@components/Loader/Loader'
 
 export default function ProductDetailsNew({
 																				 products,
@@ -17,7 +18,9 @@ export default function ProductDetailsNew({
 																						selectedCatalogColorsList,
 																						cardClickHandleV2,
 																						onFlashSaleChange,
-																						isFlashSaleGroup
+																						isFlashSaleGroup,
+																						isLoadingV2,
+																						isLoadingId
 																			 }) {
 
 	// Визначаємо, чи всі товари в цій групі вибрані
@@ -87,28 +90,33 @@ export default function ProductDetailsNew({
 
 			</summary>
 
-			<div className={css.products__list_container}>
-				<ul className={css.products__list}>
-					{products.map((product) => (
-						<ProductCard
-							key={product.id}
-							inputHandle={cardClickHandle}
-							product={product}
-							isFlashSale={isFlashSale}
-							activeColors={activeColors}
-							isCatalog={isCatalog}
-							minimalGroup={minimalGroup}
-							sendColorsToBackend={sendColorsToBackend}
-							selectedCatalogColors={selectedCatalogColorsList[product.id] || []}
-							setCatalogSelectedColors={setCatalogSelectedColors}
-							cardClickHandleV2={cardClickHandleV2}
+			{
+				(isLoadingV2 && isLoadingId)?  <div className={css.smallLoader}>
+					<div className={css.smallSpinner}></div>
+				</div>:	<div className={css.products__list_container}>
+					<ul className={css.products__list}>
+						{products.map((product) => (
+							<ProductCard
+								key={product.id}
+								inputHandle={cardClickHandle}
+								product={product}
+								isFlashSale={isFlashSale}
+								activeColors={activeColors}
+								isCatalog={isCatalog}
+								minimalGroup={minimalGroup}
+								sendColorsToBackend={sendColorsToBackend}
+								selectedCatalogColors={selectedCatalogColorsList[product.id] || []}
+								setCatalogSelectedColors={setCatalogSelectedColors}
+								cardClickHandleV2={cardClickHandleV2}
 
-							// Якщо ProductCard очікує selected окремим пропсом, можна додати:
-							// isSelected={product.selected}
-						/>
-					))}
-				</ul>
-			</div>
+								// Якщо ProductCard очікує selected окремим пропсом, можна додати:
+								// isSelected={product.selected}
+							/>
+						))}
+					</ul>
+				</div>
+			}
+
 		</details>
 	)
 }

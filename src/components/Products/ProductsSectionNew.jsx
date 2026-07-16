@@ -51,6 +51,9 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 		})
 	}
 	const [isLoading, setIsLoading] = useState(true)
+	const [isLoadingV2, setIsLoadingV2] = useState(false)
+	const [isLoadingId, setIsLoadingId] = useState(null)
+
 	const [fetchLoader, setFetchLoader] = useState(false)
 	const [isCatalog, setIsCatalog] = useState(true)
 	const [sortingBy, setSortingBy] = useState('')
@@ -566,7 +569,8 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 
 	const handleGroupTypeChange = async (minimumGroupId, checked) => {
 		try {
-			setIsLoading(true)
+			setIsLoadingV2(true)
+			setIsLoadingId(minimumGroupId)
 			await spiritHeroApi.updateMinimumGroup(storeIdFromQuery,
 				minimumGroupId,
 				checked ? 1 : 2,
@@ -597,7 +601,8 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 		} catch (e) {
 			console.error('handleGroupTypeChange',e);
 		}finally {
-			setIsLoading(false)
+			setIsLoadingV2(false)
+			setIsLoadingId(null)
 		}
 	};
 	if (isLoading) return <Loader />
@@ -725,6 +730,8 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 								sendColorsToBackend={sendColorsToBackend}
 								setCatalogSelectedColors={setCatalogSelectedColors}
 								selectedCatalogColorsList={catalogSelectedColors|| []}
+								isLoadingV2={isLoadingV2}
+								isLoadingId={isLoadingId===group.id}
 							/>
 						)
 					})}

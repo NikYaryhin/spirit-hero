@@ -118,36 +118,81 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					setShowFlashSaleWarning(true)
 					return
 				}
-			}/* else {
-				const storeRes = await spiritHeroApi.getStore(storeId)
+			}
+			 else {
+				const storeRes = await spiritHeroApi.getStore(storeId);
 
 				const flashSaleGroups =
 					storeRes?.minimum_groups?.filter(
 						(group) => Number(group.type_id) === 1
-					) || []
+					) || [];
 
-				// ті що НЕ вибрані → видаляємо
 				const groupsToDelete = flashSaleGroups.filter(
 					(group) => !choosedCollection.includes(String(group.id))
-				)
+				);
 
-				if (groupsToDelete.length > 0) {
-					const groupsPayload = groupsToDelete.map((group) => ({
+				const removableGroups = groupsToDelete.filter(
+					(group) => !group.is_connect_products
+				);
+
+				if (removableGroups.length > 0) {
+					const groupsPayload = removableGroups.map((group) => ({
 						group_id: Number(group.id),
 						ids:
 							group.products?.map((p) => p.id) ||
 							group.product_ids ||
 							[]
-					}))
+					}));
 
 					await spiritHeroApi.deleteFromMyStoreProducts({
 						store_id: Number(storeIdFromQuery),
 						groups: groupsPayload
-					})
+					});
+				}
+
+				const connectedGroups = groupsToDelete.filter(
+					(group) => group.is_connect_products
+				);
+
+				await Promise.all(
+					connectedGroups.map((group) =>
+						spiritHeroApi.updateMinimumGroup(
+							Number(storeIdFromQuery),
+							Number(group.id),
+							2
+						)
+					)
+				);
+
+
+				const refreshedStore = await spiritHeroApi.getStore(storeId);
+
+				const flashSaleGroupsAfter =
+					refreshedStore?.minimum_groups?.filter(
+						(group) => Number(group.type_id) === 1
+					) || [];
+
+				const groupsToDeleteAfter = flashSaleGroupsAfter.filter(
+					(group) => !choosedCollection.includes(String(group.id))
+				);
+
+				if (groupsToDeleteAfter.length > 0) {
+					const groupsPayload = groupsToDeleteAfter.map((group) => ({
+						group_id: Number(group.id),
+						ids:
+							group.products?.map((p) => p.id) ||
+							group.product_ids ||
+							[]
+					}));
+
+					await spiritHeroApi.deleteFromMyStoreProducts({
+						store_id: Number(storeIdFromQuery),
+						groups: groupsPayload
+					});
+				}
 
 					showToast('Unselected flash sale products removed')
-				}
-			}*/
+			}
 
 			setIsModalOpen(false)
 			dispatch(setCustomerApproveFlashSale(true))
