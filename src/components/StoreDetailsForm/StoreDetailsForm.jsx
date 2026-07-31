@@ -52,23 +52,7 @@ export default function StoreDetailsForm({ image }) {
 		}
 	}, [storeInfo])
 
-	// const saveColors = async (e) => {
-	// 	e.preventDefault()
-	// 	const payload = {
-	// 		store_id: storeId,
-	// 		color_id: colorsIds,
-	// 	}
 
-	// 	try {
-	// 		setIsLoading(true)
-	// 		const response = await spiritHeroApi.saveColorsDetails(payload)
-	// 		console.log('saveColorsDetails response', response)
-	// 	} catch (error) {
-	// 		console.error('saveColorsDetails error', error)
-	// 	} finally {
-	// 		setIsLoading(false)
-	// 	}
-	// }
 
 	const onFormSubmit = async (event) => {
 		event.preventDefault()
@@ -188,35 +172,6 @@ export default function StoreDetailsForm({ image }) {
 						/>
 					</label>
 
-					{/*<div className={css['social--media__inputs--box']}>
-						<label className={css['text--label']}>
-							<span className={css['input--label']}>
-								Add Social Media <em>(optional)</em>
-							</span>
-							<input
-								onChange={(event) => {
-									setFirstSocial(event.currentTarget.value)
-								}}
-								value={firstSocial}
-								type="url"
-								placeholder="https://tiktok.com"
-							/>
-						</label>
-
-						<label className={css['text--label']}>
-							<span className={css['input--label']}>
-								Add Social Media <em>(optional)</em>
-							</span>
-							<input
-								onChange={(event) => {
-									setSecondSocial(event.currentTarget.value)
-								}}
-								value={secondSocial}
-								type="url"
-								placeholder="https://x.com"
-							/>
-						</label>
-					</div>*/}
 				</fieldset>
 
 				<fieldset>

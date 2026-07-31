@@ -75,7 +75,6 @@ export default function ProductsSection({ isFlashSale }) {
 		if (catalogProducts.length < 1) fetchData()
 	}, [])
 
-	// Активация цветовых фильтров из storeInfo после загрузки продуктов
 	useEffect(() => {
 		if (!filters) return
 		if (!storeInfo) return

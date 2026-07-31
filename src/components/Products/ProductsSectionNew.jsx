@@ -30,7 +30,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 	const [myStoreGroups, setMyStoreGroups] = useState([])
 	const [filtersData, setFiltersData] = useState(null)
 	const [selectedDuplicates, setSelectedDuplicates] = useState({})
-	// Структура тепер така: { "groupId": [productId1, productId2] }
 	const [selectedData, setSelectedData] = useState({})
 	const [selectedCollections, setSelectedCollections] = useState({})
 	const handleCheckboxChange = (groupId, collectionId) => {
@@ -86,7 +85,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 				setIsCatalog(!storeRes.minimum_groups.length>0)
 				onCatalogChange(!storeRes.minimum_groups.length>0)
 
-				// Авто-фільтрація по кольорах магазину
 				if (storeRes.store?.color && productsRes.filters?.colorFamilies) {
 					const storeColors = storeRes.store.color.map(c => c.toUpperCase())
 					const matchingIds = productsRes.filters.colorFamilies
@@ -119,7 +117,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 				const response = await spiritHeroApi.getCheckStoreImageProcessing(storeIdFromQuery);
 				const isDone = response?.process?.status === 'done'  || response?.process===null;
 
-				// якщо перший запит і вже done -> просто завершити без повідомлень
 				if (firstRequest && isDone) {
 					setIsProcessingDesign(true);
 					clearInterval(interval);
@@ -127,7 +124,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 					return;
 				}
 
-				// якщо раніше був процесинг і тепер done
 				if (!firstRequest && wasProcessingBefore && isDone) {
 					setIsProcessingDesign(true);
 					clearInterval(interval);
@@ -139,7 +135,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 					return;
 				}
 
-				// ще обробляється
 				if (!isDone) {
 					setIsProcessingDesign(false);
 					wasProcessingBefore = true;
@@ -253,7 +248,7 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 			.length;
 	}, [catalogGroups, myStoreGroups,isFlashSale]);
 /*	const totalCatalogCount = useMemo(() => {
-		// Якщо хочемо бачити кількість тільки тих, що залишилися в каталозі:
+
 		return processedGroups.reduce((acc, g) => acc + g.products.length, 0)
 	}, [processedGroups])*/
 	const totalMyStoreCount = useMemo(() => {
@@ -364,7 +359,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 
 			const normalizedExisting = normalize(existingGroup.name)
 
-			// 🔥 беремо ВСІ includes (включаючи exact)
 			const catalogGroupsFiltered =
 				myStoreGroups?.filter(
 					(group) => Number(group.type_id) === targetTypeId
@@ -373,7 +367,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 				normalize(value.name).includes(normalizedExisting)
 			)
 
-			// 🔥 якщо тільки 1 і він exact → скіпаємо
 			if (
 				matches.length === 1 &&
 				normalize(matches[0].name) === normalizedExisting
@@ -381,7 +374,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 				return
 			}
 
-			// 🔥 якщо є хоч щось (2+ або 1 але не exact)
 			if (matches.length > 0) {
 				duplicatedGroups[groupId] = {
 					groupName: existingGroup.name,
@@ -462,7 +454,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 				const selectedColors =
 					catalogSelectedColors?.[productId]
 
-				// якщо нічого не вибрано — просто не додаємо цей продукт
 				if (!selectedColors || selectedColors.length === 0) return
 
 				productsPayload.push({
@@ -511,13 +502,11 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 		Object.entries(selectedData).forEach(([groupId, productIds]) => {
 			const targetGroupIds = selectedCollections[groupId]
 
-			// якщо юзер нічого не вибрав → залишаємо як є
 			if (!targetGroupIds || targetGroupIds.length === 0) {
 				result[groupId] = productIds
 				return
 			}
 
-			// 🔥 розкидаємо продукти по вибраних групах
 			targetGroupIds.forEach((targetGroupId) => {
 				if (!result[targetGroupId]) {
 					result[targetGroupId] = []
@@ -532,7 +521,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 
 	const deleteFromStoreAction = async () => {
 		setFetchLoader(true)
-		// Для видалення зазвичай бекенд приймає просто плоский масив ID або таку ж структуру
 		const groupsPayload = Object.entries(selectedData).map(([groupId, ids]) => ({
 			group_id: Number(groupId),
 			ids: ids
@@ -809,7 +797,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 
 								console.log('updatedSelectedData', updatedSelectedData)
 
-								// 🔥 ДАЛІ ВСТАВЛЯЄШ СВІЙ КОД
 								//setFetchLoader(true)
 
 								const groupsPayload = Object.entries(updatedSelectedData).map(
@@ -840,7 +827,6 @@ export default function ProductsSectionNew({ isFlashSale, storeIdFromQuery,isCat
 										const selectedColors =
 											catalogSelectedColors?.[productId]
 
-										// якщо нічого не вибрано — просто не додаємо цей продукт
 										if (!selectedColors || selectedColors.length === 0) return
 
 										productsPayload.push({

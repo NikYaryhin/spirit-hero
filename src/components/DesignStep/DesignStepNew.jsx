@@ -99,14 +99,12 @@ const DesignStepNew = forwardRef((props, ref) => {
 		return Array.isArray(groupProducts) ? groupProducts : []
 	}
 
-	// Функция для отрисовки иконки удаления
 	const renderDeleteIcon = (ctx, left, top, styleOverride, fabricObject) => {
 		const size = 16
 		ctx.save()
 		ctx.translate(left, top)
 		ctx.rotate(util.degreesToRadians(fabricObject.angle))
 
-		// Рисуем круг
 		ctx.beginPath()
 		ctx.arc(0, 0, size / 2, 0, 2 * Math.PI)
 		ctx.fillStyle = '#ff4444'
@@ -115,7 +113,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 		ctx.lineWidth = 2
 		ctx.stroke()
 
-		// Рисуем крестик
 		ctx.strokeStyle = '#ffffff'
 		ctx.lineWidth = 2
 		ctx.beginPath()
@@ -129,26 +126,21 @@ const DesignStepNew = forwardRef((props, ref) => {
 		ctx.restore()
 	}
 
-	// Функция обработчик удаления объекта
 	const deleteObject = (eventData, transform) => {
 		const canvas = transform.target.canvas
 		const target = transform.target
 
-		// Удаляем изображения
 		if (target.customData?.type === 'uploaded-image') {
 			const urlToRemove = target.customData.url
 
-			// Удаляем с canvas
 			canvas.remove(target)
 			canvas.renderAll()
 
-			// Удаляем из uploaderFiles
 			setUploaderFiles((prev) => {
 				const index = prev.findIndex((f) => f.url === urlToRemove)
 				if (index !== -1) {
 					const next = prev.slice()
 					const [removed] = next.splice(index, 1)
-					// Освобождаем URL только для загруженных файлов
 					if (removed && removed.url && !removed.isServerImage) {
 						URL.revokeObjectURL(removed.url)
 					}
@@ -158,7 +150,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 			})
 		}
 
-		// Удаляем текст
 		if (target.customData?.type === 'text') {
 			canvas.remove(target)
 			canvas.renderAll()
@@ -194,214 +185,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 		// 🎯 HANDLERS
 		// =========================
 
-	/*	const handleTextScaling = (e) => {
-			const obj = e.target
-			if (!obj || obj.customData?.type !== 'text') return
 
-
-			const scaleX = obj.scaleX
-			obj.customData.originalFontSize = Math.round(obj.fontSize * scaleX)
-			obj.customData.originalWidth = obj.width * scaleX
-			obj.customData.originalHeight = obj.height * scaleX
-
-		}*/
-		/*const handleTextScaling = (e) => {
-			const obj = e.target;
-			const area = currentAreaRef2.current;
-
-			if (!obj || obj.customData?.type !== 'text') return;
-
-			obj.setCoords();
-			area.setCoords();
-
-			const scaleX = obj.scaleX;
-			const scaleY = obj.scaleY;
-
-			// 🔥 1. нормалізуємо scale → в fontSize
-			const newFontSize = Math.round(obj.fontSize * scaleX);
-
-			obj.set({
-				fontSize: newFontSize,
-				scaleX: 1,
-				scaleY: 1,
-			});
-
-			// 🔥 2. для textbox оновлюємо ширину
-			if (obj.type === 'textbox') {
-				obj.set({
-					width: obj.width * scaleX,
-				});
-			}
-
-			// 🔥 3. після зміни — беремо нові bounds
-			obj.setCoords();
-
-			const areaBounds = area.getBoundingRect(true);
-
-			const objWidth = obj.getScaledWidth();
-			const objHeight = obj.getScaledHeight();
-
-			let newLeft = obj.left;
-			let newTop = obj.top;
-
-			const minX = areaBounds.left + objWidth / 2;
-			const maxX = areaBounds.left + areaBounds.width - objWidth / 2;
-
-			const minY = areaBounds.top + objHeight / 2;
-			const maxY = areaBounds.top + areaBounds.height - objHeight / 2;
-
-			// 🔒 обмеження як у moving
-			if (newLeft < minX) newLeft = minX;
-			if (newLeft > maxX) newLeft = maxX;
-
-			if (newTop < minY) newTop = minY;
-			if (newTop > maxY) newTop = maxY;
-
-			obj.set({
-				left: newLeft,
-				top: newTop
-			});
-
-			// 🔥 4. збереження
-			obj.customData = {
-				...obj.customData,
-				originalFontSize: obj.fontSize,
-				originalWidth: obj.width,
-				originalHeight: obj.height,
-			};
-
-			obj.setCoords();
-		};*/
-		/*const handleTextScaling = (e) => {
-			const obj = e.target;
-			const area = currentAreaRef2.current;
-
-			if (!obj || obj.customData?.type !== 'text') return;
-
-			const areaBounds = area.getBoundingRect(true);
-
-			// ========================
-			// 📐 Визначаємо який corner тягнуть
-			// щоб знати в який бік обмежувати
-			// ========================
-			const transform = obj.canvas?._currentTransform;
-			const corner = transform?.corner || '';
-
-			// ========================
-			// 📐 Raw розміри
-			// ========================
-			const rawWidth = obj.width * obj.scaleX;
-
-			// Clamp width
-			const clampedWidth = Math.max(30, Math.min(rawWidth, areaBounds.width));
-
-			// ========================
-			// 🔤 FontSize пропорційно
-			// ========================
-			const originalWidth = obj.customData?.originalWidth || obj.width;
-			const originalFontSize = obj.customData?.originalFontSize || obj.fontSize;
-
-			const widthRatio = clampedWidth / originalWidth;
-			let newFontSize = Math.max(8, Math.round(originalFontSize * widthRatio));
-
-			obj.set({
-				width: clampedWidth,
-				fontSize: newFontSize,
-				scaleX: 1,
-				scaleY: 1,
-			});
-
-			obj.setCoords();
-
-			// ========================
-			// 🔒 Бінарний пошук якщо висота вилізла
-			// ========================
-			if (obj.height > areaBounds.height) {
-				let min = 8;
-				let max = newFontSize;
-
-				while (max - min > 1) {
-					const mid = Math.round((min + max) / 2);
-					obj.set({ fontSize: mid });
-					obj.setCoords();
-					obj.height > areaBounds.height ? (max = mid) : (min = mid);
-				}
-
-				obj.set({ fontSize: min });
-				obj.setCoords();
-				newFontSize = min;
-			}
-
-			// ========================
-			// 📍 Правильний clamp позиції
-			// originX: 'center' → obj.left = центр об'єкта
-			// ========================
-			const currentWidth = obj.getScaledWidth();
-			const currentHeight = obj.getScaledHeight();
-
-			// Межі для ЦЕНТРУ об'єкта
-			const minLeft = areaBounds.left + currentWidth / 2;
-			const maxLeft = areaBounds.left + areaBounds.width - currentWidth / 2;
-			const minTop  = areaBounds.top  + currentHeight / 2;
-			const maxTop  = areaBounds.top  + areaBounds.height - currentHeight / 2;
-
-			let newLeft = obj.left;
-			let newTop  = obj.top;
-
-			// ========================
-			// 🎯 Прив'язуємо до правильного краю залежно від corner
-			// ========================
-			if (corner.includes('l')) {
-				// Тягнуть лівий край → правий край має лишатись на місці
-				// Центр = правий край - половина ширини
-				const rightEdge = Math.min(
-					obj.left + currentWidth / 2, // поточний правий
-					areaBounds.left + areaBounds.width  // межа area
-				);
-				newLeft = rightEdge - currentWidth / 2;
-				newLeft = Math.max(newLeft, minLeft); // не виходимо за ліву межу
-			} else if (corner.includes('r')) {
-				// Тягнуть правий край → лівий край лишається
-				const leftEdge = Math.max(
-					obj.left - currentWidth / 2,
-					areaBounds.left
-				);
-				newLeft = leftEdge + currentWidth / 2;
-				newLeft = Math.min(newLeft, maxLeft);
-			} else {
-				newLeft = Math.min(Math.max(newLeft, minLeft), maxLeft);
-			}
-
-			if (corner.includes('t')) {
-				const bottomEdge = Math.min(
-					obj.top + currentHeight / 2,
-					areaBounds.top + areaBounds.height
-				);
-				newTop = bottomEdge - currentHeight / 2;
-				newTop = Math.max(newTop, minTop);
-			} else if (corner.includes('b')) {
-				const topEdge = Math.max(obj.top - currentHeight / 2, areaBounds.top);
-				newTop = topEdge + currentHeight / 2;
-				newTop = Math.min(newTop, maxTop);
-			} else {
-				newTop = Math.min(Math.max(newTop, minTop), maxTop);
-			}
-
-			obj.set({ left: newLeft, top: newTop });
-
-			// ========================
-			// 💾 Зберігаємо тільки коли не clamped
-			// ========================
-			if (rawWidth <= areaBounds.width) {
-				obj.customData = {
-					...obj.customData,
-					originalFontSize: newFontSize,
-					originalWidth: clampedWidth,
-				};
-			}
-
-			obj.setCoords();
-		};*/
 		const handleTextScaling = (e) => {
 			const obj = e.target;
 			const area = currentAreaRef2.current;
@@ -418,14 +202,9 @@ const DesignStepNew = forwardRef((props, ref) => {
 			const rawWidth = obj.width * obj.scaleX;
 			const clampedWidth = Math.max(30, Math.min(rawWidth, areaBounds.width));
 
-			// ========================
-			// 🔤 FontSize через пряме вимірювання ctx
-			// Плавно: fontSize пропорційно до зміни ширини
-			// ========================
-			const prevWidth = obj.width  // ширина ДО скидання scale
+			const prevWidth = obj.width
 			const prevFontSize = obj.fontSize
 
-			// Якщо width не змінився — не рахуємо заново
 			const widthDelta = clampedWidth / prevWidth
 			let newFontSize = Math.max(8, Math.min(
 				Math.round(prevFontSize * widthDelta),
@@ -441,9 +220,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 			obj.setCoords()
 
-			// ========================
-			// 🔒 Якщо висота вилізла — бінарний пошук
-			// ========================
 			if (obj.height > areaBounds.height) {
 				let min = 8
 				let max = newFontSize
@@ -460,9 +236,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 				newFontSize = min
 			}
 
-			// ========================
-			// 📍 Clamp позиція залежно від corner
-			// ========================
+
 			const currentWidth = obj.getScaledWidth()
 			const currentHeight = obj.getScaledHeight()
 
@@ -473,13 +247,10 @@ const DesignStepNew = forwardRef((props, ref) => {
 			let newTop  = obj.top
 
 			if (corner.includes('l')) {
-				// Фіксуємо правий край
 				const rightEdge = Math.min(newLeft + currentWidth / 2, areaRight)
 				newLeft = rightEdge - currentWidth / 2
-				// Не виходимо за ліву межу
 				newLeft = Math.max(newLeft, areaBounds.left + currentWidth / 2)
 			} else if (corner.includes('r')) {
-				// Фіксуємо лівий край
 				const leftEdge = Math.max(newLeft - currentWidth / 2, areaBounds.left)
 				newLeft = leftEdge + currentWidth / 2
 				newLeft = Math.min(newLeft, areaRight - currentWidth / 2)
@@ -501,10 +272,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 			obj.set({ left: newLeft, top: newTop })
 
-			// ========================
-			// 💾 Завжди зберігаємо поточний стан як базовий
-			// (бо рахуємо delta від попереднього кадру)
-			// ========================
 			obj.customData = {
 				...obj.customData,
 				originalFontSize: newFontSize,
@@ -598,7 +365,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 			const areaCenterY = currentArea.y + currentArea.h / 2
 			/*const distanceX = Math.abs(objCenter.x - areaCenterX)
 			const distanceY = Math.abs(objCenter.y - areaCenterY)*/
-			const distanceX = Math.abs(objCenter.x - currentArea.x); // Порівнюємо з 300
+			const distanceX = Math.abs(objCenter.x - currentArea.x);
 			const distanceY = Math.abs(objCenter.y - currentArea.y);
 			vLine.set({ visible: distanceX <= snapThreshold })
 			hLine.set({ visible: distanceY <= snapThreshold })
@@ -613,86 +380,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 			fabricCanvas.renderAll()
 		}
 
-		/*const handleImageScaling = (e) => {
-			const obj = e.target;
-			const area = currentAreaRef2.current;
-
-			if (!obj || obj.customData?.type !== 'uploaded-image') return;
-
-			obj.setCoords();
-			area.setCoords();
-
-			const areaBounds = area.getBoundingRect(true);
-
-			const scaleX = obj.scaleX;
-			const scaleY = obj.scaleY;
-
-			// 🔥 центр об'єкта
-			const center = obj.getCenterPoint();
-
-			// 🔥 максимально доступна ширина/висота від центру
-			const maxWidth =
-				2 * Math.min(
-				center.x - areaBounds.left,
-				areaBounds.left + areaBounds.width - center.x
-				);
-
-			const maxHeight =
-				2 * Math.min(
-				center.y - areaBounds.top,
-				areaBounds.top + areaBounds.height - center.y
-				);
-
-			// 🔥 обмежуємо scale
-			let allowedScaleX = scaleX;
-			let allowedScaleY = scaleY;
-
-			if (obj.width * scaleX > maxWidth) {
-				allowedScaleX = maxWidth / obj.width;
-			}
-
-			if (obj.height * scaleY > maxHeight) {
-				allowedScaleY = maxHeight / obj.height;
-			}
-
-			// 🔥 застосовуємо scale (як у тебе fontSize)
-			obj.set({
-				scaleX: allowedScaleX,
-			});
-
-			obj.setCoords();
-
-			// 🔥 обмеження позиції (як у moving)
-			const objBounds = obj.getBoundingRect(true);
-
-			let newLeft = obj.left;
-			let newTop = obj.top;
-
-			const minX = areaBounds.left + objBounds.width / 2;
-			const maxX = areaBounds.left + areaBounds.width - objBounds.width / 2;
-
-			const minY = areaBounds.top + objBounds.height / 2;
-			const maxY = areaBounds.top + areaBounds.height - objBounds.height / 2;
-
-			if (newLeft < minX) newLeft = minX;
-			if (newLeft > maxX) newLeft = maxX;
-
-			if (newTop < minY) newTop = minY;
-			if (newTop > maxY) newTop = maxY;
-
-			obj.set({
-				left: newLeft,
-				top: newTop
-			});
-
-			obj.customData = {
-				...obj.customData,
-				originalWidth: obj.getScaledWidth(),
-				originalHeight: obj.getScaledHeight(),
-			};
-
-			obj.setCoords();
-		};*/
 
 		const handleImageScaling = (e) => {
 			const obj = e.target;
@@ -704,27 +391,19 @@ const DesignStepNew = forwardRef((props, ref) => {
 			const transform = obj.canvas?._currentTransform;
 			const corner = transform?.corner || '';
 
-			// ========================
-			// 📐 Raw scaled розміри
-			// ========================
+
 			const rawWidth  = obj.width  * obj.scaleX;
 			const rawHeight = obj.height * obj.scaleY;
 
-			// ========================
-			// ✂️ Clamp до area
-			// ========================
 			const clampedWidth  = Math.max(20, Math.min(rawWidth,  areaBounds.width));
 			const clampedHeight = Math.max(20, Math.min(rawHeight, areaBounds.height));
 
-			// ========================
-			// 🔒 Зберігаємо пропорції (aspect ratio)
-			// ========================
+
 			const aspectRatio = obj.width / obj.height;
 
 			let finalWidth  = clampedWidth;
 			let finalHeight = clampedWidth / aspectRatio;
 
-			// Якщо висота все одно вилізла — обмежуємо по висоті
 			if (finalHeight > areaBounds.height) {
 				finalHeight = clampedHeight;
 				finalWidth  = clampedHeight * aspectRatio;
@@ -740,9 +419,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 			obj.setCoords();
 
-			// ========================
-			// 📍 Clamp позиція залежно від corner
-			// ========================
 			const currentWidth  = obj.getScaledWidth();
 			const currentHeight = obj.getScaledHeight();
 
@@ -778,9 +454,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 			obj.set({ left: newLeft, top: newTop });
 
-			// ========================
-			// 💾 Зберігаємо поточний стан
-			// ========================
+
 			obj.customData = {
 				...obj.customData,
 				originalWidth:  finalWidth,
@@ -905,11 +579,9 @@ const DesignStepNew = forwardRef((props, ref) => {
 		const objWidth = activeObj.getScaledWidth();
 		const objHeight = activeObj.getScaledHeight();
 
-		// По горизонталі — центр area
 		const newLeft = areaBounds.left + areaBounds.width / 2;
 
-		// По вертикалі — верхній край area + половина висоти об'єкта
-		// (бо origin = center)
+
 		const newTop = areaBounds.top + objHeight / 2;
 
 		activeObj.set({
@@ -928,7 +600,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 		if (!canvas) return;
 
 		console.log('canvas area',canvas)
-		// Видаляємо стару рамку та гайди перед малюванням нових
 		const existingObjects = canvas.getObjects().filter(obj =>
 			obj.customData?.type === 'area' || obj.customData?.type === 'guide-line'
 		);
@@ -954,9 +625,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 
 		console.log(areaRect)
-		// =========================
-		// 📏 GUIDE LINES (центр area)
-		// =========================
+
 		const centerX = currentArea.x;
 		const centerY = currentArea.y;
 
@@ -997,12 +666,10 @@ const DesignStepNew = forwardRef((props, ref) => {
 		canvas.add( verticalGuideLine);
 		canvas.add( horizontalGuideLine);
 		canvas.add( areaRect);
-		// Важливо: перемістити системні елементи назад, щоб вони не перекривали текст
 		canvas.requestRenderAll();
 
 	}, [area]);
 
-	// Удаление выделенного элемента при нажатии Delete или Backspace
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) {
@@ -1010,7 +677,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 		}
 
 		const handleKeyDown = (e) => {
-			// Проверяем, что фокус не на input/textarea
 			const activeElement = document.activeElement
 			if (
 				activeElement &&
@@ -1021,28 +687,23 @@ const DesignStepNew = forwardRef((props, ref) => {
 				return
 			}
 
-			// Проверяем нажатие Delete или Backspace
 			if (e.key === 'Delete' || e.key === 'Backspace') {
 				const activeObject = canvas.getActiveObject()
 
 				if (activeObject) {
-					// Удаление изображения
 					if (activeObject.customData?.type === 'uploaded-image') {
 						e.preventDefault()
 
 						const urlToRemove = activeObject.customData.url
 
-						// Удаляем с canvas
 						canvas.remove(activeObject)
 						canvas.renderAll()
 
-						// Удаляем из uploaderFiles
 						setUploaderFiles((prev) => {
 							const index = prev.findIndex((f) => f.url === urlToRemove)
 							if (index !== -1) {
 								const next = prev.slice()
 								const [removed] = next.splice(index, 1)
-								// Освобождаем URL только для загруженных файлов
 								if (removed && removed.url && !removed.isServerImage) {
 									URL.revokeObjectURL(removed.url)
 								}
@@ -1052,7 +713,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 						})
 					}
 
-					// Удаление текста
 					if (activeObject.customData?.type === 'text') {
 						e.preventDefault()
 						canvas.remove(activeObject)
@@ -1069,7 +729,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 		}
 	}, [isLoading])
 
-	// Добавление загруженных изображений на canvas
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
@@ -1083,13 +742,11 @@ const DesignStepNew = forwardRef((props, ref) => {
 			height: area.h,
 		}
 
-		// Получаем текущие URL изображений на canvas
 		const currentObjects = canvas.getObjects()
 		const currentUrls = currentObjects
 			.filter((obj) => obj.customData?.type === 'uploaded-image')
 			.map((obj) => obj.customData.url)
 
-		// Удаляем изображения, которых больше нет в uploaderFiles
 		const uploaderUrls = uploaderFiles.map((f) => f.url)
 		currentObjects.forEach((obj) => {
 			if (obj.customData?.type === 'uploaded-image' && !uploaderUrls.includes(obj.customData.url)) {
@@ -1097,7 +754,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 			}
 		})
 
-		// Добавляем новые изображения
 		uploaderFiles.forEach(async (fileData) => {
 			console.log("fileData",fileData)
 			if (currentUrls.includes(fileData.url)) return
@@ -1156,7 +812,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 						mb: false,
 					})
 
-					// Добавляем кнопку удаления
 					fabricImg.controls.deleteControl = new Control({
 						x: 0.5,
 						y: -0.5,
@@ -1175,7 +830,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 						id=fileData.id
 					}
 
-					// Добавляем кастомные данные для идентификации
 					fabricImg.customData = {
 						type: 'uploaded-image',
 						url: fileData.url,
@@ -1194,15 +848,14 @@ const DesignStepNew = forwardRef((props, ref) => {
 				}
 
 				imgElement.onerror = (error) => {
-					console.error('Ошибка загрузки изображения:', error)
+					console.error('ERROR photo:', error)
 				}
 			} catch (error) {
-				console.error('Ошибка при добавлении изображения на canvas:', error)
+				console.error('ERROR canvas:', error)
 			}
 		})
 	}, [uploaderFiles])
 
-	// useEffect для загрузки текста с сервера на canvas
 	useEffect(() => {
 		if (isLoading) return
 		const canvas = fabricCanvasRef.current
@@ -1220,20 +873,16 @@ const DesignStepNew = forwardRef((props, ref) => {
 		}
 
 		const currentObjects = canvas.getObjects()
-		// Получаем текущие тексты на canvas (по уникальному признаку)
 		const currentTexts = currentObjects
 			.filter((obj) => obj.customData?.type === 'text')
 			.map((obj) => obj.customData.serverId)
 
-		// Добавляем новые тексты
 		serverLabels.forEach((labelData, index) => {
 			const serverId = `server-label-${index}`
 
-			// Проверяем, не загружен ли уже этот текст
 			if (currentTexts.includes(serverId)) return
 
 			try {
-				// Используем координаты с сервера, если они есть, иначе значения по умолчанию
 				const left = labelData.x !== undefined ? labelData.x : 50
 				const top = labelData.y !== undefined ? labelData.y : 50
 				const fontSize = labelData.fontSize || 54
@@ -1258,12 +907,10 @@ const DesignStepNew = forwardRef((props, ref) => {
 					transparentCorners: false,
 					lockScalingFlip: true,
 					lockUniScaling: false,
-// заборонити рухати
 				/*	lockMovementX: true,
 					lockMovementY: true,*/
 				})
 
-				// Скрываем ненужные контролы
 				textbox.setControlsVisibility({
 					ml: false,
 					mr: false,
@@ -1280,7 +927,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 					}),
 				})
 
-				// Добавляем кнопку удаления
 				textbox.controls.deleteControl = new Control({
 					x: 0.5,
 					y: -0.5,
@@ -1297,7 +943,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 				}else {
 					id=labelData.id
 				}
-				// Добавляем кастомные данные для идентификации
 				textbox.customData = {
 					type: 'text',
 					serverId: serverId,
@@ -1315,7 +960,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 					}
 				}
 			} catch (error) {
-				console.error('❌ Ошибка при добавлении текста на canvas:', error)
+				console.error('❌ Error canvas:', error)
 			}
 		})
 
@@ -1639,7 +1284,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 		fetchStoreData()
 	}, [dispatch, storeId,isNewDesignModalOpen])
 
-	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
@@ -1650,7 +1294,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 		const labelsData = []
 
 		objects.forEach((obj) => {
-			// Собираем данные о логотипах (изображениях)
 			if (obj.customData?.type === 'uploaded-image') {
 				customerLogosData.push({
 					image: obj.customData.fileData.base64,
@@ -1661,7 +1304,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 					rotation: Math.round(obj.angle),
 				})
 			}
-			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
 				labelsData.push({
 					text: obj.text,
@@ -1679,7 +1321,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 			}
 		})
 
-		// Обновляем customerLogos
 		setCustomerLogos((prev) => ({
 			...prev,
 			customerLogos: customerLogosData,
@@ -1787,40 +1428,9 @@ const DesignStepNew = forwardRef((props, ref) => {
 	}
 
 
-	/*const mapLogosForProduct = (objects, productId,groupId) => {
-		let area
-
-		const group = minimalGroups.find(g => g.id === +groupId)
-
-		const product = group?.products?.find(p => p.id === +productId)
-
-		const areaFromConfig = product?.logo_area?.[0]?.logo_area
-
-		if (areaFromConfig) {
-			area = {
-				x: areaFromConfig.x,
-				y: areaFromConfig.y,
-				w: areaFromConfig.width,
-				h: areaFromConfig.height,
-			}
-		}
-
-		return objects
-			.filter(obj => obj.customData?.type === 'uploaded-image')
-			.map(obj => ({
-				image: obj.customData.fileData.base64,
-				x: Math.round(area.x),
-				y: Math.round(area.y),
-				width: undefined,
-				height: undefined,
-				rotation: 0,
-				uId:obj.customData.orgObj.id,
-			}))
-	}*/
 
 	const mapLogosForProduct = (objects, productId,groupId, type,typeId,areaData) => {
 
-		// helper: перевірка чи обʼєкт в межах area
 		const isExceedingArea = (obj, area) => {
 			const rect = obj.getBoundingRect();
 
@@ -1834,12 +1444,11 @@ const DesignStepNew = forwardRef((props, ref) => {
 			const areaRight = area.x + area.w / 2;
 			const areaBottom = area.y + area.h / 2;
 
-			// Повертає true, якщо ХОЧА Б ОДИН край об'єкта вийшов за межі квадрата
 			return (
-				objLeft < areaLeft ||    // Виліз зліва
-				objTop < areaTop ||      // Виліз зверху
-				objRight > areaRight ||  // Виліз справа
-				objBottom > areaBottom   // Виліз знизу
+				objLeft < areaLeft ||
+				objTop < areaTop ||
+				objRight > areaRight ||
+				objBottom > areaBottom
 			);
 		};
 
@@ -1851,7 +1460,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 					uId: obj.customData.orgObj.id,
 				}
 
-				// 🔥 APPLY ALL логіка
 				if (type === 'Apply All' && !isExceedingArea(obj,areaData)) {
 					return {
 						...base,
@@ -1867,7 +1475,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 					areaData.h / obj.customData.orgObj.h
 				)
 
-				// ❌ fallback (центр)
 				return {
 					...base,
 					x: Math.round(areaData.x),
@@ -1915,12 +1522,11 @@ const DesignStepNew = forwardRef((props, ref) => {
 			const areaRight = area.x + area.w / 2;
 			const areaBottom = area.y + area.h / 2;
 
-			// Повертає true, якщо ХОЧА Б ОДИН край об'єкта вийшов за межі квадрата
 			return (
-				objLeft < areaLeft ||    // Виліз зліва
-				objTop < areaTop ||      // Виліз зверху
-				objRight > areaRight ||  // Виліз справа
-				objBottom > areaBottom   // Виліз знизу
+				objLeft < areaLeft ||
+				objTop < areaTop ||
+				objRight > areaRight ||
+				objBottom > areaBottom
 			);
 		};
 
@@ -1929,7 +1535,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 				uId: label.customData.orgObj.id,
 			}
 
-			// 🔥 APPLY ALL логіка
 			if (type === 'Apply All' && !isExceedingArea(label,areaData)) {
 				return {
 					...base,
@@ -1985,7 +1590,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 		const labelsData = []
 
 		objects.forEach((obj) => {
-			// Собираем данные о логотипах (изображениях)
 			console.log(obj.customData)
 			if (obj.customData?.type === 'uploaded-image') {
 				customerLogosData.push({
@@ -1999,7 +1603,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 				})
 			}
-			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
 				labelsData.push({
 					uId:obj.customData.orgObj.id,
@@ -2036,7 +1639,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 				return item;
 			});
 
-			// 🔥 якщо не знайшли — додаємо новий
 			if (!found) {
 				updated.push({
 					product_group_id: +groupId,
@@ -2264,7 +1866,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 			setLocationId(null)
 		}
 		objects.forEach((obj) => {
-			// Собираем данные о логотипах (изображениях)
 			console.log(obj.customData)
 			if (obj.customData?.type === 'uploaded-image') {
 				customerLogosData.push({
@@ -2278,7 +1879,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 				})
 			}
-			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
 
 				const optimalFontSize = calculateOptimalFontSize(
@@ -2894,7 +2494,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 
 
-	// Функция для получения параметров логотипа
 	const getLogoParameters = async () => {
 		try {
 			setIsLoadingD(true)
@@ -2911,7 +2510,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 					};
 				}
 
-				// Збираємо унікальні картинки для кореня групи
 				item.customerLogos.forEach(logo => {
 					if (!acc[groupId].customerLogosImgList.find(l => l.id === logo.uId)) {
 						acc[groupId].customerLogosImgList.push({
@@ -2926,9 +2524,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 					location_id: item.location_id || 1,
 					type_id: item.type_id,
 					design: {
-						// Видаляємо image, залишаємо все інше
 						customerLogos: item.customerLogos.map(({ image, ...rest }) => rest),
-						// Видаляємо uId, залишаємо все інше
 						labels: item.labels.map(({ ...rest }) => rest)
 					}
 				});
@@ -2973,7 +2569,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 		}
 	}
 
-	// Экспозиция функции getLogoParameters через ref
 	useImperativeHandle(ref, () => ({
 		getLogoParameters
 	}))
@@ -3279,9 +2874,7 @@ const DesignStepNew = forwardRef((props, ref) => {
 											fontSize: options.size,
 										})
 
-										// 🔒 Зменшуємо fontSize поки не влізе і по висоті і по ширині
 										const fitsInArea = () => {
-											// getMinWidth() — мінімальна ширина для найдовшого слова без переносу
 											const minW = selectedTextObject.getMinWidth?.() ?? selectedTextObject.width
 											return (
 												selectedTextObject.height <= areaBox.height &&
@@ -3302,7 +2895,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 											selectedTextObject.set({ fontSize: min })
 										}
 
-										// 🔒 Центруємо в area
 										selectedTextObject.set({
 											left: areaBox.left,
 											top: areaBox.top,
@@ -3403,7 +2995,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 
 											const getTextWidth = (fontSize) => {
 												ctx.font = `${obj.fontStyle} ${obj.fontWeight} ${fontSize}px ${obj.fontFamily}`
-												// Міряємо кожен рядок і беремо максимум
 												const lines = obj.text.split('\n')
 												return Math.max(...lines.map(line => ctx.measureText(line).width))
 											}
@@ -3428,7 +3019,6 @@ const DesignStepNew = forwardRef((props, ref) => {
 											return min
 										}
 
-// Виклик — додайте canvas як параметр
 										const fittedFontSize = fitFontSizeToArea(textbox, areaBox.width, areaBox.height, options.size, canvas)
 
 										// =========================

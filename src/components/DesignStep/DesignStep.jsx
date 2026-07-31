@@ -76,14 +76,12 @@ const DesignStep = forwardRef((props, ref) => {
 		return Array.isArray(groupProducts) ? groupProducts : []
 	}
 
-	// Функция для отрисовки иконки удаления
 	const renderDeleteIcon = (ctx, left, top, styleOverride, fabricObject) => {
 		const size = 16
 		ctx.save()
 		ctx.translate(left, top)
 		ctx.rotate(util.degreesToRadians(fabricObject.angle))
 
-		// Рисуем круг
 		ctx.beginPath()
 		ctx.arc(0, 0, size / 2, 0, 2 * Math.PI)
 		ctx.fillStyle = '#ff4444'
@@ -92,7 +90,6 @@ const DesignStep = forwardRef((props, ref) => {
 		ctx.lineWidth = 2
 		ctx.stroke()
 
-		// Рисуем крестик
 		ctx.strokeStyle = '#ffffff'
 		ctx.lineWidth = 2
 		ctx.beginPath()
@@ -106,26 +103,21 @@ const DesignStep = forwardRef((props, ref) => {
 		ctx.restore()
 	}
 
-	// Функция обработчик удаления объекта
 	const deleteObject = (eventData, transform) => {
 		const canvas = transform.target.canvas
 		const target = transform.target
 
-		// Удаляем изображения
 		if (target.customData?.type === 'uploaded-image') {
 			const urlToRemove = target.customData.url
 
-			// Удаляем с canvas
 			canvas.remove(target)
 			canvas.renderAll()
 
-			// Удаляем из uploaderFiles
 			setUploaderFiles((prev) => {
 				const index = prev.findIndex((f) => f.url === urlToRemove)
 				if (index !== -1) {
 					const next = prev.slice()
 					const [removed] = next.splice(index, 1)
-					// Освобождаем URL только для загруженных файлов
 					if (removed && removed.url && !removed.isServerImage) {
 						URL.revokeObjectURL(removed.url)
 					}
@@ -135,7 +127,6 @@ const DesignStep = forwardRef((props, ref) => {
 			})
 		}
 
-		// Удаляем текст
 		if (target.customData?.type === 'text') {
 			canvas.remove(target)
 			canvas.renderAll()
@@ -144,13 +135,10 @@ const DesignStep = forwardRef((props, ref) => {
 		return true
 	}
 
-	// Инициализация fabric canvas
 	useEffect(() => {
-		// Ждём, пока данные загрузятся и компонент отрендерится
 		if (isLoading) return
 		if (!canvasRef.current || !containerRef.current) return
 
-		// Создаём fabric canvas
 		const fabricCanvas = new Canvas(canvasRef.current, {
 			width: containerRef.current.clientWidth,
 			height: containerRef.current.clientHeight,
@@ -161,7 +149,6 @@ const DesignStep = forwardRef((props, ref) => {
 
 		fabricCanvasRef.current = fabricCanvas
 
-		// Создаём направляющие линии для выравнивания по центру
 		const verticalGuideLine = new Line(
 			[fabricCanvas.width / 2, 0, fabricCanvas.width / 2, fabricCanvas.height],
 			{
@@ -170,7 +157,7 @@ const DesignStep = forwardRef((props, ref) => {
 				strokeDashArray: [5, 5],
 				selectable: false,
 				evented: false,
-				visible: false, // Скрыта по умолчанию
+				visible: false,
 				opacity: 0.7,
 			},
 		)
@@ -183,18 +170,16 @@ const DesignStep = forwardRef((props, ref) => {
 				strokeDashArray: [5, 5],
 				selectable: false,
 				evented: false,
-				visible: false, // Скрыта по умолчанию
+				visible: false,
 				opacity: 0.7,
 			},
 		)
 
-		// Добавляем кастомные данные для идентификации
 		verticalGuideLine.customData = { type: 'guide-line' }
 		horizontalGuideLine.customData = { type: 'guide-line' }
 
 		fabricCanvas.add(verticalGuideLine, horizontalGuideLine)
 
-		// Обработчик масштабирования текста для пропорционального изменения размера шрифта
 		const handleTextScaling = (e) => {
 			const obj = e.target
 			if (!obj || obj.customData?.type !== 'text') return
@@ -238,11 +223,9 @@ const DesignStep = forwardRef((props, ref) => {
 				)
 			}
 
-			// Синхронизируем данные с customerLogos
 			syncCanvasToCustomerLogos()
 		}
 
-		// Обработчик выбора объекта
 		const handleSelection = (e) => {
 			const selected = e.selected?.[0] || e.target
 			if (selected && selected.customData?.type === 'text') {
@@ -254,57 +237,45 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		}
 
-		// Обработчик снятия выделения
 		const handleSelectionCleared = () => {
 			setSelectedTextObject(null)
 		}
 
-		// Обработчик вращения с магнитным snap'ом к углам кратным 15°
 		const handleRotating = (e) => {
 			const obj = e.target
 			if (!obj) return
 
-			const snapAngle = 15 // Кратность углов (15°, 30°, 45° и т.д.)
-			const snapThreshold = 3 // Магнитная зона ±2°
+			const snapAngle = 15
+			const snapThreshold = 3
 
-			// Получаем текущий угол и нормализуем его в диапазон 0-360
 			let currentAngle = obj.angle % 360
 			if (currentAngle < 0) currentAngle += 360
 
-			// Находим ближайший угол кратный 15°
 			const nearestSnap = Math.round(currentAngle / snapAngle) * snapAngle
 
-			// Вычисляем расстояние до ближайшего snap-угла
 			const distance = Math.abs(currentAngle - nearestSnap)
 
-			// Если в пределах магнитной зоны - применяем snap
 			if (distance <= snapThreshold) {
 				obj.set('angle', nearestSnap)
 			}
 		}
 
-		// Обработчик перемещения с магнитным выравниванием по центру канваса
 		const handleMoving = (e) => {
 			const obj = e.target
 			if (!obj || obj.customData?.type === 'center-marker' || obj.customData?.type === 'guide-line')
 				return
 
-			const snapThreshold = 10 // Магнитная зона ±10px
+			const snapThreshold = 10
 
-			// Вычисляем центр канваса
 			const canvasCenterX = fabricCanvas.width / 2
 			const canvasCenterY = fabricCanvas.height / 2
 
-			// Получаем центр объекта
 			const objCenter = obj.getCenterPoint()
 
-			// Проверяем расстояние по горизонтали
 			const distanceX = Math.abs(objCenter.x - canvasCenterX)
 			const distanceY = Math.abs(objCenter.y - canvasCenterY)
 
-			// Snap по горизонтали (вертикальная линия)
 			if (distanceX <= snapThreshold) {
-				// Вычисляем новую позицию left с учётом originX
 				// obj.center()
 				// const newLeft = canvasCenterX - obj.width* obj.scaleX / 2
 				// obj.set({ left: newLeft })
@@ -313,9 +284,7 @@ const DesignStep = forwardRef((props, ref) => {
 				verticalGuideLine.set({ visible: false })
 			}
 
-			// Snap по вертикали (горизонтальная линия)
 			if (distanceY <= snapThreshold) {
-				// Вычисляем новую позицию top с учётом originY
 				// obj.center()
 				// const newTop = canvasCenterY - obj.height* obj.scaleY / 2
 				// obj.set({ top: newTop })
@@ -324,17 +293,15 @@ const DesignStep = forwardRef((props, ref) => {
 				horizontalGuideLine.set({ visible: false })
 			}
 
-			obj.setCoords() // Обновляем координаты объекта
+			obj.setCoords()
 		}
 
-		// Обработчик окончания перемещения - скрываем направляющие
 		const handleMovingEnd = () => {
 			verticalGuideLine.set({ visible: false })
 			horizontalGuideLine.set({ visible: false })
 			fabricCanvas.renderAll()
 		}
 
-		// Подписываемся на события
 		fabricCanvas.on('object:scaling', handleTextScaling)
 		fabricCanvas.on('object:rotating', handleRotating)
 		fabricCanvas.on('object:moving', handleMoving)
@@ -344,7 +311,6 @@ const DesignStep = forwardRef((props, ref) => {
 		// fabricCanvas.on('selection:updated', handleSelection)
 		fabricCanvas.on('selection:cleared', handleSelectionCleared)
 
-		// Cleanup при размонтировании
 		return () => {
 			fabricCanvas.off('object:scaling', handleTextScaling)
 			fabricCanvas.off('object:rotating', handleRotating)
@@ -359,7 +325,6 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 	}, [isLoading])
 
-	// Удаление выделенного элемента при нажатии Delete или Backspace
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) {
@@ -367,7 +332,6 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 
 		const handleKeyDown = (e) => {
-			// Проверяем, что фокус не на input/textarea
 			const activeElement = document.activeElement
 			if (
 				activeElement &&
@@ -378,28 +342,23 @@ const DesignStep = forwardRef((props, ref) => {
 				return
 			}
 
-			// Проверяем нажатие Delete или Backspace
 			if (e.key === 'Delete' || e.key === 'Backspace') {
 				const activeObject = canvas.getActiveObject()
 
 				if (activeObject) {
-					// Удаление изображения
 					if (activeObject.customData?.type === 'uploaded-image') {
 						e.preventDefault()
 
 						const urlToRemove = activeObject.customData.url
 
-						// Удаляем с canvas
 						canvas.remove(activeObject)
 						canvas.renderAll()
 
-						// Удаляем из uploaderFiles
 						setUploaderFiles((prev) => {
 							const index = prev.findIndex((f) => f.url === urlToRemove)
 							if (index !== -1) {
 								const next = prev.slice()
 								const [removed] = next.splice(index, 1)
-								// Освобождаем URL только для загруженных файлов
 								if (removed && removed.url && !removed.isServerImage) {
 									URL.revokeObjectURL(removed.url)
 								}
@@ -409,7 +368,6 @@ const DesignStep = forwardRef((props, ref) => {
 						})
 					}
 
-					// Удаление текста
 					if (activeObject.customData?.type === 'text') {
 						e.preventDefault()
 						canvas.remove(activeObject)
@@ -426,18 +384,15 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 	}, [isLoading])
 
-	// Добавление загруженных изображений на canvas
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
 
-		// Получаем текущие URL изображений на canvas
 		const currentObjects = canvas.getObjects()
 		const currentUrls = currentObjects
 			.filter((obj) => obj.customData?.type === 'uploaded-image')
 			.map((obj) => obj.customData.url)
 
-		// Удаляем изображения, которых больше нет в uploaderFiles
 		const uploaderUrls = uploaderFiles.map((f) => f.url)
 		currentObjects.forEach((obj) => {
 			if (obj.customData?.type === 'uploaded-image' && !uploaderUrls.includes(obj.customData.url)) {
@@ -448,7 +403,6 @@ const DesignStep = forwardRef((props, ref) => {
 
 		console.log('currentUrls',currentUrls)
 
-		// Добавляем новые изображения
 		uploaderFiles.forEach(async (fileData) => {
 			if (currentUrls.includes(fileData.url)) return
 
@@ -457,7 +411,6 @@ const DesignStep = forwardRef((props, ref) => {
 				imgElement.src = fileData.url
 
 				imgElement.onload = () => {
-					// Используем размеры с сервера для расчёта scale, если они есть
 					let scaleX, scaleY
 					if (fileData.width !== undefined && fileData.height !== undefined) {
 						scaleX = fileData.width / imgElement.width
@@ -467,8 +420,7 @@ const DesignStep = forwardRef((props, ref) => {
 						scaleY = 100 / imgElement.height
 					}
 
-					// Используем координаты с сервера, если они есть, иначе центрируем
-					// Важно: используем !== undefined, чтобы 0 не считалось falsy
+
 					const left = fileData.x !== undefined ? fileData.x : canvas.width / 2
 					const top = fileData.y !== undefined ? fileData.y : canvas.height / 2
 
@@ -495,7 +447,6 @@ const DesignStep = forwardRef((props, ref) => {
 						mb: false,
 					})
 
-					// Добавляем кнопку удаления
 					fabricImg.controls.deleteControl = new Control({
 						x: 0.5,
 						y: -0.5,
@@ -507,7 +458,6 @@ const DesignStep = forwardRef((props, ref) => {
 						cornerSize: 16,
 					})
 
-					// Добавляем кастомные данные для идентификации
 					fabricImg.customData = {
 						type: 'uploaded-image',
 						url: fileData.url,
@@ -527,7 +477,6 @@ const DesignStep = forwardRef((props, ref) => {
 		})
 	}, [uploaderFiles])
 
-	// useEffect для загрузки текста с сервера на canvas
 	useEffect(() => {
 		if (isLoading) return
 		const canvas = fabricCanvasRef.current
@@ -535,20 +484,16 @@ const DesignStep = forwardRef((props, ref) => {
 		if (!canvas || serverLabels.length === 0) return
 
 		const currentObjects = canvas.getObjects()
-		// Получаем текущие тексты на canvas (по уникальному признаку)
 		const currentTexts = currentObjects
 			.filter((obj) => obj.customData?.type === 'text')
 			.map((obj) => obj.customData.serverId)
 
-		// Добавляем новые тексты
 		serverLabels.forEach((labelData, index) => {
 			const serverId = `server-label-${index}`
 
-			// Проверяем, не загружен ли уже этот текст
 			if (currentTexts.includes(serverId)) return
 
 			try {
-				// Используем координаты с сервера, если они есть, иначе значения по умолчанию
 				const left = labelData.x !== undefined ? labelData.x : 50
 				const top = labelData.y !== undefined ? labelData.y : 50
 				const fontSize = labelData.fontSize || 54
@@ -575,7 +520,6 @@ const DesignStep = forwardRef((props, ref) => {
 					lockUniScaling: false,
 				})
 
-				// Скрываем ненужные контролы
 				textbox.setControlsVisibility({
 					ml: false,
 					mr: false,
@@ -583,7 +527,6 @@ const DesignStep = forwardRef((props, ref) => {
 					mb: false,
 				})
 
-				// Добавляем кнопку удаления
 				textbox.controls.deleteControl = new Control({
 					x: 0.5,
 					y: -0.5,
@@ -595,7 +538,6 @@ const DesignStep = forwardRef((props, ref) => {
 					cornerSize: 16,
 				})
 
-				// Добавляем кастомные данные для идентификации
 				textbox.customData = {
 					type: 'text',
 					serverId: serverId,
@@ -610,7 +552,7 @@ const DesignStep = forwardRef((props, ref) => {
 					originalHeight: labelData.height,
 				}
 			} catch (error) {
-				console.error('❌ Ошибка при добавлении текста на canvas:', error)
+				console.error('❌ Error canvas:', error)
 			}
 		})
 
@@ -736,7 +678,6 @@ const DesignStep = forwardRef((props, ref) => {
 		fetchStoreData()
 	}, [dispatch, storeId,isNewDesignModalOpen])
 
-	// Функция для синхронизации данных с canvas в customerLogos
 	const syncCanvasToCustomerLogos = () => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
@@ -747,7 +688,6 @@ const DesignStep = forwardRef((props, ref) => {
 		const labelsData = []
 
 		objects.forEach((obj) => {
-			// Собираем данные о логотипах (изображениях)
 			if (obj.customData?.type === 'uploaded-image') {
 				customerLogosData.push({
 					image: obj.customData.fileData.base64,
@@ -758,7 +698,6 @@ const DesignStep = forwardRef((props, ref) => {
 					rotation: Math.round(obj.angle),
 				})
 			}
-			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
 				labelsData.push({
 					text: obj.text,
@@ -776,7 +715,6 @@ const DesignStep = forwardRef((props, ref) => {
 			}
 		})
 
-		// Обновляем customerLogos
 		setCustomerLogos((prev) => ({
 			...prev,
 			customerLogos: customerLogosData,
@@ -894,7 +832,6 @@ const DesignStep = forwardRef((props, ref) => {
 		const labelsData = []
 
 		objects.forEach((obj) => {
-			// Собираем данные о логотипах (изображениях)
 			if (obj.customData?.type === 'uploaded-image') {
 				customerLogosData.push({
 					image: obj.customData.fileData.base64,
@@ -905,7 +842,6 @@ const DesignStep = forwardRef((props, ref) => {
 					rotation: Math.round(obj.angle),
 				})
 			}
-			// Собираем данные о текстах
 			if (obj.customData?.type === 'text') {
 				labelsData.push({
 					text: obj.text,
@@ -939,7 +875,6 @@ const DesignStep = forwardRef((props, ref) => {
 				return item;
 			});
 
-			// 🔥 якщо не знайшли — додаємо новий
 			if (!found) {
 				updated.push({
 					product_group_id: +groupId,
@@ -1053,7 +988,6 @@ const DesignStep = forwardRef((props, ref) => {
 
 	}
 
-	// Функция для получения параметров логотипа
 	const getLogoParameters = async () => {
 		try {
 			setIsLoading(true)
@@ -1086,7 +1020,6 @@ const DesignStep = forwardRef((props, ref) => {
 		}
 	}
 
-	// Экспозиция функции getLogoParameters через ref
 	useImperativeHandle(ref, () => ({
 		getLogoParameters
 	}))
@@ -1194,7 +1127,6 @@ const DesignStep = forwardRef((props, ref) => {
 											const canvas = fabricCanvasRef.current
 											if (!canvas) return
 
-											// Обновляем текст
 											selectedTextObject.set({
 												text: text,
 												fontFamily: options.font,
@@ -1213,7 +1145,6 @@ const DesignStep = forwardRef((props, ref) => {
 												return
 											}
 
-											// Функция для подбора оптимального размера шрифта
 											const calculateOptimalFontSize = (
 												text,
 												targetWidth,
@@ -1222,32 +1153,25 @@ const DesignStep = forwardRef((props, ref) => {
 												fontWeight,
 												fontStyle,
 											) => {
-												// Создаём canvas context для измерения текста
 												const ctx = canvas.getContext()
 
-												// Устанавливаем стиль шрифта
 												const fontStyle2 = `${fontStyle} ${fontWeight} ${initialFontSize}px ${fontFamily}`
 												ctx.font = fontStyle2
 
-												// Измеряем реальную ширину текста
 												const metrics = ctx.measureText(text)
 												const actualWidth = metrics.width
 
-												// Добавляем небольшой отступ (5%) для безопасности
 												const safeTargetWidth = targetWidth * 0.95
 
-												// Вычисляем коэффициент масштабирования
 												const widthRatio = safeTargetWidth / actualWidth
 												let fontSize = initialFontSize * widthRatio
 
-												// Ограничиваем размер шрифта разумными пределами
-												fontSize = Math.max(fontSize, 16) // Минимум 16px
-												fontSize = Math.min(fontSize, 200) // Максимум 200px
+												fontSize = Math.max(fontSize, 16)
+												fontSize = Math.min(fontSize, 200)
 
 												return fontSize
 											}
 
-											// Вычисляем оптимальный размер шрифта
 											const optimalFontSize = calculateOptimalFontSize(
 												text,
 												canvas.width,
@@ -1257,22 +1181,18 @@ const DesignStep = forwardRef((props, ref) => {
 												options.italic ? 'italic' : 'normal',
 											)
 
-											// Создаём текстовый объект с оптимальным размером шрифта
 											const textbox = new Textbox(text, {
-												left: 0, // Будет центрирован после создания
+												left: 0,
 												top: 0,
-												width: canvas.width, // Ширина равна ширине canvas
+												width: canvas.width,
 												fontFamily: options.font,
 												fontSize: optimalFontSize,
 												fontWeight: options.bold ? 'bold' : 'normal',
 												fontStyle: options.italic ? 'italic' : 'normal',
 												fill: options.color,
 												textAlign: 'center',
-												// Настройки для пропорционального изменения
 												lockScalingFlip: true,
-												// Разрешаем изменение только по ширине для пропорционального масштабирования
 												lockUniScaling: false,
-												// Стили контролов
 												cornerStyle: 'circle',
 												cornerColor: '#4E008E',
 												cornerStrokeColor: '#ffffff',
@@ -1281,14 +1201,12 @@ const DesignStep = forwardRef((props, ref) => {
 												transparentCorners: false,
 											})
 
-											// Центрируем текст на канвасе
 											textbox.set({
 												left: canvas.width / 2,
 												top: canvas.height / 2,
 											})
 
-											// Скрываем контролы масштабирования по вертикали и горизонтали
-											// Оставляем только угловые для пропорционального изменения
+
 											textbox.setControlsVisibility({
 												mt: false,
 												mb: false,
@@ -1296,7 +1214,6 @@ const DesignStep = forwardRef((props, ref) => {
 												mr: false,
 											})
 
-											// Добавляем кнопку удаления
 											textbox.controls.deleteControl = new Control({
 												x: 0.5,
 												y: -0.5,
@@ -1308,14 +1225,12 @@ const DesignStep = forwardRef((props, ref) => {
 												cornerSize: 24,
 											})
 
-											// Добавляем кастомные данные
 											textbox.customData = {
 												type: 'text',
 												originalFontSize: optimalFontSize,
 												originalWidth: canvas.width,
 											}
 
-											// Добавляем на canvas
 											canvas.add(textbox)
 
 											canvas.setActiveObject(textbox)

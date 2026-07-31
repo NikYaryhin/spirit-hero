@@ -8,6 +8,5 @@ export const store = configureStore({
 		flashSale: flashSaleReducer,
 		navigation: navigationReducer,
 		products: productsReducer,
-		// другие редьюсеры можно добавить здесь
 	},
 })

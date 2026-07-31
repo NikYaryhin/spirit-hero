@@ -196,7 +196,6 @@ export default function FundraisingStep() {
 			ids: selectedProductsIdList,
 		}
 
-		// Группируем удаляемые продукты по категориям
 		const idsByCategory = selectedProducts.reduce((acc, prod) => {
 			const groupKey = getGroupKey(prod)
 			acc[groupKey] = acc[groupKey] ? acc[groupKey].add(prod.id) : new Set([prod.id])
@@ -318,13 +317,11 @@ export default function FundraisingStep() {
 		setSelectedCategory(value)
 	}
 
-	// Функция для получения отсортированных ключей категорий
 	const getSortedCategoryKeys = (categories) => {
 		if (!categories) return []
 
 		const keys = Object.keys(categories)
 
-		// Если выбрана конкретная категория, ставим её первой
 		if (selectedCategory !== 'all' && keys.includes(selectedCategory)) {
 			return [selectedCategory, ...keys.filter((key) => key !== selectedCategory)]
 		}

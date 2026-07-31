@@ -212,10 +212,10 @@ const FlashSale = forwardRef((props, ref) => {
 		const base = new Date(date);
 
 		const start = new Date(base);
-		start.setDate(start.getDate() + 14); // +2 тижні
+		start.setDate(start.getDate() + 14);
 
 		const end = new Date(base);
-		end.setDate(end.getDate() + 21); // +3 тижні
+		end.setDate(end.getDate() + 21);
 
 		return `${formatDate(start)} – ${formatDate(end)}`;
 	};

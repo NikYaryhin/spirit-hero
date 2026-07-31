@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { prevStep } from '@/features/navigation/navigationSlice'
+import { nextStep, prevStep } from '@/features/navigation/navigationSlice'
 import css from './BuilderHeader.module.css'
 import logoImage from '@/assets/SpiritHero__Logo.png'
 import Chevron from '../Icons/Chevron'
@@ -32,6 +32,10 @@ export default function BuilderHeader({ onNextStep, onFlashSaleSave }) {
 				await onFlashSaleSave()
 			} else {
 				await onNextStep()
+			}
+
+			if (activeStep === 4 && +sessionStorage.getItem('fundraisingCount') > 0) {
+				return
 			}
 			window.location.href =  `https://spirit-hero.splitdev.org/login-uuid?uuid=${uuid}`
 

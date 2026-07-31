@@ -23,13 +23,11 @@ export default function ProductDetailsNew({
 																						isLoadingId
 																			 }) {
 
-	// Визначаємо, чи всі товари в цій групі вибрані
-	// Використовуємо useMemo, щоб не перераховувати при кожному дрібному рендері
+
 	const isGroupChecked = useMemo(() => {
 		return products.length > 0 && products.every((product) => Boolean(product.selected))
 	}, [products])
 
-	// Якщо після фільтрації в групі немає товарів, нічого не рендеримо
 	if (products.length === 0) return null
 
 
@@ -109,7 +107,6 @@ export default function ProductDetailsNew({
 								setCatalogSelectedColors={setCatalogSelectedColors}
 								cardClickHandleV2={cardClickHandleV2}
 
-								// Якщо ProductCard очікує selected окремим пропсом, можна додати:
 								// isSelected={product.selected}
 							/>
 						))}

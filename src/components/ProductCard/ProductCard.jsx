@@ -79,7 +79,6 @@ export default function ProductCard({
 		)
 	})
 
-	// Статичні розміри як на макеті
 	const mockSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
 
 	const filteredColors = useMemo(() => {
@@ -93,7 +92,7 @@ export default function ProductCard({
 
 	const visibleColors = useMemo(() => {
 		if (showAllColors) return filteredColors
-		return filteredColors.slice(0, 10) // Показуємо перші 9 кольорів, як на фото
+		return filteredColors.slice(0, 10)
 	}, [filteredColors, showAllColors])
 
 	useEffect(() => {
@@ -168,21 +167,27 @@ export default function ProductCard({
 			color_id: updated.map((v) => +v.color_id),
 		})
 	}
-
+	const handleContainerClick = () => {
+		console.log(1111)
+		inputHandle({
+			currentTarget: {
+				checked: !selected,
+				value: id,
+			},
+		});
+	};
 
 	return (
 		<li className={`${css.product__item} ${selected ? css.selected : ''}`} key={id}>
 
-			{/* Контейнер зображення з сірим фоном */}
-			<div className={css.image_container}>
+			<div className={css.image_container} 	onClick={handleContainerClick}
+			>
 				<div className={css.image}>
 					<img src={`${image}`} alt={product_title} loading="lazy" />
 				</div>
 
-				{/* Хіт продажів */}
 				<div className={css.best_seller}>Bestseller</div>
 
-				{/* Чекбокс у верхньому лівому кутку */}
 				<label className={css.label} title={product_title}>
 					<input
 						checked={Boolean(selected)}
@@ -198,7 +203,6 @@ export default function ProductCard({
 				</label>
 			</div>
 
-			{/* Рядок Рейтингу та Мінімалки */}
 		{/*	<div className={css.meta_row}>
 				<div className={css.rating}>
 					<span className={css.star}>★</span>
@@ -218,12 +222,11 @@ export default function ProductCard({
 				</div>
 			</div>*/}
 
-			{/* Назва та Опис */}
 			<div className={css.info_block}>
 {/*
 				<h3 className={css.name}>{product_title} - id:{id}</h3>
 */}
-				<h3 className={css.name}>{product_title}</h3>
+				<h3 className={css.name} onClick={handleContainerClick} >{product_title}</h3>
 
 				{product_description && (				<div className={css.tooltip}>
 						<svg
@@ -266,32 +269,10 @@ export default function ProductCard({
 				)}
 			</div>
 
-			{/* Ціна */}
-
-			{/*<div className={css.price_row}>
-				{
-					+sale_price_min ===+sale_price_max  ? (<>
-							<span className={css.flash__price}>
-    ${(+sale_price_min+ colorPrice).toFixed(2)}
-  </span>
-					</>):(<>
-
-						<span className={css.flash__price}>
-    ${(+sale_price_min+ colorPrice).toFixed(2)}
-  </span>
-						<span className={css.old__price_wrapper}>
-    <span className={css.dash}>-</span>
-    <span className={css.old__price}>
-      ${(+sale_price_max+ colorPrice).toFixed(2)}
-    </span>
-  </span>
-					</>)
-				}
-
-			</div>*/}
 
 
-			<div className={css.price_row}>
+
+			<div className={css.price_row} onClick={handleContainerClick}>
 				{isFlashSale && is_flash_sale_type ? (
 					<>
 			<span className={css.flash__price_red}>
@@ -340,7 +321,6 @@ export default function ProductCard({
 				))}
 			</div>
 
-			{/* Секція кольорів */}
 			<div className={css.colors_section}>
 				<div className={css.colors__bottom}>
 					{visibleColors.map((color) => {
@@ -390,14 +370,12 @@ export default function ProductCard({
 									style={{ backgroundColor: color.color }}
 								/>
 
-								{/* Повернено галочку як було раніше */}
 								{isActive && <span className={css.remove}>✓</span>}
 							</div>
 						)
 					})}
 				</div>
 
-				{/* Кнопка розгортання кольорів */}
 				{!showAllColors && filteredColors.length > 10 && (
 					<button
 						type="button"

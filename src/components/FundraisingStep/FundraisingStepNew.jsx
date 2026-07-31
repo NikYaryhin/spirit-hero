@@ -17,6 +17,7 @@ import { useSelector } from 'react-redux'
 export default function FundraisingStepNew() {
 	const params = new URLSearchParams(window.location.search)
 	const storeId = params.get('store_id')
+	const storeInfo = useSelector((state) => state.flashSale.storeInfo)
 
 
 	// --- States ---
@@ -24,7 +25,6 @@ export default function FundraisingStepNew() {
 	const [isFundraiseView, setIsFundraiseView] = useState(false)
 	const [minimalGroups, setMinimalGroups] = useState([])
 
-	// Продукти, розбиті по категоріях для двох станів
 	const [productsByCategory, setProductsByCategory] = useState({})
 	const [sellAtCostProducts, setSellAtCostProducts] = useState({})
 
@@ -56,19 +56,15 @@ export default function FundraisingStepNew() {
 			const groups = res.minimum_groups || []
 			setMinimalGroups(groups)
 
-			// 👉 читаємо параметр з URL
 			const params = new URLSearchParams(window.location.search)
 			const fundraisingParam = params.get('fundraising')
 
-			// ============================
-			// 🔥 1. Якщо є fundraising в URL
-			// ============================
+
 			if (fundraisingParam !== null) {
 				const isFundraisingGroup = fundraisingParam === 'true'
 
 				setIsFundraiseView(isFundraisingGroup)
 
-				// 👉 формуємо всі продукти
 				const products = groups.flatMap(group =>
 					(group.products || []).map(product => ({
 						...product,
@@ -76,7 +72,6 @@ export default function FundraisingStepNew() {
 					}))
 				)
 
-				// 👉 оновлюємо на бекенді
 				await spiritHeroApi.updateFundraisingStatus({
 					store_id: storeId,
 					products_info: products.map(product => ({
@@ -85,7 +80,6 @@ export default function FundraisingStepNew() {
 					})),
 				})
 
-				// 👉 після оновлення — всі продукти одного типу
 				const map = {}
 
 				groups.forEach(group => {
@@ -106,15 +100,12 @@ export default function FundraisingStepNew() {
 
 
 
-				// 👉 видаляємо параметр з URL
 				const url = new URL(window.location.href)
 				url.searchParams.delete('fundraising')
 				window.history.replaceState({}, '', url)
 			}
 
-				// ============================
-				// ✅ 2. Якщо немає параметру — стандартна логіка
-			// ============================
+
 			else {
 				console.log("test 2.")
 				const fundraisingMap = {}
@@ -186,7 +177,7 @@ export default function FundraisingStepNew() {
 
 		try {
 			await updateStatusOnServer(selectedIds, toFundraise)
-			await fetchStoreData() // Найпростіший спосіб оновити всі лічильники та списки
+			await fetchStoreData()
 			setSelectedProducts([])
 			showToast(`Moved to ${toFundraise ? 'Fundraise' : 'Sell at cost'}`)
 		} catch (e) {
@@ -259,9 +250,19 @@ export default function FundraisingStepNew() {
 		<section className={css.fundraising__section}>
 			<div className={css.products__handle}>
 				<div className={css.products__container}>
-					<div className={css.warning}>
-						<Icon name={'Danger'} />
-						<p>Your base price includes 1 ink color—want more? It’s just $1 extra per color.</p>
+					<div className={css.warning__header}>
+						<div className={css.warning}>
+							<Icon name={'Danger'} />
+							<p>Your base price includes 1 ink color—want more? It’s just $1 extra per color.</p>
+						</div>
+						<a
+							href={storeInfo?.store?.collection_url || '#'}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={css['flash--sale__head--button']}
+						>
+							Preview store
+						</a>
 					</div>
 
 					<div className={css.categories__container}>

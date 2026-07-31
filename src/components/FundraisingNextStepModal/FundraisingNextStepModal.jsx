@@ -72,7 +72,6 @@ export default function FundraisingNextStepModal({ closeModal }) {
 						setIsCheck(false)
 					}
 				}
-				// FUNDS або старі записи без receive_type
 				else {
 					if (store?.receiveFunds) {
 						const {
@@ -103,7 +102,6 @@ export default function FundraisingNextStepModal({ closeModal }) {
 						setIsCheck(true)
 
 					}
-					// fallback якщо receive_type=funds, але дані лежать в receiveFundsAch
 					else if (store?.receiveFundsAch) {
 						const {
 							account_number,

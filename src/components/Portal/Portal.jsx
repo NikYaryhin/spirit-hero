@@ -10,7 +10,6 @@ export default function Portal({ children }) {
 			document.body.appendChild(root)
 		}
 		return () => {
-			// не удаляем root полностью — другие порталы могут использовать
 		}
 	}, [])
 

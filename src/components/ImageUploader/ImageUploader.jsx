@@ -73,7 +73,6 @@ export default function ImageUploader({
 		setFiles((prev) => {
 			const next = prev.slice()
 			const [removed] = next.splice(index, 1)
-			// Освобождаем URL только для загруженных файлов, не для серверных
 			if (removed && removed.url && !removed.isServerImage) {
 				URL.revokeObjectURL(removed.url)
 			}

@@ -28,6 +28,13 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 	const [storeGroupsToDelete, setStoreGroupsToDelete] = useState([])
 	const [fetchLoader, setFetchLoader] = useState(false)
 
+	useEffect(() => {
+	if(!isFlashSale){
+
+	}
+
+	}, )
+
 	/*useEffect(() => {
 		async function loadData() {
 			try {
@@ -377,7 +384,6 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 					</div>
 				</>*/
 				<>
-					{/* Шапка модалки */}
 				{/*	<div className={css.header_v2}>
 						<span className={css.badge_v2}>Success</span>
 						<button onClick={() => setIsModalOpen(false)} className={css.close_btn_v2} aria-label="Close">
@@ -390,7 +396,6 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						<span className={css.subtitle_v2}>Please select the collection you want to run a flash sale for.</span>
 					</h3>
 
-					{/* Селектор колекцій */}
 					<fieldset className={css.fieldset_v2}>
 						{isLoadingGroups ? (
 							<Loader />
@@ -416,7 +421,6 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						)}
 					</fieldset>
 
-					{/* Політика та інформаційні картки */}
 					<div className={css.policy_section_v2}>
 						<h4 className={css.policy_title_v2}>Minimum Requirements Policy</h4>
 						<p className={css.policy_subtitle_v2}>If the minimums aren't met, you can choose one of the following options:</p>
@@ -433,9 +437,7 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						</ol>
 					</div>
 
-					{/* Дві картки поруч */}
 					<div className={css.cards_container_v2}>
-						{/* Ліва картка (Важливо) */}
 						<div className={css.notice_card_v2}>
 							<h5 className={css.card_title_v2}>
 								<span className={css.info_icon_v2}>i</span> Important Notice
@@ -447,7 +449,6 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 							</ul>
 						</div>
 
-						{/* Права картка (Мінімуми) */}
 						<div className={css.minimum_card_v2}>
 							<span className={css.min_label_v2}>Required Minimum</span>
 							<div className={css.min_count_v2}>
@@ -460,7 +461,6 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						</div>
 					</div>
 
-					{/* Чекбокс згоди */}
 					<label className={css.checkbox__label_v2}>
 						<input
 							type="checkbox"
@@ -475,7 +475,6 @@ export default function ProductStepValidationModal({ setIsModalOpen }) {
 						I agree with the minimum order requirements for each product group
 					</label>
 
-					{/* Кнопки дії */}
 					<div className={css.button__box_v2}>
 						<button
 							onClick={() => setIsModalOpen(false)}

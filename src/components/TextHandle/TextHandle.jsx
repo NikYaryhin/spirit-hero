@@ -12,7 +12,6 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 	const [size, setSize] = useState(54)
 	const [openFonts, setOpenFonts] = useState(false)
 
-	// Синхронизация с выбранным текстом
 	useEffect(() => {
 		if (selectedText) {
 			setText(selectedText.text || '')
@@ -31,7 +30,6 @@ export default function TextHandle({ onAdd, onUpdate, selectedText }) {
 		}
 	}, [selectedText])
 
-	// Автоматическое применение изменений к выбранному тексту
 	useEffect(() => {
 		if (selectedText && onUpdate) {
 			onUpdate(text, { font, bold, italic, color, size })

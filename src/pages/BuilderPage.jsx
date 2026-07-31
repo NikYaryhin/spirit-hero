@@ -33,6 +33,8 @@ export default function Builder() {
 	const isLoading = useSelector((state) => state.products.isLoading)
 	const activeStep = useSelector((state) => state.navigation.activeStep)
 	const storeId = useSelector((state) => state.flashSale.storeId)
+	const isFlashSale = useSelector((state) => state.flashSale.isFlashSale)
+
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const designStepRef = useRef(null)
 	const flashSaleRef = useRef(null)
@@ -122,7 +124,6 @@ export default function Builder() {
 		initBuilder()
 	}, [dispatch])
 
-	// Функция для обработки перехода на следующий шаг
 	const handleNextStep = async () => {
 		if (activeStep === 2) {
 			try {
@@ -135,6 +136,11 @@ export default function Builder() {
 					return
 				}
 
+
+				if (!isFlashSale) {
+					dispatch(nextStep())
+					return
+				}
 				setIsModalOpen(true)
 			} catch (e) {
 				showToast('Failed to load data', 'error')
